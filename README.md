@@ -1,2 +1,3 @@
-# elSpectro
-Event Generator for electron scattering hadron spectroscopy
+# elSpectro 
+
+## Event Generator framework for incorporating Spectroscopy into electro / photoproduction reactions.
