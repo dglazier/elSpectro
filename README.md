@@ -40,7 +40,7 @@ ROOT 6
 
 1) EIC e + p -> e' rho(pi+,pi-) p
 
-        root Load.C
+        root Load.C RunRhoProton.C
         hW.Draw()
         hQ2.Draw()
         hRhoM.Draw()
