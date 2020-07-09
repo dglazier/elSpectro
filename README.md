@@ -2,7 +2,7 @@
 
 Event Generator framework for incorporating Spectroscopy into electro / photoproduction reactions.
 
-#Prerequisites
+# Prerequisites
 
 ROOT 6
 
@@ -18,11 +18,11 @@ ROOT 6
 
      make install
 
-## running examples
+## Running examples
 
      cd examples
 
-###Examples comparing to simple weighting of TGenPhaseSpace
+### Examples comparing to simple weighting of TGenPhaseSpace
 
 1) Decay a rho meson to 2 pi
 
