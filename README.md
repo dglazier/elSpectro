@@ -12,6 +12,11 @@ ROOT 6
 
      cd elSpectro
 
+ # Set Environment
+
+     setenv ELSPECTRO /path/to/elSpectro (or $PWD)
+     setenv JPACPHOTO /path/to/jpacPhoto
+
      mkdir build
 
      cd build
@@ -20,10 +25,11 @@ ROOT 6
 
      make install
 
-# Set Environment
+     cmake ../
 
-     setenv ELSPECTRO /path/to/elSpectro
-     setenv JPACPHOTO /path/to/jpacPhoto
+     make install
+
+Note the double cmake ../; make install; is required for ROOT pcm files 
 
 ## Running examples
 
