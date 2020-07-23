@@ -10,6 +10,8 @@ ROOT 6
 
      git clone https://github.com/dglazier/elSpectro
 
+     cd elSpectro
+
      mkdir build
 
      cd build
