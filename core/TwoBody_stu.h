@@ -87,7 +87,27 @@ namespace elSpectro{
       
     }
     double CalcWeight() const{
-      return TMath::Exp( (_t) * _t_slope) * _t_strength + _s_strength;
+      double W = _CM->M();
+      double M1=_p1->M();
+      // double M1=0;
+      double M2=_p2->M();
+      double M3=_p3->M();
+      double M4=_p4->M();
+      
+      double P3 = kine::PDK(W,M3,M4);
+
+      //PDK does not always have a valid solution for g*
+      //Direct boost of g* into cm rest frame
+      auto cmBoost=_CM->BoostToCM();
+      auto p1cm=boost(*_p1,cmBoost);
+      auto P1=p1cm.P();
+      
+  
+      double E1 = sqrt(M1*M1 + P1*P1);
+      double E3 = sqrt(M3*M3 + P3*P3);
+      double tmin =  M1*M1 + M3*M3  - 2 * ( E1*E3 -P1*P3 ); 
+      
+      return TMath::Exp( (_t-tmin) * _t_slope) * _t_strength + _s_strength;
     }
     double CosThFrom_u() const noexcept {
        //Needs fixed to return correct cos theta and applu u distribution

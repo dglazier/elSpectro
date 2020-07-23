@@ -19,7 +19,7 @@ namespace elSpectro{
 
     DistTH1(const TH1D& ff);
  
-    double SampleSingle()   noexcept final {
+    double SampleSingle()  noexcept final {
       _x=_th1.GetRandom();
       _val=_th1.Interpolate(_x);
       return _x;
@@ -36,7 +36,8 @@ namespace elSpectro{
     double GetMinX() const noexcept final{return _th1.GetXaxis()->GetXmin();}
     double GetMaxX() const noexcept final{return _th1.GetXaxis()->GetXmax();}
 
-    double GetWeightFor(double valX) const {return _th1.Interpolate(valX)/_max_val;}
+    //  double GetWeightFor(double valX)  {return _th1.Interpolate(valX)/_max_val;}
+    double GetWeightFor(double valX)  {return ((TH1D *)(&_th1))->Interpolate(valX)/_max_val;}
     
     const TH1& GetTH1() const noexcept {return _th1;}
     
