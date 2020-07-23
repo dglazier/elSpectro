@@ -5,13 +5,16 @@
 ///             Control behaviour of Particle decay to Particle products
 ///             Defined by
 ///             1) list of Particle products
-///             2) Intensity function given the produt LorentzVectors
+///             2) Intensity function dependent on Q2 and W
 ///
-///            Note drevied classes should include a constructor to initialise
+///            Note derived classes should include a constructor to initialise
 ///            DecayModelQ2W( particle_ptrs , const std::vector<int> pdgs );
 #pragma once
 
 #include "DecayModel.h"
+#include "DecayVectors.h"
+#include "DecayingParticle.h"
+#include "ReactionInfo.h"
 
 namespace elSpectro{
 
@@ -27,21 +30,38 @@ namespace elSpectro{
     //constructor giving W theshold, just produces scatted electron kinematics
     DecayModelQ2W(  double thresh  );
     //constructor giving W theshold and subsequent primary decay of Nucl+gamma* system
-    DecayModelQ2W(  double thresh, DecayModel* primary  );
+    //DecayModelQ2W(  double thresh, DecayModel* gNmodel,DecayVectors* gNdecayer=nullptr);
+    DecayModelQ2W(  double thresh, DecayModel* gNmodel,DecayVectors* gNdecayer=new TwoBodyFlat());
     
     // Each model must define its intensity
-    const CurrentEventInfo* Intensity(const CurrentEventInfo* info=nullptr) const override;
+    double Intensity() const override;
 
+    void PostInit(ReactionInfo* info) override;
+
+    bool RegenerateOnFail() const  noexcept override {return false;}
+
+
+    const Particle*  GetScatteredElectron() const noexcept{return _electron; }
+    const DecayingParticle* GetGammaN() const noexcept{return dynamic_cast<const DecayingParticle*>(_gstarNuc); }
     
+  protected:
+    
+    //mutable PhotoProdInfo _myInfo;//!
+    const ReactionElectroProd* ProdInfo() const noexcept {return _prodInfo;}
+    mutable LorentzVector _gamma;
+
+
+ 
   private:
     void Init();
     
-    mutable PhotoProdInfo _myInfo;//!
     double _threshold = {0};
     
     Particle* _electron={nullptr};
     Particle* _gstarNuc={nullptr};
-      
+
+    ReactionElectroProd* _prodInfo={nullptr};
+    
     ClassDefOverride(elSpectro::DecayModelQ2W,1); //class DecayModelQ2W
     
   };//class DecayModelQ2W

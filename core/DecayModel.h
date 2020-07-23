@@ -14,6 +14,7 @@
 #include "Particle.h"
 #include "CurrentEventInfo.h"
 #include "FunctionsForKinematics.h"
+#include "ReactionInfo.h"
 #include <TObject.h> //for ClassDef
 #include <vector>
 #include <string>
@@ -39,14 +40,16 @@ namespace elSpectro{
     
     // Each model must define its intensity
     //    virtual double Intensity() const=0;
-    virtual const CurrentEventInfo*  Intensity(const CurrentEventInfo* info=nullptr) const=0;
+    virtual double  Intensity() const=0;
 
     const particle_ptrs& Products() const{ return _products;}
     const decaying_ptrs& UnstableProducts() const{ return _unstables;}
 
+    virtual bool RegenerateOnFail() const noexcept =0;
 
     bool CheckThreshold() const{
       SumAllProducts();
+      //  std::cout<<"CheckThreshold() "<<_sumOfMasses<<" "<<_parent.M()<<std::endl;
       if(_sumOfMasses>_parent.M()) return false;
       else return true;
     }
@@ -58,10 +61,9 @@ namespace elSpectro{
 	_parent+=entry->P4();
 	_sumOfMasses+=entry->P4().M();
       }
-      // std::cout<<"SumAllPRoducts "<<_sumOfMasses<<" "<<_parent.M()<<" "<<_products[0]->P4().M()<<" "<<_products[1]->P4().M()<<std::endl;
     }
 
-    const LorentzVector& ParentVector()const {return _parent;}
+    const LorentzVector& ParentVector()const {SumAllProducts( );return _parent;}
 
     double SumOfProductMasses()const {return _sumOfMasses;}
 
@@ -78,7 +80,9 @@ namespace elSpectro{
     const std::string& GetName()const {return _name;}
 
     double PhaseSpaceWeightSq(double W);
-   
+    
+    virtual void PostInit(ReactionInfo* info);
+ 
   protected:
 
     std::string _name;
@@ -91,6 +95,7 @@ namespace elSpectro{
 
     mutable LorentzVector _parent;
     mutable double _sumOfMasses=0;
+
     
     ClassDef(elSpectro::DecayModel,1); //class DecayModel
     

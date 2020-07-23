@@ -22,14 +22,13 @@ namespace elSpectro{
     PhaseSpaceDecay( particle_ptrs , const std::vector<int> pdgs );
 
     // Each model must define its intensity
-    const CurrentEventInfo* Intensity(const CurrentEventInfo* info=nullptr) const final{
+    double Intensity() const final{
       if(CheckThreshold())
-	_myInfo._weight=1;
+	return 1.;
       else
-	_myInfo._weight=0;
-	
-      return &_myInfo;
+	return 0.;
     }
+    bool RegenerateOnFail() const  noexcept final {return false;}
 
     
   private:

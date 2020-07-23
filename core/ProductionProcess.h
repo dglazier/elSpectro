@@ -14,22 +14,24 @@
 
 namespace elSpectro{
   
- 
+  
   class ProductionProcess : public DecayingParticle {
 
+     
   public:
-    ProductionProcess()=delete;
-    
+    //virtual ~ProductionProcess()=default;
+
     //only construct via and take ownership of model 
     ProductionProcess(DecayModel* model);
-    ProductionProcess(int pdg,DecayVectors* decayer, DecayModel* model);
+    ProductionProcess(int pdg, DecayVectors* decayer, DecayModel* model);
 
     
-  
+    virtual void InitGen() =0;
 
     
   private:
-
+    ProductionProcess()=default;
+    
  
     
   };

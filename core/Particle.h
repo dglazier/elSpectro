@@ -35,7 +35,9 @@ namespace elSpectro{
 
     Particle(int pdg);
 
-    const LorentzVector& P4() const {return _vec;}//can be changed by others
+    LorentzVector const& P4() const {return _vec;}//const be changed by others
+    LorentzVector* P4ptr() {return &_vec;}
+    
     int Pdg()const{return _pdg;}
 
  
@@ -72,34 +74,51 @@ namespace elSpectro{
     /* } */
 
   
-    double PdgMass()const {return _pdgMass;}
+    double PdgMass()const  noexcept{return _pdgMass;}
 
-    virtual double MinimumMassPossible()const {return PdgMass(); }
+    virtual double MinimumMassPossible()const  noexcept{return PdgMass(); }
     
+    double MassWeight() const noexcept {
+      return _massWeight;
+    }
 
-    virtual void Print() const;
+    virtual void Print()  const;
     
   protected:
  
+    void SetP4M(double mm){
+      auto P2=_vec.P2();
+      _vec.SetXYZT(_vec.X(),_vec.Y(),_vec.Z(),TMath::Sqrt(P2+mm*mm));
+    }
 
   private:
+
     friend DecayModel; //for  DetermineDynamicMass()
     
     //if mass comes from a distribution
     void  DetermineDynamicMass(){
+      
+      if(_massDist==nullptr ) return; //stick at pdgMass
+      
       _dynamicMass=-1;
       auto min = MinimumMassPossible();
       while(_dynamicMass<min){
 	//	std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<std::endl;
-	_dynamicMass=
-	  (_massDist==nullptr ? _pdgMass : _massDist->SampleSingle());
+	
+	_dynamicMass= _massDist->SampleSingle();
+	SetP4M(_dynamicMass);
+	//need a weight for "envelope"
+	_massWeight =_massDist->GetCurrentWeight();
+	
       }
       
-     }
+    }
 
+    
     LorentzVector _vec;
     double _pdgMass={0};
     double _dynamicMass={0};
+    double _massWeight={1};
     
     int _pdg={0};
 

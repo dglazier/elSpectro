@@ -24,7 +24,6 @@ namespace elSpectro{
 
   public:
     
-    ElectronScattering()=delete;
     //or if decayer already give required distribution
    
     ElectronScattering(double ep,double ionp,
@@ -33,14 +32,16 @@ namespace elSpectro{
     ElectronScattering(double ep,double ionp,
 		       DecayVectors* decayer, DecayModel* model=new PhaseSpaceDecay{{},{11,-2211}},int ionpdg=2212);
 
-   
-    double GenerateProducts( const CurrentEventInfo* parentInfo=nullptr) override;
+    
+    DecayStatus  GenerateProducts( ) override;
 
-    const CurrentEventInfo* EventInfo() const override{ return &_info; }
+    // const CurrentEventInfo* EventInfo() const override{ return &_info; }
 
-      
+    void InitGen() override;
+
   private:
-
+    ElectronScattering()=default;
+ 
     void SetBeamCondtion();
     
     double _pElectron; //nominal e- beam energy
@@ -53,8 +54,13 @@ namespace elSpectro{
 
     LorentzVector _beamElec;
     LorentzVector _beamNucl;
- 
-    PhotoProdInfo _info;
+    LorentzVector _nuclRestElec;
+    LorentzVector _nuclRestNucl;
+
+    DecayingParticle* _gStarN={nullptr}; 
+    //PhotoProdInfo _info;
+    ReactionElectroProd _reactionInfo;
+    
     
     ClassDefOverride(elSpectro::ElectronScattering,1); //class ElectronScattering
  

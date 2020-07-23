@@ -39,16 +39,17 @@ namespace elSpectro{
       //in case decay chain may change each event coulsd get the masses each time
       // std::vector<double> masses;
       //_model->GetStableMasses(masses); //fill vector with masses of final particles
-
+      //  std::cout<<"mass ps  "<<amodel->MinimumMassPossible()<<" "<<amodel->ParentVector().M()<<std::endl;
       double max= kine::PhaseSpaceWeightMax(parentM,_masses);
-      //  std::cout<<"MassPhaseSpace() max "<< max<<std::endl;
+      // std::cout<<"MassPhaseSpace() max "<< max<<" "<<parentM<<std::endl;
 
       //accept or reject mass combinations until got one
       //PhaseSpaceWeight will try alternative masses
       while( PhaseSpaceWeight(parentM) < gRandom->Uniform()*max ){
 	//reject this combintation
       }
-    
+      //std::cout<<"MassPhaseSpace() max "<< _masses.size()<<std::endl;
+  
     }
     
     void SetModel(DecayModel* amodel){

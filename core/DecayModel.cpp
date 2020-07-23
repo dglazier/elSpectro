@@ -1,5 +1,6 @@
 #include "Manager.h"
 #include "DecayModel.h"
+#include "DecayingParticle.h"
 #include <algorithm>
 
 namespace elSpectro{
@@ -26,6 +27,16 @@ namespace elSpectro{
     }
 	    
   }
+
+  void DecayModel::PostInit(ReactionInfo* info){
+    if(_unstables.empty()) return;
+    for(auto& p:_unstables){
+      std::cout<<"DecayModel::PostInit  "<<p<<" "<<_name<<std::endl;
+      std::cout<<p->Pdg()<<std::endl;
+      p->PostInit(info);
+    }
+  };
+
   void  DecayModel::GetStableMasses( std::vector<double >& masses) const{
 
     //if stable particle add its mass
@@ -38,23 +49,27 @@ namespace elSpectro{
     
   }
   double DecayModel::PhaseSpaceWeightSq(double W){
-    //std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq "<<std::endl;
+    // std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq "<<MinimumMassPossible()<<" "<<W<<std::endl;
     //Note use weight squared to reduce sqrt calls
 
     double result=1;
     
     double TCM=W;
     for(auto* p:_unstables){
+      //This should be the only call to DetermineDynamicMass in the code.
       p->DetermineDynamicMass();
       TCM-=p->Mass();
     }
     for(auto* p:_stables)
       TCM-=p->Mass();
     
-    if(TCM<0)  return 0;
+    //  std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq "<<TCM<<std::endl;
+     
+    if(TCM<0)  return 0;//below threshold, start again
     
-    result  *=kine::PDK2(W,_products[0]->Mass(),_products[1]->Mass());
-    
+    result  *= kine::PDK2(W,_products[0]->Mass(),_products[1]->Mass());
+    // std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq result "<<result<<std::endl;
+   
     for(auto* p:_unstables)
       result*=p->PhaseSpaceWeightSq();
     

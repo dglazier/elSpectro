@@ -59,9 +59,8 @@ namespace elSpectro{
     RotateZaxisToCMDirection(parent);
     
    _gamma_ion= parent - _scattered; //residual gamma* + ion system
-
-   //   std::cout<<_scattered<<" "<<TMath::Pi()*1E6-_scattered.Theta()*1E6<<std::endl;
-  
+   
+   //std::cout<<"ScatteredElectron "<<_scattered<<" "<<_gamma_ion<<std::endl;  
    if(products[0]->Pdg()==11){
      products[0]->SetXYZT(_scattered.X(),_scattered.Y(),_scattered.Z(),_scattered.T());
      products[1]->SetXYZT(_gamma_ion.X(),_gamma_ion.Y(),_gamma_ion.Z(),_gamma_ion.T());
@@ -70,7 +69,8 @@ namespace elSpectro{
      products[1]->SetXYZT(_scattered.X(),_scattered.Y(),_scattered.Z(),_scattered.T());
      products[0]->SetXYZT(_gamma_ion.X(),_gamma_ion.Y(),_gamma_ion.Z(),_gamma_ion.T());
    }
-    
+   //  std::cout<<"Electron Check theta "<<products[0]->P4().Theta()*TMath::RadToDeg()<<" "<<products[1]->P4().Theta()*TMath::RadToDeg()<<std::endl;
+
     return 1.;
     //    return _random_xy->CurrentValue();
   }

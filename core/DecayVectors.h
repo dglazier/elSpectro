@@ -21,7 +21,14 @@ namespace elSpectro{
     ///can be used to get phase space distribution
     virtual double  Generate(const LorentzVector& parent,
 			     const particle_ptrs& products)  = 0;
+
     
+    virtual void PostInit(ReactionInfo* info){};
+
+  protected:
+    
+    mutable double _weight={1};
+ 
   private:
 
     

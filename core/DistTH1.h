@@ -2,27 +2,26 @@
 ///
 ///Class:		DistTF1
 ///Description:
-///             wrapper for TF1 distributions
+///             wrapper for TH1 distributions
 /// 
 
 #pragma once
 
 #include "Distribution.h"
-#include <TF1.h>
-#include <string>
+#include <TH1.h>
 
 namespace elSpectro{
 
-  class DistTF1 : public Distribution {
+  class DistTH1 : public Distribution {
 
     
   public :
 
-    DistTF1(const TF1& ff);
+    DistTH1(const TH1D& ff);
  
     double SampleSingle()   noexcept final {
-      _x=_tf1.GetRandom();
-      _val=_tf1.Eval(_x);
+      _x=_th1.GetRandom();
+      _val=_th1.Interpolate(_x);
       return _x;
     }
     
@@ -34,24 +33,24 @@ namespace elSpectro{
 
     double GetX() const noexcept { return _x;}
     
-    double GetMinX() const noexcept final{return _tf1.GetXmin();}
-    double GetMaxX() const noexcept final{return _tf1.GetXmax();}
+    double GetMinX() const noexcept final{return _th1.GetXaxis()->GetXmin();}
+    double GetMaxX() const noexcept final{return _th1.GetXaxis()->GetXmax();}
 
-    double GetWeightFor(double valX) const {return _tf1.Eval(valX)/_max_val;}
+    double GetWeightFor(double valX) const {return _th1.Interpolate(valX)/_max_val;}
     
-    const TF1& GetTF1() const noexcept {return _tf1;}
+    const TH1& GetTH1() const noexcept {return _th1;}
     
   private:
     //no one should use default constructor
-    DistTF1()=default;
+    DistTH1()=default;
 
-    TF1 _tf1;
+    TH1D _th1;
     double _val{0};
     double _x{0};
     double _max_val{0};
     double _min_val{0};
     
-    ClassDef(elSpectro::DistTF1,1); //class Distribution
+    ClassDef(elSpectro::DistTH1,1); //class Distribution
  
 
   };

@@ -26,12 +26,15 @@ namespace elSpectro{
     virtual dist_pair SamplePair()  noexcept = 0 ;
 
     virtual double CurrentValue() const noexcept=0;
+    virtual double MaxValue() const noexcept=0;
+    virtual double MinValue() const noexcept=0;
 
     virtual double GetMinX() const noexcept = 0 ;
     virtual double GetMaxX() const noexcept = 0 ;
     virtual double GetMinY() const noexcept {return 0;}
     virtual double GetMaxY() const noexcept {return 0;}
-    
+
+    double GetCurrentWeight() const noexcept { return CurrentValue()/MaxValue();}
   private:
     
     //   ClassDef(elSpectro::Distribution,1); //class Distribution

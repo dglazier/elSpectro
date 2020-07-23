@@ -78,27 +78,76 @@ namespace elSpectro{
     SetXYZT(_beamElec.X(),_beamElec.Y(),
 	    _beamElec.Z(),_beamElec.T());
 
-  }
 
+    //For nominal beam conditions set nucleon rest frame vectors
+    //in case info is needed in PostInit stage
+    //Boost into ion rest frame
+    auto prBoost=_beamNucl.BoostToCM();
+    _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.M());
+    _nuclRestElec= boost(_beamElec,prBoost);
+    
+  }
   /////////////////////////////////////////////////////////////////////////
-  double ElectronScattering::GenerateProducts(const CurrentEventInfo* parentInfo){
+  void ElectronScattering::InitGen(){
+    //pass on lorentzvectors in nucleon rest frame
+    //This is the internal frame for the generator
+    _reactionInfo._target=&_nuclRestNucl;
+    _reactionInfo._ebeam =&_nuclRestElec;
+    DecayingParticle::PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
+    auto& unproducts=Model()->UnstableProducts();
+    if(unproducts.size()!=1) {
+      std::cerr<<"ElectronScattering::PostInit need a Q2W model with just a gamma*N decay product"<<std::endl;
+    }
+    _gStarN = unproducts[0];//should only be gamma*N decaying product 
+  }
+  /////////////////////////////////////////////////////////////////////////
+  DecayStatus  ElectronScattering::GenerateProducts(){
     //First, Eventually want to sample from beam divergence distributions
     LorentzVector collision = _beamElec + _beamNucl;
 
     //Boost into ion rest frame
     auto prBoost=_beamNucl.BoostToCM();
     collision=boost(collision,prBoost);
-  
+    _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.M());
+    _nuclRestElec= boost(_beamElec,prBoost);
+    
     //set decay parent for e -> e'g*
     SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
 
     //proceed through decay chain
-    DecayingParticle::GenerateProducts(parentInfo);
+    
+    //in case I have any useful info to pass to decay products
+    //e.g. polarisations, SDMEs, moments,...
+      //   const CurrentEventInfo* myInfo ={nullptr}; 
+
+     
+    long nProdsamples = 0 ;
+    long nDecaysamples = 0 ;
+
+    //generate scattered electron
+    // DecayStatus status = DecayStatus::ReGenerate;
+    //while(status == DecayStatus::ReGenerate){
+
+    //find a W candidate
+    while(DecayingParticle::GenerateProducts()!=DecayStatus::Decayed){
+      nProdsamples++;
+    }//DecayModelQ2W
+    
+    //  std::cout<< "ElectronScattering  " <<nProdsamples<<std::endl;
+  
+      //Decay gStarN->Products, may need to regenerate if this model intensity depends on W (in this case any DecayModelQ2W sWeight (if not =1)  must be divided out from this model's weight)
+      //while((status=_gStarN->GenerateProducts()) == DecayStatus::TryAnother) {
+    //	nDecaysamples++;
+    // } 
+    // if(status==DecayStatus::Decayed) break;
+    // }
+    
+    // std::cout<<"Needed "<<nProdsamples<<" eletecrons for this event and "<<nDecaysamples<<" decays"<<std::endl;
     
     //Boost all stable particles back to lab
     Manager::Instance().Particles().BoostStable(-prBoost);
 
-    return 1.0;
+    return DecayStatus::Decayed;
   }
 
 }

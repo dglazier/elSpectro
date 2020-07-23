@@ -29,7 +29,7 @@ namespace elSpectro{
        _process.reset(prod);
      }
      
-     ProductionProcess* const Reaction(){return _process.get();}
+     ProductionProcess* Reaction(){return _process.get();}
 
      void SetSeed(ULong_t seed = 0){gRandom->SetSeed(seed);}
 

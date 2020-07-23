@@ -39,8 +39,9 @@
  TH1F hPE("PE","proton Energy",100,0,100);
  TH1F hPTh("PTh","proton #theta",1000,0,180);
  
-  gBenchmark->Start("e");
-  for(int i=0;i<1E6;i++){
+ gBenchmark->Start("e");
+ production->InitGen();
+ for(int i=0;i<1E6;i++){
     production->GenerateProducts();
   
     auto photonNuc = products[0]->P4();

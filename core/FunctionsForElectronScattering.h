@@ -77,7 +77,10 @@ namespace elSpectro{
       return M2_el()*y*y/m1y;
       
     }
-    
+    inline double Q2min_y(double y){
+      double m1y=(1-y);
+      return M2_el()*y*y/m1y;
+    }
     inline double  PhotonE(const LorentzVector& e_in,const LorentzVector& e_sc){
       return e_in.T()-e_sc.T();
     }
@@ -132,8 +135,8 @@ namespace elSpectro{
       // auto m1y=(1-yy);
       double xx = TMath::Exp(ln_yy);
       double yy = TMath::Exp(ln_xx);
-   auto m1y=(1-yy);
-  
+      auto m1y=(1-yy);
+      //std::cout<<xx<<" "<<yy<<" Q2 "<< Q2_xy(e_in,xx, yy)<<" min Q2 "<<Q2min_y(yy)<<" min x "<<Q2min_y(yy)/2/M_pr()/e_in/yy<<std::endl;
    //std::cout<<"Q2 "<< Q2_xy(e_in,xx, yy)<<" "<<M2_el()*yy*yy/m1y<<" "<< K_xy(e_in,xx,yy)<<" "<<L_xy(e_in,xx,yy)<< " "<<1./yy<<" "<<1./xx<<" "<<K_xy(e_in,xx,yy)*2*M_pr()+M2_pr()<<" "<<M_pr()<<"KL by E "<<K_xy(e_in,xx,yy) * L_xy(e_in,xx,yy) / e_in<<std::endl;
  
         

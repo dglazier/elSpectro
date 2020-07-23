@@ -30,6 +30,8 @@ namespace elSpectro{
     }
 
     double CurrentValue() const noexcept final {return _val;}
+    double MaxValue() const noexcept final {return _max_val;}
+    double MinValue() const noexcept final {return 0;}
 
     double GetMinX() const noexcept final{return TMath::Exp( _lnxmin);}
     double GetMaxX() const noexcept final{return TMath::Exp( _lnxmax);}
