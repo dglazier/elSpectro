@@ -18,6 +18,11 @@ ROOT 6
 
      make install
 
+# Set Environment
+
+     setenv ELSPECTRO /path/to/elSpectro
+     setenv JPACPHOTO /path/to/jpacPhoto
+
 ## Running examples
 
      cd examples
@@ -44,3 +49,22 @@ ROOT 6
         hW.Draw()
         hQ2.Draw()
         hRhoM.Draw()
+
+### Examples of ElectroProduction of Jpac amplitudes
+
+1) e + p -> e' rho(pi+,pi-) p
+
+       root Load.C JpacAmpRho.C+
+       hW.Draw()
+       hQ2.Draw()
+       hRhoM.Draw()
+       ht.Draw()
+
+2) Pentaquark e + p -> e' Jpsi(e+,e-) p
+
+       root Load.C JpacAmpPenta.C+
+       hW.Draw()
+       hQ2.Draw()
+       hJpsiM.Draw()
+       ht.Draw()
+       hWt.Draw()
