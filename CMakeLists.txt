@@ -9,6 +9,8 @@ set(CMAKE_CXX_FLAGS "-fPIC -O3")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
+find_package(HepMC3 REQUIRED)
+include_directories($ENV{HEPMC3}/hepmc3-install/include)
 
 find_package(ROOT REQUIRED MathMore)
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}) ############USEROOTSYS

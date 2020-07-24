@@ -9,7 +9,8 @@ namespace elSpectro{
    ScatteredElectron_xy::ScatteredElectron_xy(Distribution* dist):
     _random_xy{dist}
   {
-    
+     hist = new TH1D("ydist","ydist",1000,0,1);
+     histW = new TH1D("genWdist","genWdist",1000,0,100);
   }
   
   ////////////////////////////////////////////////////////////////////
@@ -29,6 +30,10 @@ namespace elSpectro{
     // std::cout<<" x = "<<xx*1E6<<" y "<<yy*1E6<<std::endl;
     double Egamma = Ee * yy;
     double Esc = Ee - Egamma;
+
+    double W = Mion*(Mion + 2*Egamma);
+    hist->Fill(yy);
+    histW->Fill(W);
 
     //calculate cos(theta) from e,x,y (via Q2 and Mass proton)
     double costh = escat::CosTh_xy(Ee,xx,yy);
