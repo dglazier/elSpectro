@@ -61,7 +61,7 @@ namespace elSpectro{
 
     //jpac photo amp depends on s, t, and meson mass
     _amp->kinematics->setVectorMass( _meson->Mass() );
-    double weight = _amp->probablity_distribution(s,t)/_max;
+    double weight = _amp->differential_xsection(s,t)/_max;
   
     if(weight>1){
       auto oldmax=_max;
