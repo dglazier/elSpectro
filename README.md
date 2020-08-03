@@ -5,6 +5,7 @@ Event Generator framework for incorporating Spectroscopy into electro / photopro
 # Prerequisites
 
 ROOT 6
+HepMC3
 
 # Installation
 
@@ -16,6 +17,7 @@ ROOT 6
 
      setenv ELSPECTRO /path/to/elSpectro (or $PWD)
      setenv JPACPHOTO /path/to/jpacPhoto
+     setenv HEPMC3 /path/to/HepMC3/
 
      mkdir build
 

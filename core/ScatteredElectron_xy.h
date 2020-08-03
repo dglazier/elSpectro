@@ -10,6 +10,7 @@
 #include "Distribution.h"
 #include <Math/VectorUtil.h> //for boosts etc.
 #include <Math/RotationY.h>
+#include <TH1.h>
 
 namespace elSpectro{
 
@@ -40,6 +41,8 @@ namespace elSpectro{
     
     ROOT::Math::RotationY _rotateToZaxis;
     LorentzVector _cachedParent;
+    
+    TH1D *hist, *histW;
     
     ClassDef(elSpectro::ScatteredElectron_xy,1); //class DecayVectors
  

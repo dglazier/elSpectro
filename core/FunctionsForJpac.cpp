@@ -15,7 +15,7 @@ namespace elSpectro {
       double s=0;
       auto F = [amp,&s](double t)
 	{
-	  return amp->probablity_distribution(s, t);
+	  return amp->differential_xsection(s, t);
 	};
 
       ROOT::Math::GSLIntegrator ig(ROOT::Math::IntegrationOneDim::kADAPTIVE,
@@ -46,7 +46,7 @@ namespace elSpectro {
 	  if(x[1]> amp->kinematics->t_man(s,0)) return 0.;
 	  if(x[1]< amp->kinematics->t_man(s,TMath::Pi())) return 0.;
 	  
-	  double val=amp->probablity_distribution(s , x[1]);
+	  double val=amp->differential_xsection(s , x[1]);
 	  
 	  if( TMath::IsNaN(val) ) return 0.;
 	  return -val; //using a minimiser!
