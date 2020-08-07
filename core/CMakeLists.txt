@@ -3,7 +3,9 @@ set(DIRNAME core)
 set(BASE $ENV{ELSPECTRO})
 
 include_directories($ENV{JPACPHOTO}/include)
-link_libraries($ENV{JPACPHOTO}/build/libJpacPhoto.so)
+link_libraries($ENV{JPACPHOTO}/lib/libjpacPhoto.so)
+include_directories($ENV{HEPMC3}/include)
+link_libraries($ENV{HEPMC3}/lib/libHepMC3.so)
 
 #
 ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
@@ -30,9 +32,12 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   ParticleManager.h
   DecayManager.h
   MassPhaseSpace.h
+  Writer.h
+  HepMC3Writer.h
+  LundWriter.h
+#  FunctionsForJpac.h
   Manager.h
   Interface.h
-  FunctionsForJpac.h
   LINKDEF ElSpectroLinkDef.h
   )
 
@@ -60,6 +65,9 @@ add_library(${ELSPECTRO} SHARED
   ParticleManager.cpp
   DecayManager.cpp
   MassPhaseSpace.cpp
+  Writer.cpp
+  HepMC3Writer.cpp
+  LundWriter.cpp
   Manager.cpp
   FunctionsForJpac.cpp
   G__${ELSPECTRO}.cxx
