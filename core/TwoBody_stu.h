@@ -57,7 +57,6 @@ namespace elSpectro{
       double E1 = sqrt(M1*M1 + P1*P1);
       double E3 = sqrt(M3*M3 + P3*P3);
      
-      //std::cout<<"CosThFrom_t   "<<W<<" "<<M1<<" "<<" "<<M2<<" "<<" "<<M3<<" "<<" "<<M4<<" p1 "<<P1<<" "<<P3<<" "<<E1<<" "<<E3<<std::endl;
       //std::cout<<W-M1-M2<<" "<<W-TMath::Abs(M1)-M2<<" "<<kine::PDK2(W,M1,M2)<<" "<<sqrt(-kine::PDK2(W,M1,M2))<<" "<< kine::PDK(W,TMath::Abs(M1),M2)<<std::endl;
         
       /*auto prBoost=_p2->BoostToCM();
@@ -81,8 +80,7 @@ namespace elSpectro{
       //_weight *= TMath::Exp( (t) * _t_slope) * _t_strength;
       //_weight *= TMath::Exp( (_t-tmin) * _t_slope) * _t_strength + _strength;
 
-      //std::cout<<t<<" t "<<tmin<<" "<<tmax<<" "<<1 - (tmin-t)/2/P1/P3<<" "<<_weight<<std::endl;
-      // if(TMath::IsNaN(tmin)) exit(0);
+         // if(TMath::IsNaN(tmin)) exit(0);
       return (1 - (tmin - _t)/2/P1/P3); //cos(theta) from t
       
     }
@@ -106,7 +104,6 @@ namespace elSpectro{
       double E1 = sqrt(M1*M1 + P1*P1);
       double E3 = sqrt(M3*M3 + P3*P3);
       double tmin =  M1*M1 + M3*M3  - 2 * ( E1*E3 -P1*P3 ); 
-      
       return TMath::Exp( (_t-tmin) * _t_slope) * _t_strength + _s_strength;
     }
     double CosThFrom_u() const noexcept {
@@ -158,8 +155,16 @@ namespace elSpectro{
       double M2=_p2->M();
       double M3=_p3->M();
       double M4=_p4->M();
- 
-      _t=kine::tFromcosthW(costh, W,M1,M2,M3,M4);
+      
+   //PDK does not always have a valid solution for g*
+      //Direct boost of g* into cm rest frame
+      auto cmBoost=_CM->BoostToCM();
+      auto p1cm=boost(*_p1,cmBoost);
+      auto P1=p1cm.P();
+    
+  
+      _t=kine::tFromcosthWP1P3(costh, P1, kine::PDK(W,M3,M4), W,M1,M2,M3,M4);
+    
       return  costh;
     }
 

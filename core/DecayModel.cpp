@@ -14,7 +14,7 @@ namespace elSpectro{
     
     //now the non decaying particles
     auto& pman = Manager::Instance().Particles();
-    for(const auto pdg : pdgs)
+    for(const auto& pdg : pdgs)
       _products.push_back( pman.Take( new Particle{pdg} ) );
 
     //store list of unstable particles which decay
@@ -31,9 +31,7 @@ namespace elSpectro{
   void DecayModel::PostInit(ReactionInfo* info){
     if(_unstables.empty()) return;
     for(auto& p:_unstables){
-      std::cout<<"DecayModel::PostInit  "<<p<<" "<<_name<<std::endl;
-      std::cout<<p->Pdg()<<std::endl;
-      p->PostInit(info);
+        p->PostInit(info);
     }
   };
 
@@ -48,6 +46,14 @@ namespace elSpectro{
       entry->Model()->GetStableMasses(masses);
     
   }
+  void DecayModel::DetermineProductMasses(){
+    for(auto* p:_unstables){
+      //This should be the only call to DetermineDynamicMass in the code.
+      p->DetermineProductMasses(); //first get product masses for mass Minimum
+      p->DetermineDynamicMass(); //now get the particles own mass
+    }
+ 
+  }
   double DecayModel::PhaseSpaceWeightSq(double W){
     // std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq "<<MinimumMassPossible()<<" "<<W<<std::endl;
     //Note use weight squared to reduce sqrt calls
@@ -59,11 +65,12 @@ namespace elSpectro{
       //This should be the only call to DetermineDynamicMass in the code.
       p->DetermineDynamicMass();
       TCM-=p->Mass();
+      if(TCM<0)  return 0;//below threshold, start again
     }
     for(auto* p:_stables)
       TCM-=p->Mass();
     
-    //  std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq "<<TCM<<std::endl;
+    // std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq "<<TCM<<std::endl;
      
     if(TCM<0)  return 0;//below threshold, start again
     
@@ -73,6 +80,7 @@ namespace elSpectro{
     for(auto* p:_unstables)
       result*=p->PhaseSpaceWeightSq();
     
+    //std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq result "<<result<<std::endl;
     return result;
     
   }

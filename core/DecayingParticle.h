@@ -18,7 +18,8 @@
 namespace elSpectro{
   
   enum class DecayStatus{ Decayed, TryAnother, ReGenerate };
- 
+
+  
   class DecayingParticle : public Particle {
 
   public:
@@ -56,26 +57,40 @@ namespace elSpectro{
       //std::cout<<"min masss "<<Pdg()<<" "<<minmass<<std::endl;
       return minmass;
     };
-    
+
     void Print() const override;
 
 
     double  PhaseSpaceWeightSq(){
       return _decay->PhaseSpaceWeightSq(Mass());
     }
+    virtual void PostInit(ReactionInfo* info);
 
-    virtual void PostInit(ReactionInfo* info) {
-      _decay->PostInit(info);
-      _decayer->PostInit(info);
-    };
-   
+    //temporary until deal with vertices properly i.e. non zero
+    void GenerateVertexPosition()  noexcept{
+      //auto old=VertexPosition();
+      _decayVertex=VertexPosition();
+      // _decayVertex.SetXYZT(old.X(),old.Y(),old.Z(),old.T());
+    }
+
+    void DetermineProductMasses(){ //only want to call intially in Process
+      _decay->DetermineProductMasses();
+    }
+
+  protected:
+    
+    DecayVectors* mutableDecayer() const {return _decayer.get();}
+
+
   private:
      
     DecayModel* _decay={nullptr}; //not owner
     //DecayVectors* _decayer={nullptr}; //not owner
     std::unique_ptr<DecayVectors> _decayer={nullptr}; //owner
     
- 
+    LorentzVector _decayVertex;
+    int _decayVertexID={0};
+      
     ClassDefOverride(elSpectro::DecayingParticle,1); //class DecayingParticle
     
   };//class DecayingParticle

@@ -32,7 +32,12 @@ namespace elSpectro{
   public:
     
     DecayModel()=default;
-    //only declaring default constructor
+    virtual ~DecayModel()=default;
+    DecayModel(const DecayModel& other); //need the virtual destructor...so rule of 5
+    DecayModel(DecayModel&&)=default;
+    DecayModel& operator=(const DecayModel& other);
+    DecayModel& operator=(DecayModel&& other) = default;
+//only declaring default constructor
     //so other 5 constructors also defaulted(rule of 5)
 
     //constructor to decay into particles
@@ -44,7 +49,8 @@ namespace elSpectro{
 
     const particle_ptrs& Products() const{ return _products;}
     const decaying_ptrs& UnstableProducts() const{ return _unstables;}
-
+    const particle_ptrs& StableProducts() const{ return _stables;}
+ 
     virtual bool RegenerateOnFail() const noexcept =0;
 
     bool CheckThreshold() const{
@@ -80,6 +86,8 @@ namespace elSpectro{
     const std::string& GetName()const {return _name;}
 
     double PhaseSpaceWeightSq(double W);
+
+    void DetermineProductMasses();
     
     virtual void PostInit(ReactionInfo* info);
  

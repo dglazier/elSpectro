@@ -7,7 +7,6 @@
 #pragma once
 
 #include "DecayVectors.h"
-#include <Math/VectorUtil.h> //for boosts etc.
 #include <TRandom.h> //for gRandom
 #include <Math/VectorUtil.h> //for boosts etc.
 #include <Math/RotationY.h>
@@ -17,9 +16,16 @@ namespace elSpectro{
   using ROOT::Math::VectorUtil::boost;
 
   class TwoBodyFlat : public DecayVectors {
-
- 
+    
   public:
+
+    TwoBodyFlat()=default;
+    virtual ~TwoBodyFlat()=default;
+    TwoBodyFlat(const TwoBodyFlat& other); //need the virtual destructor...so rule of 5
+    TwoBodyFlat(TwoBodyFlat&&)=default;
+    TwoBodyFlat& operator=(const TwoBodyFlat& other);
+    TwoBodyFlat& operator=(TwoBodyFlat&& other) = default;
+ 
 
     double Generate(const LorentzVector& parent,
 		    const particle_ptrs& products)  final;

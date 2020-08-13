@@ -9,13 +9,13 @@ set(CMAKE_CXX_FLAGS "-fPIC -O3")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
-find_package(HepMC3 REQUIRED)
-include_directories($ENV{HEPMC3}/hepmc3-install/include)
+#include($ENV{HEPMC3}/share/HepMC3/cmake/HepMC3Config.cmake)
+#find_package(HepMC3 REQUIRED)
 
 find_package(ROOT REQUIRED MathMore)
-list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}) ############USEROOTSYS
+list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}) 
 #---Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
-include(${ROOT_USE_FILE}) ##########USEROOTSYS
+include(${ROOT_USE_FILE})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS}")
 
 

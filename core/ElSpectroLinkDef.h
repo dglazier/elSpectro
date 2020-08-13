@@ -31,7 +31,11 @@
 #pragma link C++ class elSpectro::DistTF1+;
 #pragma link C++ class elSpectro::DistTH1+;
 #pragma link C++ class elSpectro::DistTH2+;
-#pragma link C++ class elSpectro::DistVirtPhotFlux_xy;
+#pragma link C++ class elSpectro::DistVirtPhotFlux_xy+;
+
+#pragma link C++ class elSpectro::Writer+;
+#pragma link C++ class elSpectro::LundWriter+;
+#pragma link C++ class elSpectro::HepMC3Writer+;
 
 
 #pragma link C++ class elSpectro::ParticleManager+;

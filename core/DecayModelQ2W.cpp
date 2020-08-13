@@ -96,7 +96,7 @@ namespace elSpectro{
     //ebeam.SetE(escat::E_el(parent.P()));
     
     _gamma = *(_prodInfo->_ebeam) - _electron->P4();
-    
+
     if(_gstarNuc->P4().M() > _threshold ) return 1.;
     else  return 0;
    

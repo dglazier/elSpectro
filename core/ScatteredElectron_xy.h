@@ -7,7 +7,7 @@
 #pragma once
 
 #include "DecayVectors.h"
-#include "Distribution.h"
+#include "DistVirtPhotFlux_xy.h"
 #include <Math/VectorUtil.h> //for boosts etc.
 #include <Math/RotationY.h>
 #include <TH1.h>
@@ -21,30 +21,37 @@ namespace elSpectro{
  
   public:
     
-    ScatteredElectron_xy(Distribution* dist);
+    ScatteredElectron_xy(double eb, double mion, double Wmin);
     
     double Generate(const LorentzVector& parent,
 		    const particle_ptrs& products)  final;
 
-    Distribution* Dist()const {return _random_xy.get();}
+    DistVirtPhotFlux_xy &Dist(){return _random_xy;}
 
-  protected:
+
+    void SetModel(DecayModel* model){_gStarNmodel=model;}
+   protected:
 
     void RotateZaxisToCMDirection(const LorentzVector& parent);
     
   private:
 
+    DecayModel* _gStarNmodel{nullptr};
+    
+    DistVirtPhotFlux_xy _random_xy;
+ 
     LorentzVector _scattered;
     LorentzVector _gamma_ion; //residual gamma* + ion system
 
-    dist_uptr _random_xy;
     
     ROOT::Math::RotationY _rotateToZaxis;
     LorentzVector _cachedParent;
     
-    TH1D *hist, *histW;
+    // TH1D *hist, *histW;
+    TH1D histy={"ydist","ydist",1000,0,1};
+    TH1D histW={"genWdist","genWdist",1000,0,100};
     
-    ClassDef(elSpectro::ScatteredElectron_xy,1); //class DecayVectors
+    ClassDefOverride(elSpectro::ScatteredElectron_xy,1); //class DecayVectors
  
 
   };

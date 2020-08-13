@@ -31,7 +31,9 @@ namespace elSpectro {
 	  hist.SetBinContent(ih, 0);
 	else
 	  hist.SetBinContent(ih,ig.Integral(amp->kinematics->t_man(s,TMath::Pi()),amp->kinematics->t_man(s,0)));
-	if(ih%10==0)std::cout<<(hist.GetNbinsX() - ih)/10<<" ";
+	
+	std::cout<<"JPAC "<<Wval<<" "<<hist.GetBinContent(ih)<<std::endl;
+	if(ih%10==0)std::cout<<(hist.GetNbinsX() - ih)/10<<" "<<std::endl;
       }
       std::cout<<std::endl;
       //done

@@ -100,7 +100,7 @@ namespace elSpectro{
       //  double m1y=(1-yy);
       //std::cout<<"Q2 "<< Q2_xy(e_in,xx,yy)<<" "<<M2_el()*yy*yy/m1y<<" "<<e_in*e_sc<<" "<<e_in*e_sc - M2_el()<<std::endl;
       //std::cout<< (e_in*e_sc - 0.5*Q2_xy(e_in,xx,yy) - M2_el() )<<" "<<P_el(e_in)*P_el(e_sc)<<std::endl;
-
+      
       //std::cout<<" other "<< 1- Q2_xy(e_in,xx,yy)/2/e_in/(e_sc)<<std::endl;
       
       return  (e_in*e_sc - 0.5*Q2_xy(e_in,xx,yy) - M2_el() )/P_el(e_in)/P_el(e_sc);
@@ -119,6 +119,23 @@ namespace elSpectro{
       return (1 + m1y*m1y)  * (1-xx)  -  ( 2 * M2_el() * yy ) / Q2_xy(e_in,yy,xx) *yy; 
     }
     
+    inline double K_W2(double W2){
+      double K= W2-M2_pr();
+      K/=M_pr();
+      K/=2;
+      return K<0 ? 0 : K; //protect -ve
+    }
+    /*
+      inline double KLbyE_Q2y(double e_in,double Q2, double yy){
+      //      double y = (W2 - M2_pr() + Q2)/2/M_pr()/e_in;
+      if(y<=0) return 0;
+      double m1y=1-yy;
+      double L= ( (1 + m1y*m1y) / yy)  - ( 2 * M2_el() * yy ) / Q2;
+      
+      return L<0 ? 0 : K_W2(ww)*L/e_in; //protect -ve
+
+      }
+    */
     inline double flux_dxdy(double e_in,double xx, double yy){
       //protect zero values on denominator
       //mimimum escatter = M_el
@@ -136,27 +153,24 @@ namespace elSpectro{
       double xx = TMath::Exp(ln_yy);
       double yy = TMath::Exp(ln_xx);
       auto m1y=(1-yy);
-      //std::cout<<xx<<" "<<yy<<" Q2 "<< Q2_xy(e_in,xx, yy)<<" min Q2 "<<Q2min_y(yy)<<" min x "<<Q2min_y(yy)/2/M_pr()/e_in/yy<<std::endl;
-   //std::cout<<"Q2 "<< Q2_xy(e_in,xx, yy)<<" "<<M2_el()*yy*yy/m1y<<" "<< K_xy(e_in,xx,yy)<<" "<<L_xy(e_in,xx,yy)<< " "<<1./yy<<" "<<1./xx<<" "<<K_xy(e_in,xx,yy)*2*M_pr()+M2_pr()<<" "<<M_pr()<<"KL by E "<<K_xy(e_in,xx,yy) * L_xy(e_in,xx,yy) / e_in<<std::endl;
- 
-        
+         
       return ((1-yy)*e_in>=M_el()) * xx  ==0 ? 0 :
 	Alpha_by2Pi() * K_xy(e_in,xx,yy) * L_xy(e_in,xx,yy) / e_in ; 
     }
-  inline double flux2_dlnxdlny(double e_in,double ln_xx, double ln_yy){
+    /*
+      inline double flux_dlnQ2dlnrW(double e_in,double Q2, double yy){
       //Range of ln_xx [-infinity , 0 ]
       //protect zero values on denominator
       //mimimum escatter = M_el
       // auto m1y=(1-yy);
-      double xx = TMath::Exp(ln_yy);
-      double yy = TMath::Exp(ln_xx);
-      auto m1y=(1-yy);
-  
-   //std::cout<<"Q2 "<< Q2_xy(e_in,xx, yy)<<" "<<M2_el()*yy*yy/m1y<<" "<< K_xy(e_in,xx,yy)<<" "<<L_xy(e_in,xx,yy)<< " KLby E "<<KLbyE_xy(e_in,xx,yy)<<std::endl;
+      
  
-        
+      
+      auto m1y=(1-yy);
+         
       return ((1-yy)*e_in>=M_el()) * xx  ==0 ? 0 :
-	Alpha_by2Pi() * KLbyE_xy(e_in,xx,yy); 
-    }
+      Alpha_by2Pi() * KLbyE_Q2y(e_in, Q2, yy); 
+      }
+    */
   }
 }

@@ -18,6 +18,7 @@ namespace elSpectro{
   class Manager;
   
   using particle_ptrs= std::vector<Particle*> ;
+  using particle_constptrs= std::vector<const Particle*> ;
   using decaying_ptrs= std::vector<DecayingParticle*> ;
 
   class ParticleManager{

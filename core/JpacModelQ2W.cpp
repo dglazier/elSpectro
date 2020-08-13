@@ -39,7 +39,7 @@ namespace elSpectro{
 
     //declare the model for controlling phase space
     //this is the decay of the overall hadronic system
-    generator().SetModelForMassPhaseSpace(GetGammaN()->Model());
+    // move to ElectronScatter  generator().SetModelForMassPhaseSpace(GetGammaN()->Model());
     
     //JPAC model is for photoproduction
     //Leave Q2 dependence for now
@@ -49,46 +49,36 @@ namespace elSpectro{
     double maxW = ( *(prodInfo->_target) + *(prodInfo->_ebeam) ).M();
 
     std::cout<<"JpacModelQ2W::PostInit generating total cross section, may take some time... "<<std::endl;
-    TH1D hist("Wdist","Wdist",100,0,maxW);
+    TH1D hist("Wdist","Wdist",50,0,maxW);
+   
     jpacFun::HistProbabilityDistribution_s(_amp,hist);
     
     auto maxVal= hist.GetMaximum();
-    //add additional 10% of max to raise envelope
-    for(int ibin=1;ibin<=hist.GetNbinsX();ibin++)
-      hist.SetBinContent(ibin,hist.GetBinContent(ibin)+maxVal*0.1);
+   
+    //for(int ibin=1;ibin<=hist.GetNbinsX();ibin++)
+    // hist.SetBinContent(ibin,hist.GetBinContent(ibin));
     
     _W_Dist.reset( new DistTH1(hist) );
     
-    /* std::cout<<"JpacModelQ2W check interpolation "<<std::endl;
-    for(int iW=0;iW<1000;iW++){
-      double Wval=double(iW)/1000*maxW;
-      std::cout<<Wval<<" "<<_W_Dist->GetWeightFor( Wval )<<" or "<<hist.Interpolate(Wval)<<std::endl;
-
-    }
-    exit(0);
-    */
+  
   }
   double JpacModelQ2W::Intensity() const{
-    //  std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<GetGammaN()->MinimumMassPossible()<<" "<<ProdInfo()->_photoN->M()<<" meson "<<GetDecayMeson()->Mass()<<std::endl;
+
     if(CheckThreshold()==false){
       return 0.;
     }
-    // std::cout<<"Mass check "<<GetGammaN()->P4().M() <<" "<< GetGammaN()->MinimumMassPossible()<<std::endl;
     if(GetGammaN()->P4().M()<GetGammaN()->MinimumMassPossible()) return 0;
     
-    //    if(GetGammaN()->P4().M() < GetGammaN()->MinimumMassPossible())
-    // std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" passed "<<std::endl;
- 
+   
     auto prodInfo=ProdInfo(); 
-    //if(prodInfo->_photoN->M()<25)return 0;
  
     _gamma = *(prodInfo->_ebeam) - *(prodInfo->_scattered);
 
     if(_W_Dist.get()==nullptr) return 1.;
     
     double weight=_W_Dist->GetWeightFor( prodInfo->_photoN->M() );
-    // std::cout<<"         JpacModelQ2W::Intensity()  "<<prodInfo->_photoN->M()<<" "<<weight<<std::endl;
-    prodInfo->_sWeight=weight*1; //might be used in s and t
+    
+    prodInfo->_sWeight=weight; //might be used in s and t
     
     return weight;
   }

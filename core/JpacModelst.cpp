@@ -31,6 +31,7 @@ namespace elSpectro{
   /////////////////////////////////////////////////////////////////
   void JpacModelst::PostInit(ReactionInfo* info){
     DecayModel::PostInit(info);
+    
     _prodInfo= dynamic_cast<ReactionElectroProd*> (info); //I need Reaction info
  
      double maxW = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
@@ -47,8 +48,7 @@ namespace elSpectro{
     double s = parent.M();
     s*=s;
 
-    //   if(_amp->kinematics->sth > s) std::cout<<"JpacModelst::Intensity Threshold problem "<<s<<" "<<_amp->kinematics->sth<<" "<< _meson->Mass() <<" "<<(_meson->Mass()+_baryon->Mass())*(_meson->Mass()+_baryon->Mass())<<std::endl;
-
+  
     //must rotate into the g*N z-axis frame
     auto cmBoost=parent.BoostToCM();
     auto rfm = _meson->P4();
@@ -60,15 +60,16 @@ namespace elSpectro{
     double t = _amp->kinematics->t_man(s,rfm.Theta());
 
     //jpac photo amp depends on s, t, and meson mass
-    _amp->kinematics->setVectorMass( _meson->Mass() );
+    _amp->kinematics->set_vectormass( _meson->Mass() );
     double weight = _amp->differential_xsection(s,t)/_max;
-  
+   
     if(weight>1){
       auto oldmax=_max;
       _max=weight*oldmax;
       std::cout<<"JpacModelst::Intensity changing max from  "<<oldmax<<" to "<<_max<<std::endl;
     }
-    //std::cout<<"&&&&&&&&&&&&&&&&JpacModelst::Intensity "<<weight<<" "<<t<<" "<<s<<" "<<_prodInfo->_sWeight<<" "<<weight/_prodInfo->_sWeight<<std::endl;
+    
+    //Correct for Q2&W weighting which has already been applied
     weight/=_prodInfo->_sWeight;
     
     if(weight>1){

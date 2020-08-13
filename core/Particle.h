@@ -30,8 +30,11 @@ namespace elSpectro{
 
  
     Particle()=default;
-    //only declaring default constructor
-    //so other 5 constructors also defaulted(rule of 5)
+    virtual ~Particle()=default;
+    Particle(const Particle& other); //need the virtual destructor...so rule of 5
+    Particle(Particle&&)=default;
+    Particle& operator=(const Particle& other);
+    Particle& operator=(Particle&& other) = default;
 
     Particle(int pdg);
 
@@ -50,7 +53,9 @@ namespace elSpectro{
       auto m2=_vec.M2();auto P2=xx*xx+yy*yy+zz*zz;
       _vec.SetXYZT(xx,yy,zz,TMath::Sqrt(P2+m2));
     }
-
+    void SetP4(const LorentzVector& p4){
+      _vec=p4;
+    }
     void Boost(const  elSpectro::BetaVector& vboost ){
       _vec=ROOT::Math::VectorUtil::boost(_vec,vboost);
     }
@@ -83,7 +88,13 @@ namespace elSpectro{
     }
 
     virtual void Print()  const;
-    
+
+    void SetVertex(int vertexID,const LorentzVector& v){
+      _vertexID=vertexID;
+      _vertex.SetXYZT(v.X(),v.Y(),v.Z(),v.T());
+    }
+    const LorentzVector& VertexPosition()const noexcept{return _vertex;}
+    int VertexID()const noexcept{return _vertexID;}
   protected:
  
     void SetP4M(double mm){
@@ -103,15 +114,15 @@ namespace elSpectro{
       _dynamicMass=-1;
       auto min = MinimumMassPossible();
       while(_dynamicMass<min){
-	//	std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<std::endl;
 	
 	_dynamicMass= _massDist->SampleSingle();
-	SetP4M(_dynamicMass);
 	//need a weight for "envelope"
 	_massWeight =_massDist->GetCurrentWeight();
+	//	std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<" "<<_massWeight<<std::endl;
 	
       }
-      
+      SetP4M(_dynamicMass);
+
     }
 
     
@@ -121,7 +132,9 @@ namespace elSpectro{
     double _massWeight={1};
     
     int _pdg={0};
-
+    int _vertexID={0};
+    LorentzVector _vertex;
+    
     Distribution* _massDist={nullptr};
 
     // DistType _distType={DistType::kMass};

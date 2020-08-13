@@ -1,17 +1,16 @@
 #include "ScatteredElectron_xy.h"
 #include "FunctionsForElectronScattering.h"
 #include "FunctionsForGenvector.h"
+#include "Manager.h"
 #include <TRandom.h>
 #include <TMath.h>
 
 namespace elSpectro{
   
-   ScatteredElectron_xy::ScatteredElectron_xy(Distribution* dist):
-    _random_xy{dist}
+  ScatteredElectron_xy::ScatteredElectron_xy(double eb, double mion, double Wmin):
+    _random_xy{eb,mion,Wmin}
   {
-     hist = new TH1D("ydist","ydist",1000,0,1);
-     histW = new TH1D("genWdist","genWdist",1000,0,100);
-  }
+   }
   
   ////////////////////////////////////////////////////////////////////
   ///Caclulate electron scattering kinematics from
@@ -20,20 +19,32 @@ namespace elSpectro{
   ///Return a weight that gives phase-space distribution
   double ScatteredElectron_xy::Generate(const LorentzVector& parent, const particle_ptrs& products)  {
 
-    //std::cout<<"ScatteredElectron_xy::Generate "<<parent.T()<<" "<<products.size()<<std::endl;
-    double Ee = escat::E_el(parent.Z()); //parent in rest frame of ion, momentum=e momentum
+     double Ee = escat::E_el(parent.Z()); //parent in rest frame of ion, momentum=e momentum
     double Mion= parent.T()-Ee; // energy of parent = Mion + E(e-)
 
     double xx,yy;
-    std::tie(xx,yy) = _random_xy->SamplePair();
 
-    // std::cout<<" x = "<<xx*1E6<<" y "<<yy*1E6<<std::endl;
+    std::tie(xx,yy) = _random_xy.SamplePair();
+
     double Egamma = Ee * yy;
+ 
+    double W = sqrt( Mion*(Mion + 2*Egamma ) -  escat::Q2_xy( Ee,xx,yy));
+    /*
+    Manager::Instance().AcceptPhaseSpace(W);
+    while(Manager::Instance().AcceptPhaseSpace(W) == false ){
+      //try again
+      _gStarNmodel->DetermineProductMasses();
+      _random_xy.SetWThreshold(_gStarNmodel->MinimumMassPossible());
+       std::tie(xx,yy) = _random_xy.SamplePair();
+      Egamma = Ee * yy;
+      W = sqrt( Mion*(Mion + 2*Egamma ) -  escat::Q2_xy( Ee,xx,yy));
+      
+      }
+    */
+    
     double Esc = Ee - Egamma;
-
-    double W = Mion*(Mion + 2*Egamma);
-    hist->Fill(yy);
-    histW->Fill(W);
+    histy.Fill(yy);
+    histW.Fill(W);
 
     //calculate cos(theta) from e,x,y (via Q2 and Mass proton)
     double costh = escat::CosTh_xy(Ee,xx,yy);
@@ -54,9 +65,6 @@ namespace elSpectro{
     auto z_sc = Psc * costh;
 
     _scattered.SetXYZT(x_sc,y_sc,z_sc,Esc);//scattered electron
-    // std::cout<<"Scattered electrons "<<_scattered.M()<<" "<<Esc*Esc-Psc*Psc<<std::endl;
-    // std::cout<<(Ee==Esc)<<" Ee "<<Ee*1E2<<"Esc "<<Esc*1E2<<" P "<<Psc*1E2<<" phi "<<phi <<" costh "<<costh<<std::endl;
-    //std::cout<<_scattered<<" "<<_scattered.Theta()<<std::endl;
     
     //Must make sure scattered e- is in the same frame as the parent
     //still in rest system of nucl, just need rotation
@@ -65,7 +73,6 @@ namespace elSpectro{
     
    _gamma_ion= parent - _scattered; //residual gamma* + ion system
    
-   //std::cout<<"ScatteredElectron "<<_scattered<<" "<<_gamma_ion<<std::endl;  
    if(products[0]->Pdg()==11){
      products[0]->SetXYZT(_scattered.X(),_scattered.Y(),_scattered.Z(),_scattered.T());
      products[1]->SetXYZT(_gamma_ion.X(),_gamma_ion.Y(),_gamma_ion.Z(),_gamma_ion.T());
@@ -74,10 +81,8 @@ namespace elSpectro{
      products[1]->SetXYZT(_scattered.X(),_scattered.Y(),_scattered.Z(),_scattered.T());
      products[0]->SetXYZT(_gamma_ion.X(),_gamma_ion.Y(),_gamma_ion.Z(),_gamma_ion.T());
    }
-   //  std::cout<<"Electron Check theta "<<products[0]->P4().Theta()*TMath::RadToDeg()<<" "<<products[1]->P4().Theta()*TMath::RadToDeg()<<std::endl;
-
-    return 1.;
-    //    return _random_xy->CurrentValue();
+ 
+   return 1.;//in this case distribition already accounts for virtual photon flux
   }
 
   
