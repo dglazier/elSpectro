@@ -61,11 +61,7 @@ namespace elSpectro{
   }
   //////////////////////////////////////////////////////////////
   inline ProductionProcess* eic(double ep,double ionp,DecayModelQ2W *totalXsec=nullptr,int ionpdg=2212){
-    //computational limits seem to be 1E-6
-    //auto dist =  new DistVirtPhotFlux_xy(ep,1E-6,1,1E-6,1);
-    // auto dist =  new DistVirtPhotFlux_xy(ep,1E-16,1,1E-8,1);
-  
-    //ElectronScattering(electronP,ionP,electronAngle,ionAngle)
+
     if(totalXsec!=nullptr)
       generator().Reaction(new ElectronScattering(ep,ionp,TMath::Pi(),0,totalXsec) );
     else
@@ -74,16 +70,10 @@ namespace elSpectro{
      
     return  generator().Reaction();
   }
-  /*  ProductionProcess* const eic(double ep,double ionp,DecayModelWQ2 *totalXsec,int ionpdg=2212){
-    auto dist =  new DistVirtPhotFlux_xy(ep,1E-10,1,1E-4,1);   
-    generator().Reaction(new ElectronScattering(ep,0,0,TMath::Pi(),new ScatteredElectron_xy(dist)),totalXsec);
-    return  generator().Reaction();
-    }*/
  
   inline ProductionProcess*  mesonex(double ep,DecayModelQ2W *totalXsec=nullptr,int ionpdg=2212){
   
-    // auto dist =  new DistVirtPhotFlux_xy(ep,1E-10,1,1E-4,1);  
-    if(totalXsec!=nullptr)
+     if(totalXsec!=nullptr)
       generator().Reaction(new ElectronScattering(ep,0,0,TMath::Pi(),totalXsec ));
     else	
       generator().Reaction(new ElectronScattering(ep,0,0,TMath::Pi()));
