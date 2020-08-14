@@ -2,6 +2,7 @@
 #include "TwoBodyFlat.h"
 #include "Manager.h"
 #include <TRandom.h>
+#include <TDatabasePDG.h>
 
 namespace elSpectro{
 
@@ -20,10 +21,36 @@ namespace elSpectro{
   
 //////////////////////////////////////////////////////////////////////
   void DecayingParticle::PostInit(ReactionInfo* info) {
+    //Decay type depends on Lifetime
+    if(TDatabasePDG::Instance()->GetParticle(Pdg())){
+      double meanFreePath=TDatabasePDG::Instance()->GetParticle(Pdg())->Lifetime();
+      meanFreePath*=TMath::C()*100; //in mm
+      if( meanFreePath>0.01 ){ //10umm
+    	_decayType=DecayType::Detached;
+      }
+      else _decayType=DecayType::Attached;
+    }
+    else _decayType=DecayType::Attached;
+   
+   
+    //decay vertex position
+    auto& products=_decay->Products();
+    if(IsDecay()==DecayType::Detached||IsDecay()==DecayType::Production){
+      //create a new detached vertex
+      _decayVertexID=Manager::Instance().AddVertex(&_decayVertex);
+      for(auto* prod: products){
+	prod->SetVertex(_decayVertexID,&_decayVertex);
+      }
+    }
+    else{//same vertex as parent
+      for(auto* prod: products){
+	prod->SetVertex(VertexID(),VertexPosition());
+      }
+    }
+
     if(_decay)_decay->PostInit(info);
     if(_decayer)_decayer->PostInit(info);
-    //decay vertex position
-    _decayVertexID=Manager::Instance().AddVertex(&_decayVertex);
+ 
     std::cout<<"DecayingParticle::PostInit pdg "<<Pdg()<<" vertexID "<<_decayVertexID<<std::endl;
      std::cout<<"DecayingParticle::PostInit  min mass "<<MinimumMassPossible()<<std::endl;
   };
@@ -73,27 +100,28 @@ namespace elSpectro{
       return DecayStatus::ReGenerate;
 
     //else true
-    
+
     //decay vertex position
     GenerateVertexPosition();
 
+ 
     // std::cout<<"+++++++++++++++++DecayingParticle "<<decayed<<std::endl;
     auto& unproducts=_decay->UnstableProducts();
     for(auto* prod: unproducts){
-      prod->SetVertex(_decayVertexID,_decayVertex);
       DecayStatus prodStatus=DecayStatus::ReGenerate;
       while((prodStatus=prod->GenerateProducts()) != DecayStatus::Decayed){
 	if(prodStatus==DecayStatus::ReGenerate) return DecayStatus::ReGenerate;
       }
     }
-    
+
+    /*
     //stable products need a vertex too
     auto& stproducts=_decay->StableProducts();
     // std::cout<<"DecayingPArticle size "<<stproducts.size()<<" "<<Pdg()<<" "<<_decayVertexID<<" "<<Model()->GetName()<<std::endl;
     for(auto* prod: stproducts){
       prod->SetVertex(_decayVertexID,_decayVertex);
     }
- 
+    */
     
     return DecayStatus::Decayed;
     

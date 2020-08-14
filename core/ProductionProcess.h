@@ -42,6 +42,8 @@ namespace elSpectro{
     void AddInitialParticlePtr(const Particle* p){
       _initialParticles.push_back(p);
     }
+    
+    DecayType IsDecay() const noexcept override {return DecayType::Production;}
 
   protected:
 

@@ -35,14 +35,18 @@ namespace elSpectro{
      void FillAnEvent() final;
      void Write() final;
      void End() final;
-
+     
+     void Init() final;
+     
    private:
+     decaying_constptrs _vertexParticles;
+ 
      //streaming functions
      
      void StreamEventInfo(){
        //E = event number, # vertices, # particles = initial+final
        _stream<< "E "<<" "<<_nEvent<<" "<<_vertices->size()<<
-	 " "<<_initialParticles.size()+_finalParticles.size()<<"\n";
+	 " "<<_initialParticles.size()+_finalParticles.size()+_vertexParticles.size()<<"\n";
      }
      /////////////////////////////////////////////////////////
      void StreamEventPosition();
@@ -58,12 +62,12 @@ namespace elSpectro{
      }
      void StreamParticle(const Particle* p,int vertex_id,int status){
        auto p4=p->P4();
-       _stream<<"P "<<_id++<<" "<<vertex_id<<" "<<p->Pdg()<<" "
+       _stream<<"P "<<_id++<<" "<<-(vertex_id+1)<<" "<<p->Pdg()<<" "
 	      <<p4.X()<<" "<<p4.Y()<<" "<<p4.Z()<<" "<<p4.T()
 	      <<" "<<p->Mass()<<" "<<status<<"\n";
      }
      void StreamVertex(int vertex_id,int status,std::vector<int> in_pids){
-       _stream<<"V "<<vertex_id<<" "<<status<<" [";
+       _stream<<"V "<<-(vertex_id+1)<<" "<<status<<" [";
 
        uint ip=0;
        
@@ -78,10 +82,10 @@ namespace elSpectro{
 	 _stream<<"]";
        
        const auto pos=_vertices->at(vertex_id);
-        if(pos->M()!=0){
+       //if(pos->M()!=0){
 	 _stream<<" @ "<<pos->X()<<" "<<pos->Y()<<" "
 		<<pos->Z()<<" "<<pos->T();
-       }
+	 // }
        _stream<<"\n";
      }
      

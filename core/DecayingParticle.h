@@ -69,14 +69,20 @@ namespace elSpectro{
     //temporary until deal with vertices properly i.e. non zero
     void GenerateVertexPosition()  noexcept{
       //auto old=VertexPosition();
-      _decayVertex=VertexPosition();
+      if( IsDecay()==DecayType::Detached){
+
+      }
       // _decayVertex.SetXYZT(old.X(),old.Y(),old.Z(),old.T());
     }
+    const LorentzVector& DecayVertexPosition()const noexcept{return _decayVertex;}
+    int DecayVertexID()const noexcept{return _decayVertexID;}
 
     void DetermineProductMasses(){ //only want to call intially in Process
       _decay->DetermineProductMasses();
     }
-
+  
+    DecayType IsDecay() const noexcept override {return _decayType;}
+    
   protected:
     
     DecayVectors* mutableDecayer() const {return _decayer.get();}
@@ -85,12 +91,13 @@ namespace elSpectro{
   private:
      
     DecayModel* _decay={nullptr}; //not owner
-    //DecayVectors* _decayer={nullptr}; //not owner
+    
     std::unique_ptr<DecayVectors> _decayer={nullptr}; //owner
     
     LorentzVector _decayVertex;
     int _decayVertexID={0};
-      
+    DecayType _decayType;
+    
     ClassDefOverride(elSpectro::DecayingParticle,1); //class DecayingParticle
     
   };//class DecayingParticle

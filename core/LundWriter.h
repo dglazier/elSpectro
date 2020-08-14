@@ -54,7 +54,7 @@ namespace elSpectro{
        _stream<<_id++<<" "<<0.<<" "<<status
 	      <<" "<<p->Pdg()<<" "<<0<<" "<<0<<" "
 	      <<p4.X()<<" "<<p4.Y()<<" "<<p4.Z()<<" "<<p4.T()<<" "
-	      <<p4.M()<<" "<<ver.X()<<" "<<ver.Y()<<" "<<ver.Z()<<"\n";
+	      <<p4.M()<<" "<<ver->X()<<" "<<ver->Y()<<" "<<ver->Z()<<"\n";
      }
    
      //data members

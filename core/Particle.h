@@ -23,6 +23,7 @@ namespace elSpectro{
   class DecayModel; //so can make friend
  
   enum class DistType {kMass, kMassSquared};
+  enum class DecayType{ Stable, Attached, Detached, Production };
 
   class Particle {
 
@@ -89,12 +90,17 @@ namespace elSpectro{
 
     virtual void Print()  const;
 
-    void SetVertex(int vertexID,const LorentzVector& v){
+    void SetVertex(int vertexID,const LorentzVector* v){
       _vertexID=vertexID;
-      _vertex.SetXYZT(v.X(),v.Y(),v.Z(),v.T());
+      //_vertex.SetXYZT(v.X(),v.Y(),v.Z(),v.T());
+      _vertex=v;
     }
-    const LorentzVector& VertexPosition()const noexcept{return _vertex;}
+    const LorentzVector* VertexPosition()const noexcept{return _vertex;}
     int VertexID()const noexcept{return _vertexID;}
+
+    virtual DecayType IsDecay() const noexcept {return DecayType::Stable;}
+  
+    
   protected:
  
     void SetP4M(double mm){
@@ -133,7 +139,7 @@ namespace elSpectro{
     
     int _pdg={0};
     int _vertexID={0};
-    LorentzVector _vertex;
+    const LorentzVector* _vertex={nullptr};
     
     Distribution* _massDist={nullptr};
 
