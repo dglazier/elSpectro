@@ -6,6 +6,9 @@
 ///             For example pointers to Lorentz Vectors
 #pragma once
 
+#include "LorentzVector.h"
+#include "PhotonPolarisationVector.h"
+
 namespace elSpectro{
   
   class ReactionInfo{
@@ -13,7 +16,7 @@ namespace elSpectro{
  
   public:
 
-     virtual ~ReactionInfo()=default;
+    virtual ~ReactionInfo()=default;
 
     
   };
@@ -22,7 +25,7 @@ namespace elSpectro{
 
 
   public:
-   virtual ~ReactionPhotoProd()=default;
+    virtual ~ReactionPhotoProd()=default;
 
     LorentzVector* _photon={nullptr};   
     LorentzVector* _target={nullptr};   
@@ -30,7 +33,9 @@ namespace elSpectro{
     LorentzVector* _meson={nullptr};   
     LorentzVector* _baryon={nullptr};
 
-    mutable double _sWeight = {1};
+    PhotonPolarisationVector* _photonPol={nullptr};
+    
+    mutable double _sWeight = {1}; //s=W^2 excitation function weight
     
   };
 
@@ -38,7 +43,7 @@ namespace elSpectro{
 
  
   public:
-   virtual ~ReactionElectroProd()=default;
+    virtual ~ReactionElectroProd()=default;
 
     LorentzVector* _scattered={nullptr}; //scattered electron   
     LorentzVector* _ebeam={nullptr}; //beam electron   

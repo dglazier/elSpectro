@@ -3,7 +3,7 @@
  
   TString JPAC = gSystem->Getenv("JPACPHOTO");
   TString ELSPECTRO = gSystem->Getenv("ELSPECTRO");
-  // TString HEPMC3 = gSystem->Getenv("HEPMC3");
+  TString HEPMC3 = gSystem->Getenv("HEPMC3");
   
   gInterpreter->AddIncludePath(JPAC+"/include/");
   gSystem->Load(JPAC+"/lib/libjpacPhoto."+gSystem->GetSoExt());
@@ -11,10 +11,15 @@
   gSystem->Load(ELSPECTRO+"/lib/libelSpectro."+gSystem->GetSoExt());
   gInterpreter->AddIncludePath(ELSPECTRO+"/core");
 
-  //gInterpreter->AddIncludePath(HEPMC3+"/hepmc3-install/include/");
-  // gSystem->Load(HEPMC3+"/hepmc3-install/lib64/libHepMC3."+gSystem->GetSoExt());
-  // gSystem->Load(TString("libHepMC3.")+gSystem->GetSoExt());
-
+  if(HEPMC3.Length()){
+    gSystem->AddDynamicPath(HEPMC3+"/hepmc3-install/lib64/:");
+    gSystem->AddDynamicPath(HEPMC3+"/hepmc3-install/lib/:");//local install
+    
+    gInterpreter->AddIncludePath(HEPMC3+"/hepmc3-install/include/");
+    gSystem->Load(TString("libHepMC3.")+gSystem->GetSoExt()); //local install
+  
+  }
+  
   ROOT::Math::LorentzRotation ddd;
  
 }

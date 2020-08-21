@@ -52,6 +52,35 @@ namespace elSpectro{
      
     auto sinth=TMath::Sqrt(1-costh*costh);
 
+    //random phi done in RotatetoParent
+    //double phi=0;
+    //auto cosphi=1;
+    //auto sinphi=0;
+     
+    double Psc=escat::P_el(Esc);
+    
+    auto x_sc = Psc * sinth ;
+    auto y_sc = 0;
+    auto z_sc = Psc * costh;
+
+    _scattered.SetXYZT(x_sc,y_sc,z_sc,Esc);//scattered electron
+    
+    //Must make sure scattered e- is in the same frame as the parent
+    //still in rest system of nucl, just need rotation
+    RotateToParent(parent,_scattered);
+    
+    if(products[0]->Pdg()==11){
+      products[0]->SetP4(_scattered);
+      products[1]->SetP4(parent -_scattered);
+    }
+    else{
+      products[1]->SetP4(_scattered);
+      products[0]->SetP4(parent -_scattered);
+    }
+    return 1;//in this case distribition already accounts for virtual photon flux
+    
+
+    /* 
     //random phi
     double phi=gRandom->Uniform()*2*TMath::Pi();
     auto cosphi=TMath::Cos(phi);
@@ -65,12 +94,13 @@ namespace elSpectro{
     auto z_sc = Psc * costh;
 
     _scattered.SetXYZT(x_sc,y_sc,z_sc,Esc);//scattered electron
-    
+ 
     //Must make sure scattered e- is in the same frame as the parent
     //still in rest system of nucl, just need rotation
     //Please note this needs checked for correct rotation
     RotateZaxisToCMDirection(parent);
-    
+    //RotateToParent(parent,_scattered);
+
    _gamma_ion= parent - _scattered; //residual gamma* + ion system
    
    if(products[0]->Pdg()==11){
@@ -81,8 +111,9 @@ namespace elSpectro{
      products[1]->SetXYZT(_scattered.X(),_scattered.Y(),_scattered.Z(),_scattered.T());
      products[0]->SetXYZT(_gamma_ion.X(),_gamma_ion.Y(),_gamma_ion.Z(),_gamma_ion.T());
    }
- 
+ */
    return 1.;//in this case distribition already accounts for virtual photon flux
+    
   }
 
   

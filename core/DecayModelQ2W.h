@@ -15,6 +15,7 @@
 #include "DecayVectors.h"
 #include "DecayingParticle.h"
 #include "ReactionInfo.h"
+#include "PhotonPolarisationVector.h"
 
 namespace elSpectro{
 
@@ -49,6 +50,7 @@ namespace elSpectro{
     //mutable PhotoProdInfo _myInfo;//!
     const ReactionElectroProd* ProdInfo() const noexcept {return _prodInfo;}
     mutable LorentzVector _gamma;
+    mutable PhotonPolarisationVector _photonPol;
 
 
  

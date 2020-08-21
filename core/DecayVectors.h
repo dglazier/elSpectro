@@ -8,9 +8,13 @@
 
 #include "Particle.h"
 #include "DecayModel.h"
+#include <Math/RotationY.h>
+#include <Math/RotationZ.h>
 #include <vector>
 
 namespace elSpectro{
+  
+  using ROOT::Math::VectorUtil::boost;
 
  
   class DecayVectors {
@@ -35,9 +39,68 @@ namespace elSpectro{
   protected:
     
     mutable double _weight={1};
- 
-  private:
 
+    virtual void BoostToParent(const LorentzVector& parent, const particle_ptrs& products){
+  
+      if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
+	_cachedParent = parent;
+	_rotateToZaxis.SetAngle(_cachedParent.Theta());
+      }
+      
+      //Apply random phi angle now z-axis is in correct direction
+      _rotateAroundZaxis.SetAngle(RandomPhi());
+      //boost from parent rest frame 
+      auto boostFromParent=-parent.BoostToCM();
+
+      for(auto& child : products){
+	auto p4=child->P4();
+	p4=_rotateToZaxis*p4;
+	p4=_rotateAroundZaxis*p4; 
+	p4=boost(p4,boostFromParent);//ROOT::Math::VectorUtil::boost;
+	child->SetP4(p4);
+      }
+      
+    }
+   virtual void BoostToParent(const LorentzVector& parent, LorentzVector& child){
+  
+      if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
+	_cachedParent = parent;
+	_rotateToZaxis.SetAngle(_cachedParent.Theta());
+      }
+      
+      //Apply random phi angle now z-axis is in correct direction
+      _rotateAroundZaxis.SetAngle(RandomPhi());
+      //boost from parent rest frame 
+      auto boostFromParent=-parent.BoostToCM();
+      
+      child=_rotateToZaxis * child;
+      child=_rotateAroundZaxis * child; 
+      child=boost(child,boostFromParent);//ROOT::Math::VectorUtil::boost;
+      
+   }
+   virtual void RotateToParent(const LorentzVector& parent, LorentzVector& child){
+  
+      if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
+	_cachedParent = parent;
+	_rotateToZaxis.SetAngle(_cachedParent.Theta());
+      }
+      
+      //Apply random phi angle now z-axis is in correct direction
+      _rotateAroundZaxis.SetAngle(RandomPhi());
+      
+      child=_rotateToZaxis * child;
+      child=_rotateAroundZaxis * child; 
+      
+   }
+
+    virtual double RandomPhi() const noexcept { return gRandom->Uniform(-TMath::Pi(),TMath::Pi()); }
+
+  private:
+    
+    LorentzVector _cachedParent;
+    ROOT::Math::RotationY _rotateToZaxis; //save memory allocation
+    ROOT::Math::RotationZ _rotateAroundZaxis;//save memory allocation
+ 
     
     ClassDef(elSpectro::DecayVectors,1); //class DecayVectors
  

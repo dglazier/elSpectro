@@ -18,6 +18,7 @@
 #include <TObject.h> //for ClassDef
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <numeric> //for accumulate
 
 namespace elSpectro{
@@ -50,7 +51,11 @@ namespace elSpectro{
     const particle_ptrs& Products() const{ return _products;}
     const decaying_ptrs& UnstableProducts() const{ return _unstables;}
     const particle_ptrs& StableProducts() const{ return _stables;}
- 
+
+    void SwapProducts(int index1, int index2){//swap pointers to particles in vector
+      std::iter_swap(_products.begin() + index1, _products.begin() + index2);
+    }
+    
     virtual bool RegenerateOnFail() const noexcept =0;
 
     bool CheckThreshold() const{
@@ -90,13 +95,20 @@ namespace elSpectro{
     void DetermineProductMasses();
     
     virtual void PostInit(ReactionInfo* info);
- 
+
+    virtual bool CanUseSDME()const noexcept{return false;}
+
+    void SetParent(DecayingParticle* pa){ _parentPtr=pa;}
+    DecayingParticle* Parent()const noexcept{return _parentPtr;}
+    
   protected:
 
     std::string _name;
 
   private:
-     
+
+    DecayingParticle* _parentPtr={nullptr};
+    
     particle_ptrs _products;
     particle_ptrs _stables; //products which are stable
     decaying_ptrs _unstables; //products which decay

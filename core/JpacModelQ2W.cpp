@@ -68,14 +68,14 @@ namespace elSpectro{
       return 0.;
     }
     if(GetGammaN()->P4().M()<GetGammaN()->MinimumMassPossible()) return 0;
-    
+
+    DecayModelQ2W::Intensity(); //does virtual photon calculations
    
+  
+    if(_W_Dist.get()==nullptr) return 1.;
+
     auto prodInfo=ProdInfo(); 
  
-    _gamma = *(prodInfo->_ebeam) - *(prodInfo->_scattered);
-
-    if(_W_Dist.get()==nullptr) return 1.;
-    
     double weight=_W_Dist->GetWeightFor( prodInfo->_photoN->M() );
     
     prodInfo->_sWeight=weight; //might be used in s and t

@@ -12,6 +12,7 @@
 #pragma once
 
 #include "DecayModel.h"
+#include "SDME.h"
 #include "FunctionsForElectronScattering.h"
 #include "amplitudes/amplitude.hpp"
 
@@ -38,19 +39,28 @@ namespace elSpectro{
 
     const Particle* GetMeson() const noexcept{return _meson; }
     const Particle* GetBaryon() const noexcept{return _baryon; }
- 
+
+    void SetUseSDME(bool use=true){_useSDME=use;}
+
   private:
     // mutable CurrentEventInfo _myInfo;//!
 
+    SDME* _sdmeMeson={nullptr};
+    
     jpacAmp_ptr _amp={nullptr}; //I am not the owner
 
     ReactionElectroProd* _prodInfo={nullptr};
  
     Particle* _baryon={nullptr};
     Particle* _meson={nullptr};
-    LorentzVector _target={0,0,0,escat::M_pr()};
-    
+    LorentzVector* _photon={nullptr};
+    LorentzVector* _target={nullptr};//{0,0,0,escat::M_pr()};
+    LorentzVector* _ebeam={nullptr};//{0,0,0,escat::M_pr()};
+    PhotonPolarisationVector* _photonPol={nullptr};
+ 
     mutable double _max={0};
+
+    bool _useSDME={false};
 
     ClassDefOverride(elSpectro::JpacModelst,1); //class JpacModelst
     

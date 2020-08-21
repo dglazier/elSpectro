@@ -9,7 +9,10 @@ namespace elSpectro {
   namespace kine {
 
     using elSpectro::LorentzVector;
-
+    using elSpectro::BetaVector;
+    using elSpectro::MomentumVector;
+    using ROOT::Math::VectorUtil::boost;
+    
     constexpr double M_pr(){return 0.93827208816;}
 
     inline double PDK2(double a, double b, double c)
@@ -23,7 +26,7 @@ namespace elSpectro {
 
     inline double PhaseSpaceWeightMax(double W, const std::vector<double>& masses){
 
-       //subtract masses from W to get TCM
+      //subtract masses from W to get TCM
       double TCM= std::accumulate(masses.begin(),masses.end(),W,  std::minus<double>());
       
       double emmax = TCM + masses[0];
@@ -35,9 +38,9 @@ namespace elSpectro {
       //std::cout<<std::endl;
 
       for (uint n=1; n<nStable; n++) {
-         emmin += masses[n-1];
-         emmax += masses[n];
-	 wtmax *= kine::PDK(emmax, emmin, masses[n]);
+	emmin += masses[n-1];
+	emmax += masses[n];
+	wtmax *= kine::PDK(emmax, emmin, masses[n]);
       }
 
       auto massSum= W-TCM;
@@ -47,7 +50,7 @@ namespace elSpectro {
       if(massSum/(nStable-1)<TCM)factor=(TMath::Factorial(nStable-1));
       else factor=(TMath::Factorial(nStable-2));
    
-     return wtmax/factor;
+      return wtmax/factor;
 
     }
     inline double PhaseSpaceWeightMaxFromEquDist(double W, const std::vector<double>& masses){
@@ -94,7 +97,7 @@ namespace elSpectro {
       double E3 = sqrt(M3*M3 + p3*p3);
       return M1*M1 + M3*M3  - 2 * ( E1*E3 -p1*p3 ); 
 
-  }
+    }
     inline double tmax(double W,double M1,double M2,double M3,double M4){
       
       double p1 = PDK(W,M1,M2);
@@ -114,7 +117,7 @@ namespace elSpectro {
 
       return 1 - (t0-t)/2/p1/p3;
     }
-   inline double tFromcosthW(double costh, double W,double M1,double M2,double M3,double M4){
+    inline double tFromcosthW(double costh, double W,double M1,double M2,double M3,double M4){
       double p1 = PDK(W,M1,M2);
       double p3 = PDK(W,M3,M4);
       double E1 = sqrt(M1*M1 + p1*p1);
@@ -124,47 +127,55 @@ namespace elSpectro {
       return  M1*M1 + M3*M3  - 2 * ( E1*E3 -p1*p3*costh ); ;
       
     }
-   inline double tFromcosthWP1P3(double costh, double W,double p1,double p3,double M1,double M2,double M3,double M4){
-     //with M1<0 PDK can sometimes not return finite number
-     double E1 = sqrt(M1*M1 + p1*p1);
-     double E3 = sqrt(M3*M3 + p3*p3);
+    inline double tFromcosthWP1P3(double costh, double W,double p1,double p3,double M1,double M2,double M3,double M4){
+      //with M1<0 PDK can sometimes not return finite number
+      double E1 = sqrt(M1*M1 + p1*p1);
+      double E3 = sqrt(M3*M3 + p3*p3);
   
       return  M1*M1 + M3*M3  - 2 * ( E1*E3 -p1*p3*costh ); ;
       
     }
-   inline double colliderMomentumInRestFrameOf(double m1, double p1, double mrest, double prest){
-     //calculate the momentum of 1 with m1 and p1
-     //in rest from of rest with mrest and prest
-     LorentzVector p(0,0,-p1,sqrt( m1*m1 + p1*p1 ));
-     LorentzVector rest(0,0,prest,sqrt( mrest*mrest + prest*prest ));
-     auto restBoost=rest.BoostToCM();
-     auto p1rest=ROOT::Math::VectorUtil::boost(p,restBoost);
-     return p1rest.P();
-   }
-  
-   inline double ChungPhaseSpaceNorm(int n){
-     return 1. / (2 * TMath::Power(TMath::Pi()*2, 2 * (int)n - 3) * TMath::Factorial(n - 2));
-     return 1.;
-   }
-   inline double ChungPhaseSpaceWeight(double W, const std::vector<double>& masses){
-     auto n = masses.size();
-     double momProd = 1;                    // product of breakup momenta
-     // for (unsigned int i = 1; i < _n; ++i) { // loop over 2- to n-bodies
-     //  momProd *= _breakupMom[i];
-     // }
-     const double massInterval=std::accumulate(masses.begin(),masses.end(),W,  std::minus<double>());//aka TCM
-     //   return  ChungPhaseSpaceNorm(n) * TMath::Power(massInterval, (int)n - 2) * momProd /W;
-     //return ( ChungPhaseSpaceNorm(n) * TMath::Power(massInterval, (int)n - 2) * momProd/W + PhaseSpaceWeightMax(W,masses) )/2;
-       //   return  ChungPhaseSpace
-     auto massSum= W-massInterval;
-     auto factor=1;
+    inline double colliderMomentumInRestFrameOf(double m1, double p1, double mrest, double prest){
+      //calculate the momentum of 1 with m1 and p1
+      //in rest from of rest with mrest and prest
+      LorentzVector p(0,0,-p1,sqrt( m1*m1 + p1*p1 ));
+      LorentzVector rest(0,0,prest,sqrt( mrest*mrest + prest*prest ));
+      auto restBoost=rest.BoostToCM();
+      auto p1rest=ROOT::Math::VectorUtil::boost(p,restBoost);
+      return p1rest.P();
+    }
+    
+    ////////////////////////////////////////////////////////
+    ///z-axis along gamma direction in meson rest frame
+    inline void mesonDecayGJ(const LorentzVector* gamma,const LorentzVector* meson,const LorentzVector* baryon,const LorentzVector* d1,MomentumVector* angles){
+      auto decBoost=meson->BoostToCM();
+      auto decBar=boost(*baryon,decBoost);
+      auto decGamma=boost(*gamma,decBoost);
+      auto zV=decGamma.Vect().Unit();
+      //auto zV=-decBar.Vect().Unit();
+      auto yV=decBar.Vect().Cross(decGamma.Vect()).Unit();
+      auto xV=yV.Cross(zV).Unit();
+    
+      LorentzVector decD1=boost(*d1,decBoost);
+    
+      angles->SetXYZ(decD1.Vect().Dot(xV),decD1.Vect().Dot(yV),decD1.Vect().Dot(zV));
+    }
+    inline void electroCMDecay(const LorentzVector* CM,const LorentzVector* ein,const LorentzVector* gamma,const LorentzVector* meson,MomentumVector* angles){
+    //CM frame defined by e-scattering
+       auto CMBoost=CM->BoostToCM();
 
-     if(massSum/(n-1)<massInterval)factor=(TMath::Factorial(n-1));//2*(1. + sqrt(massInterval/massSum) *(n>3) )*TMath::Factorial(n-2) /n*2 ;
-     else factor=(TMath::Factorial(n-2));
-     // if(n>3)factor/=n;
-     //  cout<<"w "<<ChungPhaseSpaceNorm(n)<<" "<<TMath::Power(massInterval, (int)n - 2) * momProd /W  <<" "<<PhaseSpaceWeightMax(W,masses)<<" "<<PhaseSpaceWeightMax(W,masses)/factor<<" "<<factor<<endl;
-     return   PhaseSpaceWeightMax(W,masses)/factor;
-     // TMath::Factorial(n-2)/
-   }
+       //LorentzVectors in CM
+       auto CMBeam=boost(*ein,CMBoost);
+       auto CMMes=boost(*meson,CMBoost);
+       auto CMGamma=boost(*gamma,CMBoost);
+
+       //definition of e- scattering frame
+       auto zV=CMGamma.Vect().Unit();
+       auto yV=CMGamma.Vect().Cross(CMBeam.Vect()).Unit();
+       auto xV=yV.Cross(zV).Unit();
+    
+       angles->SetXYZ(CMMes.Vect().Dot(xV),CMMes.Vect().Dot(yV),CMMes.Vect().Dot(zV));
+    }
+    
   }
 }

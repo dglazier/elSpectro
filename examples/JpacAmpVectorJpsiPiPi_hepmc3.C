@@ -7,6 +7,7 @@
 #include "HepMC3Writer.h"
 #include "LundWriter.h"
 #include "TwoBody_stu.h"
+#include "VectorSDMEDecay.h"
 
 #include "reaction_kinematics.hpp"
 #include "regge_trajectory.hpp"
@@ -30,9 +31,11 @@ double maxMass = 4.6;
 TH1F hQ2("Q2","Q2",1000,0,100);
 TH1D heE("eE","eE",1000,0,20);
 TH1D heTh("eTh","eTh",1000,0,180);
+TH1D hYTh("YTh","YTh",1000,0,180);
 TH1F hW("W","W",1000,0,100);
 TH1F ht("t","t",1000,0,10);
 TH1F hgE("gE","gE",1000,0,20);
+TH1F hgTh("gTh","gTh",1000,0,180);
 TH1F hMesonM("MesonM","; J/#psi#pi#pi Mass (GeV)",1000,minMass,maxMass);
 TH1F hJpsiM("JpsiM","; e+e- Mass (GeV)",1000,2.9,3.3);
 TH1F hRhoM("RhoM","; #pi+#pi- Mass (GeV)",1000,0.0,1.0);
@@ -44,6 +47,9 @@ TH2F hRecoilPVsEta("RecoilPVsEta","; #eta; p (GeV)",200,0,10,1000,0,275);
 TH2F hRecoilThetaVsP("RecoilThetaVsP","; p (GeV); #theta (mrad)",1000,0,275,200,0,200);
 TH1F hRecoilPt("RecoilPt","; p_{T} (GeV)",200,0,5.0);
 
+TH1F  hVectorCosTh("CosThGJ","cos(#theta_{GJ})",100,-1,1);
+TH1F  hVectorPhi("PhiGJ","#phi_{GJ}",100,-180,180);
+TH1F  hScatPhi("Phi_{Y}","#phi_{Y}",100,-180,180);
 
 void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEvents = 5e4) {
 
@@ -110,10 +116,13 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
 
   //mass_distribution(9995,new DistTF1{TF1("hh","1",3.9,4.5)});
   mass_distribution(9995,new DistTF1{TF1("hh","TMath::BreitWigner(x,4.22,0.05)",3.9,4.5)});
-  auto v=particle(9995,model(new PhaseSpaceDecay{{jpsi,rho},{}}));
-  
+  //auto v=particle(9995,model(new PhaseSpaceDecay{{jpsi,rho},{}}));
+  auto v=particle(9995,model(new VectorSDMEDecay{{jpsi,rho},{}}));
+  // 
   //create eic electroproduction of X + proton
-  auto jpac = new JpacModelQ2W{&sum, {v},{2212}, 1, 1, 0.5};
+  auto pr=particle(2212);
+  auto jpac = new JpacModelQ2W{&sum, {pr,v},{}, 0, 1, 0.5};
+  //  auto jpac = new JpacModelQ2W{&sum, {v},{2212}, 1, 1, 0.5};
   auto production=eic( ebeamE, pbeamE, jpac );
 
   //just produce events with st given distribution and no jpac amplitude
@@ -187,7 +196,22 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
     hRecoilPVsEta.Fill(proton->P4().Eta(), proton->P4().P());
     hRecoilThetaVsP.Fill(proton->P4().P(), proton->P4().Theta()*1000.);
     hRecoilPt.Fill(proton->P4().Pt());
-  
+
+    //SDME related angles
+    MomentumVector elScatAngles;
+    auto gStarN=(photon+prbeam);
+    //   kine::electroCMDecay(&gStarN,&elbeam,&photon,&jpsi_rho,&elScatAngles);
+    kine::electroCMDecay(&gStarN,&elbeam,&photon,&jpsi_rho,&elScatAngles);
+    hScatPhi.Fill(elScatAngles.Phi()*TMath::RadToDeg());
+    hYTh.Fill(jpsi_rho.Theta()*TMath::RadToDeg());
+    hgTh.Fill(photon.Theta()*TMath::RadToDeg());
+    MomentumVector vectorAngles;
+    //  std::cout<<"***************************************** in script th = "<<elScatAngles.Theta()<<" "<<elScatAngles.Phi()<<std::endl<<std::endl<<std::endl;
+    kine::mesonDecayGJ(&photon,&jpsi_rho,&(proton->P4()),&jpsiP4,&vectorAngles);
+    hVectorCosTh.Fill(TMath::Cos(vectorAngles.Theta()));
+    hVectorPhi.Fill(vectorAngles.Phi()*TMath::RadToDeg());
+    //std::cout<<"***************************************** in script vector  th = "<<vectorAngles.Theta()<<" "<<vectorAngles.Phi()<<std::endl<<std::endl<<std::endl;
+
     
   }
   gBenchmark->Stop("e");

@@ -8,14 +8,16 @@ namespace elSpectro{
 
   DecayingParticle::DecayingParticle(DecayModel* model):
     Particle{0},_decay{model},_decayer{new TwoBodyFlat}{
-
-  }
+      _decay->SetParent(this);
+    }
   DecayingParticle::DecayingParticle(int pdg,DecayModel* model,DecayVectors* decayer):
     Particle{pdg},_decay{model},_decayer{decayer}{
-
+      _decay->SetParent(this);
+      
   }
   DecayingParticle::DecayingParticle(int pdg,DecayVectors* decayer,DecayModel* model):
     Particle{pdg},_decayer{decayer},_decay{model}{
+      _decay->SetParent(this);
 
   }
   

@@ -45,20 +45,20 @@ namespace elSpectro{
       return  1-e_sc.T()/e_in.T();
     }
     
-    inline  double Sin2Theta(const LorentzVector& v1,const LorentzVector& v2){
+    inline  double SinSqTheta(const LorentzVector& v1,const LorentzVector& v2){
       double cosTh=CosTheta(v1,v2);
       return 1-cosTh*cosTh;
     }
     inline  double SinTheta(const LorentzVector& v1,const LorentzVector& v2){
       return TMath::Sqrt(SinTheta(v1,v2));
     }
-    inline  double Sin2HalfTheta(double theta){
+    inline  double SinSqHalfTheta(double theta){
       double sinhalf= TMath::Sin(theta/2);
       return sinhalf*sinhalf;
     }
     
     inline double Q2_b(const LorentzVector& e_in,const LorentzVector& e_sc){
-      return 4*e_in.T()*e_sc.T()*Sin2HalfTheta(Angle(e_in,e_sc));
+      return 4*e_in.T()*e_sc.T()*SinSqHalfTheta(Angle(e_in,e_sc));
     }
 
     inline double CosTheta_Q2EinEsc(double Q2,double Ein,double Esc ){
@@ -66,7 +66,11 @@ namespace elSpectro{
       return  (-0.5*Q2 - M2_el() + Ein*Esc)/P_el(Ein)/P_el(Esc);
      
     }
-    
+    inline double virtualPhotonPolarisation(const LorentzVector& e_in,const LorentzVector& p_in,const LorentzVector& e_sc){
+      auto yy  = y(e_in,p_in,e_sc);
+      return 2*(1-yy)/(1+(1-yy)*(1-yy));
+    }
+  
     inline double Q2(const LorentzVector& e_in,const LorentzVector& e_sc){
       return InvariantMass2(e_in,e_sc);
     }

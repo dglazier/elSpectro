@@ -13,6 +13,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   DecayingParticle.h
   DecayModel.h
   PhaseSpaceDecay.h
+  VectorSDMEDecay.h
   DecayModelQ2W.h
   DecayGammaN_Test.h
   JpacModelQ2W.h
@@ -27,6 +28,8 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   DistTF1.h
   DistTH1.h
   DistTH2.h
+  SDME.h
+  PhotonPolarisationVector.h
   DistVirtPhotFlux_xy.h
   CurrentEventInfo.h
   ParticleManager.h
@@ -35,7 +38,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   Writer.h
   HepMC3Writer.h
   LundWriter.h
-#  FunctionsForJpac.h
+  FunctionsForJpac.h
   Manager.h
   Interface.h
   LINKDEF ElSpectroLinkDef.h
@@ -46,6 +49,7 @@ add_library(${ELSPECTRO} SHARED
   DecayingParticle.cpp
   DecayModel.cpp
   PhaseSpaceDecay.cpp
+  VectorSDMEDecay.cpp
   DecayModelQ2W.cpp
   JpacModelQ2W.cpp
   JpacModelst.cpp
@@ -61,6 +65,8 @@ add_library(${ELSPECTRO} SHARED
   DistTH1.cpp
   DistTH2.cpp
   DistVirtPhotFlux_xy.cpp
+  SDME.cpp
+  PhotonPolarisationVector.cpp
   CurrentEventInfo.cpp
   ParticleManager.cpp
   DecayManager.cpp

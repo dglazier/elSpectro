@@ -48,7 +48,14 @@ namespace elSpectro{
  
     _electron->Print();
     _gstarNuc->Print();
-
+    
+    auto gNprods=dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->Products();
+    if( TString("Baryon")==TDatabasePDG::Instance()
+	->GetParticle(gNprods[0]->Pdg())->ParticleClass() ){
+      //Make sure meson is product 0 and baryon product 1
+      dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->SwapProducts(0,1);
+    }
+ 
     if(_threshold<MinimumMassPossible() )_threshold=MinimumMassPossible(); 
   }
 
@@ -60,22 +67,17 @@ namespace elSpectro{
       _prodInfo->_scattered=_electron->P4ptr();
       _prodInfo->_photoN=_gstarNuc->P4ptr();
       _prodInfo->_photon=&_gamma;
+      _prodInfo->_photonPol=&_photonPol;
       
       auto gNprods=dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->Products();
       // std::cout<<"DecayModelQ2W::PostInit "<<_prodInfo<<" "<<gNprods[0]->Pdg()<<" "<<gNprods[1]->Pdg()<<std::endl;
       
-      if( TString("Baryon")==TDatabasePDG::Instance()
-	  ->GetParticle(gNprods[0]->Pdg())->ParticleClass() ){
-	_prodInfo->_baryon=gNprods[0]->P4ptr();
-	_prodInfo->_meson=gNprods[1]->P4ptr();
-      }
-      else{
-	_prodInfo->_baryon=gNprods[1]->P4ptr();
-	_prodInfo->_meson=gNprods[0]->P4ptr();
- 
-      }
+      _prodInfo->_baryon=gNprods[1]->P4ptr();
+      _prodInfo->_meson=gNprods[0]->P4ptr();
+      
+      
       //std::cout<<"DecayModelQ2W::PostInit "<<std::endl;
-     DecayModel::PostInit(_prodInfo);
+      DecayModel::PostInit(_prodInfo);
      // std::cout<<"DecayModelQ2W::PostInit done"<<std::endl;
     
     }
@@ -86,7 +88,9 @@ namespace elSpectro{
     if(CheckThreshold()==false){
       return 0.;
     }
-    
+    if(GetGammaN()->P4().M()<GetGammaN()->MinimumMassPossible()) return 0;
+    if(_gstarNuc->P4().M() < _threshold ) return 0.;
+ 
     //auto parent = ParentVector(); //e' + g*N
     //  auto parent = _electron->P4() + _gstarNuc->P4();
 
@@ -94,13 +98,24 @@ namespace elSpectro{
     //note we are in the nuc rest frame, so parent momentum = e- beam momentum
     // auto ebeam = parent;
     //ebeam.SetE(escat::E_el(parent.P()));
-    
-    _gamma = *(_prodInfo->_ebeam) - _electron->P4();
 
-    if(_gstarNuc->P4().M() > _threshold ) return 1.;
-    else  return 0;
-   
- 
+    //calculate virtual photon
+    const auto& p4beam=*(_prodInfo->_ebeam);
+    const auto& p4tar=*(_prodInfo->_target);
+    const auto& p4scat=_electron->P4();
+    
+    //    _gamma = *(_prodInfo->_ebeam) - _electron->P4();
+    _gamma = p4beam-p4scat;
+    
+    //calculate photon polarisation
+    auto epsilon = escat::virtualPhotonPolarisation(p4beam,p4tar,p4scat);
+    auto delta = 2*escat::M2_el()/(-_gamma.M2())*(1-epsilon);
+    
+    _photonPol.SetEpsilon(epsilon);
+    _photonPol.SetDelta(delta);
+    
+    return 1.;
+  
   }
   
 }

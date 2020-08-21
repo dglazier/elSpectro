@@ -10,10 +10,12 @@
 #include <Math/Vector4D.h> //For XyZTVector
 #include <Math/Rotation3D.h> //For XyZTVector
 #include <Math/VectorUtil.h> //For when LorentzVector is used in other classes
+#include <Rtypes.h> //For when LorentzVector is used in other classes
 
 namespace elSpectro{
 
   using LorentzVector= ROOT::Math::XYZTVector;
   using BetaVector=ROOT::Math::DisplacementVector3D< ROOT::Math::Cartesian3D<ROOT::Math::Rotation3D::Scalar> >;
+  using  MomentumVector=ROOT::Math::DisplacementVector3D< ROOT::Math::Cartesian3D< Double_t >, ROOT::Math::DefaultCoordinateSystemTag >;
 
 }

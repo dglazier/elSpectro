@@ -28,7 +28,7 @@ namespace elSpectro{
  
     auto e_a = (_W*_W + m2_a - m2_b)/(2.0*_W); // E decay product a
     auto p_a = TMath::Sqrt(e_a*e_a - m2_a); // p for both
-    auto e_b = TMath::Sqrt(p_a*p_a + m2_b); // E for decay product b
+    // auto e_b = TMath::Sqrt(p_a*p_a + m2_b); // E for decay product b
 
     //std::cout<<"CM "<<e_a<<" "<<p_a<<" "<<e_b<<std::endl;
     auto costh = RandomCosTh();
@@ -36,41 +36,51 @@ namespace elSpectro{
     
     // std::cout<<"TwoBodyFlat CosTh "<<TMath::ACos(costh)<<" "<<costh<<std::endl;
     
-    auto phi =  RandomPhi();   
-    auto sinphi=TMath::Sin(phi);
-    auto cosphi=TMath::Sqrt(1-sinphi*sinphi);
-
+    auto phi =  0; //RandomPhi(); , get phi when z-axis is rotated to simplify  
+    auto sinphi=0;//TMath::Sin(phi);
+    auto cosphi=1;//TMath::Sqrt(1-sinphi*sinphi);
+ 
     //momentum components in CM frame
     auto x_a = p_a * sinth * cosphi;
-    auto y_a = p_a * sinth * sinphi;
+    auto y_a = 0;//p_a * sinth * sinphi;
     auto z_a = p_a * costh;
 
+
+
     
+    /* 
     //set the local child 4-vectors
     _a.SetXYZT( x_a, y_a, z_a, e_a);
     _b.SetXYZT(-x_a,-y_a,-z_a, e_b);
 
 
     //Must make sure scattered products are in the same frame as the parent
-    //still in rest system of nucl, just need rotation
+    //theta=0 => moving along parent direction
+    //i.e. boost vector should only have z component
     //Please note this needs checked for correct rotation
+    //Also add the random phi angle...
     RotateZaxisToCMDirection(parent);
-    
-    //boost from parent rest frame 
-    auto boostFromParent=-parent.BoostToCM();
-    
-    _a=boost(_a,boostFromParent);//ROOT::Math::VectorUtil::boost;
-    _b=boost(_b,boostFromParent);
- 
+    */
+  
+
      //set the lorentz vectors of the decay children
-    products[0]->SetXYZT(_a.X(),_a.Y(),_a.Z(),_a.T());
-    products[1]->SetXYZT(_b.X(),_b.Y(),_b.Z(),_b.T());
-   
+    products[0]->SetXYZT( x_a, y_a, z_a, e_a);
+    // products[1]->SetXYZT(-x_a,-y_a,-z_a, e_b);
+
+    
     //  std::cout<<"Masses "<< products[0]->P4().M()<<" "<< products[1]->P4().M()<<" "<<std::endl;
     //std::cout<<"Check theta "<<products[0]->P4().Theta()*TMath::RadToDeg()<<" "<<products[1]->P4().Theta()*TMath::RadToDeg()<<std::endl;
     //check
     // auto sum =_a+_b;
     //std::cout<<sum.X()<<"="<<parent.X()<<"   "<<sum.Y()<<"="<<parent.Y()<<"   "<<sum.Z()<<"="<<parent.Z()<<"   "<<sum.T()<<"="<<parent.T()<<"   "<<std::endl;
+
+    _a.SetXYZT( x_a, y_a, z_a, e_a);
+    BoostToParent(parent,_a);
+    products[0]->SetP4(_a);
+    products[1]->SetP4( parent - _a );
+    
     return _weight; //this is already a pure phase space distribuition
   }
+
+
 }

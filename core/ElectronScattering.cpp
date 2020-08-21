@@ -139,7 +139,9 @@ namespace elSpectro{
     _reactionInfo._ebeam =&_nuclRestElec;
     
     DecayingParticle::PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
-
+    //now scattered electron should be set
+    //_scattered= _reactionInfo._scattered;
+    
     auto& unproducts=Model()->UnstableProducts();
     if(unproducts.empty()==true) return;
     

@@ -12,6 +12,7 @@
 
 #include "LorentzVector.h"
 #include "Distribution.h"
+#include "SDME.h"
 #include <TObject.h> //for ClassDef
 #include <TMath.h> //for Sqrt
 #include <TRandom.h> //for Sqrt
@@ -100,6 +101,12 @@ namespace elSpectro{
 
     virtual DecayType IsDecay() const noexcept {return DecayType::Stable;}
   
+
+    SDME* InitSDME(uint J,uint alphaMax){
+      _sdme=SDME(J,alphaMax);
+      return &_sdme;
+    }
+    const SDME* GetSDME() const noexcept{ return &_sdme; }
     
   protected:
  
@@ -133,6 +140,7 @@ namespace elSpectro{
 
     
     LorentzVector _vec;
+    SDME _sdme;
     double _pdgMass={0};
     double _dynamicMass={0};
     double _massWeight={1};

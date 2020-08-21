@@ -7,14 +7,14 @@
 #pragma once
 
 #include "DecayVectors.h"
+#include "LorentzVector.h"
 #include <TRandom.h> //for gRandom
 #include <Math/VectorUtil.h> //for boosts etc.
-#include <Math/RotationY.h>
 
 namespace elSpectro{
 
   using ROOT::Math::VectorUtil::boost;
-
+  
   class TwoBodyFlat : public DecayVectors {
     
   public:
@@ -31,7 +31,6 @@ namespace elSpectro{
 		    const particle_ptrs& products)  final;
 
     virtual double RandomCosTh() const noexcept{ return gRandom->Uniform(-1,1); }
-    virtual double RandomPhi() const noexcept { return gRandom->Uniform(-TMath::Pi(),TMath::Pi()); }
 
   protected :
 
@@ -44,21 +43,12 @@ namespace elSpectro{
     LorentzVector _b;
     double _W={0};
  
-    ROOT::Math::RotationY _rotateToZaxis;
-    LorentzVector _cachedParent;
-
+ 
     ClassDef(elSpectro::TwoBodyFlat,1); //class DecayVectors
  
 
   };
-  inline void TwoBodyFlat::RotateZaxisToCMDirection(const LorentzVector& parent){
-    if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
-      _cachedParent = parent;
-      _rotateToZaxis.SetAngle(_cachedParent.Theta());
-     }
-    _a=_rotateToZaxis*_a;
-    _b=_rotateToZaxis*_b;
-  }
+ 
   
 }
   

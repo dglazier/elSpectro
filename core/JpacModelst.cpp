@@ -1,4 +1,5 @@
 #include "JpacModelst.h"
+#include "DecayingParticle.h"
 #include "FunctionsForJpac.h"
 #include "FunctionsForGenvector.h"
 #include <TDatabasePDG.h>
@@ -30,14 +31,29 @@ namespace elSpectro{
   }
   /////////////////////////////////////////////////////////////////
   void JpacModelst::PostInit(ReactionInfo* info){
+
+    if( dynamic_cast<DecayingParticle*>(_meson) ){
+      if( dynamic_cast<DecayingParticle*>(_meson)->Model()->CanUseSDME() ){
+	_sdmeMeson = _meson->InitSDME(1,4);
+	//could have electroproduced baryon spin 3/2
+	//_sdmeBaryon = _baryon->InitSDME(3,9);
+      }
+    }
+    
     DecayModel::PostInit(info);
     
     _prodInfo= dynamic_cast<ReactionElectroProd*> (info); //I need Reaction info
- 
+
+    _photon = _prodInfo->_photon;
+    _target = _prodInfo->_target;
+    _ebeam = _prodInfo->_ebeam;
+    _photonPol = _prodInfo->_photonPol;
+    
      double maxW = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
 
      _max = jpacFun::FindMaxOfProbabilityDistribution(_amp,maxW);
-    std::cout<<"JpacModelQ2W::PostInit max value "<<_max<<std::endl;
+
+     std::cout<<"JpacModelQ2W::PostInit max value "<<_max<<" "<<_meson<<" "<<_meson->Pdg()<<" "<<_sdmeMeson<<std::endl;
   }
   //////////////////////////////////////////////////////////////////
   double JpacModelst::Intensity() const
@@ -49,20 +65,42 @@ namespace elSpectro{
     s*=s;
 
   
-    //must rotate into the g*N z-axis frame
+    //For t, must rotate into the parent g*N z-axis frame
+    /*
     auto cmBoost=parent.BoostToCM();
-    auto rfm = _meson->P4();
     ROOT::Math::RotationY rotateToZaxis;
     rotateToZaxis.SetAngle(parent.Theta());
 
-    rfm=ROOT::Math::VectorUtil::boost(rfm,cmBoost);
-    rfm=rotateToZaxis*rfm;
-    double t = _amp->kinematics->t_man(s,rfm.Theta());
+    auto cmMeson = _meson->P4();
+    cmMeson=ROOT::Math::VectorUtil::boost(cmMeson,cmBoost);
+    cmMeson=rotateToZaxis*cmMeson;
+     */
+    double t = (_meson->P4()-*_photon).M2();//_amp->kinematics->t_man(s,cmMeson.Theta());
 
-    //jpac photo amp depends on s, t, and meson mass
+    MomentumVector decayAngles;
+    kine::electroCMDecay(&parent,_ebeam,_photon,_meson->P4ptr(),&decayAngles);
+    _photonPol->SetPhi(decayAngles.Phi());
+    
+     //jpac photo amp depends on s, t, and meson mass
     _amp->kinematics->set_vectormass( _meson->Mass() );
     double weight = _amp->differential_xsection(s,t)/_max;
-   
+
+    
+    //Meson spin density marix elements, note this is photoproduced
+    if(_sdmeMeson){
+      _sdmeMeson->SetElement(0,0,0,(_amp->SDME(0, 0, 0, s, t)));
+      _sdmeMeson->SetElement(0,1,0,(_amp->SDME(0, 1, 0, s, t)));
+      _sdmeMeson->SetElement(0,1,-1,(_amp->SDME(0, 1, -1, s, t)));
+      _sdmeMeson->SetElement(1,1,1,(_amp->SDME(1, 1, 1, s, t)));
+      _sdmeMeson->SetElement(1,0,0,(_amp->SDME(1, 0, 0, s, t)));
+      _sdmeMeson->SetElement(1,1,0,(_amp->SDME(1, 1, 0, s, t)));
+      _sdmeMeson->SetElement(1,1,-1,(_amp->SDME(1, 1, -1, s, t)));
+      _sdmeMeson->SetElement(2,1,0,(_amp->SDME(2, 1, 0, s, t)));
+      _sdmeMeson->SetElement(2,1,-1,(_amp->SDME(2, 1, -1, s, t)));
+      //_sdmeMeson->SetElement(3,1,0,(_amp->SDME(3, 1, 0, s, t)));
+      // _sdmeMeson->SetElement(3,1,-1,(_amp->SDME(3, 1, -1, s, t)));
+    }
+
     if(weight>1){
       auto oldmax=_max;
       _max=weight*oldmax;
