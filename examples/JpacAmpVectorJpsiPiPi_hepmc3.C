@@ -122,7 +122,6 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
   //create eic electroproduction of X + proton
   auto pr=particle(2212);
   auto jpac = new JpacModelQ2W{&sum, {pr,v},{}, 0, 1, 0.5};
-  //  auto jpac = new JpacModelQ2W{&sum, {v},{2212}, 1, 1, 0.5};
   auto production=eic( ebeamE, pbeamE, jpac );
 
   //just produce events with st given distribution and no jpac amplitude
@@ -139,13 +138,7 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
   
   auto electron = jpac->GetScatteredElectron();
   auto proton = jpac->GetDecayBaryon();
-  //Particle* proton =nullptr;
-  //for(auto* pp:particles().StableParticles()){
-  //  if(pp->Pdg()==2212){
-  //    proton=pp;
-  //    break;
-  //  }
-  // }
+
   // ---------------------------------------------------------------------------
   // Initialize HepMC3
   // ---------------------------------------------------------------------------
@@ -244,6 +237,9 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
   hRecoilPVsEta.Write();
   hRecoilThetaVsP.Write();
   hRecoilPt.Write();
+  hScatPhi.Write();
+  hVectorPhi.Write();
+  hVectorCosTh.Write();
   fout->Close();
  
   // compute total ep cross section from internally stored histograms
