@@ -57,6 +57,7 @@ namespace elSpectro{
     }
     void SetP4(const LorentzVector& p4){
       _vec=p4;
+      _dynamicMass=_vec.M();
     }
     void Boost(const  elSpectro::BetaVector& vboost ){
       _vec=ROOT::Math::VectorUtil::boost(_vec,vboost);
