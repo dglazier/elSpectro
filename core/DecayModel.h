@@ -98,12 +98,14 @@ namespace elSpectro{
 
     virtual bool CanUseSDME()const noexcept{return false;}
 
-    void SetParent(DecayingParticle* pa){ _parentPtr=pa;}
+    virtual void SetParent(DecayingParticle* pa){ _parentPtr=pa;}
     DecayingParticle* Parent()const noexcept{return _parentPtr;}
     
   protected:
 
     std::string _name;
+    
+    void ResetProducts(particle_ptrs ps);
 
   private:
 

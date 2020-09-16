@@ -159,9 +159,9 @@ namespace elSpectro{
       tempDecayer->SetModel(Model());
       SetDecayer(tempDecayer); //give it to a sink
       mutableDecayer()->PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
-      generator().SetModelForMassPhaseSpace(_gStarN->Model());
-     }
-    
+    }
+    generator().SetModelForMassPhaseSpace(_gStarN->Model());
+
   }
   /////////////////////////////////////////////////////////////////////////
   DecayStatus  ElectronScattering::GenerateProducts(){

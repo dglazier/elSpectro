@@ -10,7 +10,17 @@
 namespace elSpectro {
 
   namespace jpacFun{
-
+    TH1D HistFromLargestBins(const TH1D& h1,const TH1D& h2){
+      auto hist= TH1D{h1};
+      for(int ibin=1;ibin<=hist.GetNbinsX();ibin++){
+	auto val = h1.GetBinContent(ibin)>h2.GetBinContent(ibin) ? h1.GetBinContent(ibin):h2.GetBinContent(ibin);
+	hist.SetBinContent(ibin,val);
+	std::cout<<"HistFromLargestBins "<<hist.GetBinCenter(ibin)<<" "<<val<<std::endl;
+	
+      }
+      return hist;
+    }
+    /////////////////////////////////////////////////
     void HistProbabilityDistribution_s(jpacPhoto::amplitude* amp, TH1D&  hist){
       double s=0;
       auto F = [amp,&s](double t)
@@ -32,7 +42,7 @@ namespace elSpectro {
 	else
 	  hist.SetBinContent(ih,ig.Integral(amp->kinematics->t_man(s,TMath::Pi()),amp->kinematics->t_man(s,0)));
 	
-	std::cout<<"JPAC "<<Wval<<" "<<hist.GetBinContent(ih)<<std::endl;
+	//std::cout<<"JPAC "<<Wval<<" "<<hist.GetBinContent(ih)<<std::endl;
 	if(ih%10==0)std::cout<<(hist.GetNbinsX() - ih)/10<<" "<<std::endl;
       }
       std::cout<<std::endl;
@@ -73,7 +83,7 @@ namespace elSpectro {
 	for(int it=0;it<Npoints;it++){
 	  WtVals[1]=tmin-it*trange/Npoints;
 	  auto val = Fmax(WtVals);
-	  // std::cout<<WtVals[0]<<" "<<WtVals[1]<<" "<<val<<std::endl;
+	  //std::cout<<WtVals[0]<<" "<<WtVals[1]<<" "<<val<<std::endl;
 	  if(val<gridMin) {
 	    gridMin=val;
 	    gridW=WtVals[0];
@@ -136,6 +146,9 @@ namespace elSpectro {
       return -minVal ;
     }
     /////////////////////////////////////////////////
+    
+  
+ 
   }
 }
 /*

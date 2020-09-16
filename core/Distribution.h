@@ -23,6 +23,7 @@ namespace elSpectro{
   public :
 
     virtual double SampleSingle()  noexcept = 0 ;
+    virtual double SampleSingle(double xmin,double xmax)  noexcept { return SampleSingle();};//default ignores limits in case not applicable for derived class
     virtual dist_pair SamplePair()  noexcept = 0 ;
 
     virtual double CurrentValue() const noexcept=0;

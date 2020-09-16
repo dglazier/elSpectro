@@ -25,6 +25,11 @@ namespace elSpectro{
       _val=_tf1.Eval(_x);
       return _x;
     }
+    double SampleSingle(double xmin,double xmax)   noexcept final {
+      _x=_tf1.GetRandom(xmin,xmax);
+      _val=_tf1.Eval(_x);
+      return _x;
+    }
     
     dist_pair SamplePair()   noexcept final {return dist_pair{0,0};} ;
 

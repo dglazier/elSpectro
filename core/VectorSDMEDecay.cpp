@@ -9,16 +9,7 @@ namespace elSpectro{
   {
 
     _name={"VectorSDMEDecay"};
-    //need to find meson and baryon
-    /*  if(TDatabasePDG::Instance()->GetParticle(Products()[0]->Pdg())->ParticleClass()==TString("Baryon") ){
-      //  _baryon=Products()[0];
-      _meson= dynamic_cast<DecayingParticle*>(Products()[1]); 
-    }
-    else {
-      //_baryon=Products()[1];
-      _meson=dynamic_cast<DecayingParticle*>(Products()[0]);
-    }
-    */
+
   }
 
   ///////////////////////////////////////////////////////////////
@@ -94,11 +85,29 @@ namespace elSpectro{
     double result=0;
     _photonPol->Calc(); //epsilon,delta and phi should all now be set
     for(uint alpha=0; alpha < 8; alpha++ ){
-      //     std::cout<<"      "<< W[alpha]<<" "<<(*_photonPol)[alpha]<<" "<<( W[alpha] * (*_photonPol)[alpha])<<std::endl;
-      result += ( W[alpha] * (*_photonPol)[alpha]) ;
+      result += ( W[alpha] * (*_photonPol)[alpha] ) ;
+    }
+    result/=1.05; //max seems to be slightly>1 should check this
+    
+    if(result>1.0 || result<0){
+      std::cout<<"VectorSDMEDecay invalid result "<< result<<std::endl;
+      for(uint alpha=0; alpha < 8; alpha++ ){
+	std::cout<<"      "<< W[alpha]<<" "<<(*_photonPol)[alpha]<<" "<<( W[alpha] * (*_photonPol)[alpha])<<std::endl;
+	//  result += ( W[alpha] * (*_photonPol)[alpha]) ;
+      }
+      std::cout<<_rho->Re(0,0,0)<<" 010 "<<_rho->Re(0,1,0)<<" 01-1 "<<_rho->Re(0,1,-1)<<" 111 "<<_rho->Re(1,1,1)<<" 100 "<<_rho->Re(1,0,0)<<" 110 "<<_rho->Re(1,1,0)<<" 11-1 "<<_rho->Re(1,1,-1)<<" 210 "<<_rho->Re(2,1,0)<<" 21-1 "<<_rho->Re(2,1,-1)<<" "<<std::endl;
+      std::cout<<"epsilon " <<_photonPol->Epsilon()<<" delta " <<_photonPol->Delta()*TMath::RadToDeg()<<" phi " <<_photonPol->Phi()<<std::endl;
+      std::cout<<"CONDITION 1 "<<(_rho->Re(0,0,0)<=1) << (_rho->Re(0,0,0)>=0) <<std::endl;
+      std::cout<<"CONDITION 2 "<<(TMath::Abs(_rho->Re(0,1,-1))<=0.5*(1-_rho->Re(0,0,0)) )<<std::endl;
+      std::cout<<"CONDITION 3 "<<(_rho->Re(0,1,0)*_rho->Re(0,1,0) <=0.25*_rho->Re(0,0,0)*(2-_rho->Re(0,0,0)-_rho->Re(0,1,-1)) )<<std::endl;
+      std::cout<<"CONDITION 6 "<<(TMath::Abs(_rho->Re(1,0,0))<=_rho->Re(0,0,0)) <<std::endl;
+      std::cout<<"CONDITION 7 "<<(TMath::Abs(_rho->Re(1,1,1))<=0.5*(1-_rho->Re(0,0,0)) )<<std::endl;
+      std::cout<<"CONDITION 8 "<<(TMath::Abs(_rho->Re(1,1,-1))<=0.5*(1-_rho->Re(0,0,0))) <<std::endl;
+      std::cout<<"CONDITION 9 "<<(TMath::Abs(_rho->Re(1,1,0))<=TMath::Sqrt( 0.5*_rho->Re(0,0,0)*(1-_rho->Re(0,0,0)) )) <<std::endl;
+  
     }
     //std::cout<<"Vector weight "<<result<<std::endl;
-    if(TMath::IsNaN(result))exit(0);
+   
     return result; //max value is already 1, but should check
   }
 }

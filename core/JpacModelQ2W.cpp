@@ -40,6 +40,7 @@ namespace elSpectro{
     //declare the model for controlling phase space
     //this is the decay of the overall hadronic system
     // move to ElectronScatter  generator().SetModelForMassPhaseSpace(GetGammaN()->Model());
+      generator().SetModelForMassPhaseSpace(GetGammaN()->Model());
     
     //JPAC model is for photoproduction
     //Leave Q2 dependence for now
@@ -49,14 +50,20 @@ namespace elSpectro{
     double maxW = ( *(prodInfo->_target) + *(prodInfo->_ebeam) ).M();
 
     std::cout<<"JpacModelQ2W::PostInit generating total cross section, may take some time... "<<std::endl;
-    TH1D hist("Wdist","Wdist",50,0,maxW);
-   
-    jpacFun::HistProbabilityDistribution_s(_amp,hist);
+    TH1D histlow("Wdistlow","Wdistlow",50,0,maxW);
+    _amp->kinematics->set_vectormass(GetDecayMeson()->MinimumMassPossible());//to get threshold behaviour
+    jpacFun::HistProbabilityDistribution_s(_amp,histlow);
+
+    TH1D histpeak("Wdist","Wdist",50,0,maxW);
+    _amp->kinematics->set_vectormass(GetDecayMeson()->PdgMass());//to get threshold behaviour
+    jpacFun::HistProbabilityDistribution_s(_amp,histpeak);
     
-    auto maxVal= hist.GetMaximum();
+    auto hist = jpacFun::HistFromLargestBins(histlow,histpeak);
+    
+    //    auto maxVal= hist.GetMaximum();
    
     //for(int ibin=1;ibin<=hist.GetNbinsX();ibin++)
-    // hist.SetBinContent(ibin,hist.GetBinContent(ibin));
+    // hist.SetBinContent(ibin,hist.GetBinContent(ibin)+0.01*maxVal);
     
     _W_Dist.reset( new DistTH1(hist) );
     
@@ -69,7 +76,7 @@ namespace elSpectro{
     }
     if(GetGammaN()->P4().M()<GetGammaN()->MinimumMassPossible()) return 0;
 
-    DecayModelQ2W::Intensity(); //does virtual photon calculations
+    auto phasespace_weight=DecayModelQ2W::Intensity(); //does virtual photon calculations
    
   
     if(_W_Dist.get()==nullptr) return 1.;

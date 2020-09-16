@@ -54,7 +54,7 @@ namespace elSpectro{
     if(_decayer)_decayer->PostInit(info);
  
     std::cout<<"DecayingParticle::PostInit pdg "<<Pdg()<<" vertexID "<<_decayVertexID<<std::endl;
-     std::cout<<"DecayingParticle::PostInit  min mass "<<MinimumMassPossible()<<std::endl;
+    std::cout<<"DecayingParticle::PostInit  min mass "<<MinimumMassPossible()<<std::endl;
   };
   //////////////////////////////////////////////////////////////////////
   DecayStatus   DecayingParticle::GenerateProducts(){
@@ -67,7 +67,7 @@ namespace elSpectro{
     double _maxWeight=1;
 
   
-    // std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<std::endl;
+    // std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<_decay->Products().size()<<" "<<" "<<_decay->Products()[0]->Pdg()<<" "<<_decay->Products()[1]->Pdg()<<std::endl;
     //if in charge of phase space calculate masses for full decay chain
     Manager::Instance().FindMassPhaseSpace(Mass(),Model());
   

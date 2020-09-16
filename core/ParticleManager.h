@@ -32,7 +32,22 @@ namespace elSpectro{
 
     void RegisterMassDistribution(int pdg, Distribution* dist){
       _massDist[pdg]=dist_uptr{dist};
+      dist=nullptr;
     }
+    
+    int RegisterNewPdgParticle(double nominalMass,Distribution* dist=nullptr){
+      std::cout<<"RegisterNewPdgParticle "<<dist <<" "<<_nextPdg<<std::endl;
+      AddToPdgTable(_nextPdg,nominalMass);
+      std::cout<<"RegisterNewPdgParticle "<<std::endl;
+      if(dist != nullptr){
+	RegisterMassDistribution(_nextPdg,dist);
+      }
+      _nextPdg++;
+      return _nextPdg-1;
+    }
+
+    void AddToPdgTable(int pdg,double mass);
+    
     /* void RegisterMassSquaredDistribution(int pdg, Distribution* dist){ */
     /*   _mass2Dist[pdg]=dist_uptr{dist}; */
     /* } */
@@ -60,7 +75,8 @@ namespace elSpectro{
     //distribitions for generating dynamic particle masses
     std::map<int,dist_uptr> _massDist; 
     // std::map<int,dist_uptr> _mass2Dist; 
-    
+
+    int _nextPdg={10000};
     ClassDef(elSpectro::ParticleManager,1); //class ParticleManager
   };
 

@@ -1,5 +1,4 @@
 #include "JpacModelst.h"
-#include "DecayingParticle.h"
 #include "FunctionsForJpac.h"
 #include "FunctionsForGenvector.h"
 #include <TDatabasePDG.h>
@@ -10,110 +9,111 @@ namespace elSpectro{
   JpacModelst::JpacModelst( jpacPhoto::amplitude* amp ,
 			      particle_ptrs parts, const std::vector<int> pdgs) :
     _amp{amp},
-    DecayModel{ parts, pdgs }
+    DecayModelst{ parts, pdgs }
   {
     _name={"JpacModelst"};
 
-    //need to find meson and baryon
-    if(TDatabasePDG::Instance()->GetParticle(Products()[0]->Pdg())->ParticleClass()==TString("Baryon") ){
-      _baryon=Products()[0];
-      _meson=Products()[1]; 
-    }
-    else {
-      _baryon=Products()[1];
-      _meson=Products()[0];
-    }
-    
-    //find max value of amplitude as function of s and t
-    _max = 2E5;//_jpac->MaxValue();
-    // _max = 1E8;//_jpac->MaxValue();
+ 
     std::cout<<"JpacModelst::JpacModelst "<<_amp<<std::endl;
   }
   /////////////////////////////////////////////////////////////////
-  void JpacModelst::PostInit(ReactionInfo* info){
+  /*void JpacModelst::PostInit(ReactionInfo* info){
 
-    if( dynamic_cast<DecayingParticle*>(_meson) ){
-      if( dynamic_cast<DecayingParticle*>(_meson)->Model()->CanUseSDME() ){
-	_sdmeMeson = _meson->InitSDME(1,4);
-	//could have electroproduced baryon spin 3/2
-	//_sdmeBaryon = _baryon->InitSDME(3,9);
-      }
+    DecayModelst::PostInit(info);
+    
+    //double maxW = ( *(ProductionInfo()->_target) + *(ProductionInfo()->_ebeam) ).M();
+
+    // _max = jpacFun::FindMaxOfProbabilityDistribution(_amp,maxW)*1.2; //add 10% for Q2 effects etc.
+
+    std::cout<<"JpacModelst::PostInit max value "<<" "<<_meson<<" "<<_meson->Pdg()<<" "<<_sdmeMeson<<std::endl;
+    }*/
+  //////////////////////////////////////////////////////////////////
+  void JpacModelst::CalcMesonSDMEs() const {
+    //Meson spin density marix elements, note this is photoproduced
+    auto *sdme=GetMesonSDMEs();
+    
+    if(sdme){ //note this is vector formalism
+      sdme->SetElement(0,0,0,(_amp->SDME(0, 0, 0, get_s(), get_t())));
+      sdme->SetElement(0,1,0,(_amp->SDME(0, 1, 0, get_s(), get_t())));
+      sdme->SetElement(0,1,-1,(_amp->SDME(0, 1, -1, get_s(), get_t())));
+      sdme->SetElement(1,1,1,(_amp->SDME(1, 1, 1, get_s(), get_t())));
+      sdme->SetElement(1,0,0,(_amp->SDME(1, 0, 0, get_s(), get_t())));
+      sdme->SetElement(1,1,0,(_amp->SDME(1, 1, 0, get_s(), get_t())));
+      sdme->SetElement(1,1,-1,(_amp->SDME(1, 1, -1, get_s(), get_t())));
+      sdme->SetElement(2,1,0,(_amp->SDME(2, 1, 0, get_s(), get_t())));
+      sdme->SetElement(2,1,-1,(_amp->SDME(2, 1, -1, get_s(), get_t())));
     }
-    
-    DecayModel::PostInit(info);
-    
-    _prodInfo= dynamic_cast<ReactionElectroProd*> (info); //I need Reaction info
 
-    _photon = _prodInfo->_photon;
-    _target = _prodInfo->_target;
-    _ebeam = _prodInfo->_ebeam;
-    _photonPol = _prodInfo->_photonPol;
-    
-     double maxW = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
 
-     _max = jpacFun::FindMaxOfProbabilityDistribution(_amp,maxW);
-
-     std::cout<<"JpacModelQ2W::PostInit max value "<<_max<<" "<<_meson<<" "<<_meson->Pdg()<<" "<<_sdmeMeson<<std::endl;
   }
   //////////////////////////////////////////////////////////////////
-  double JpacModelst::Intensity() const
+  void JpacModelst::CalcBaryonSDMEs() const {
+    auto  *sdme=GetBaryonSDMEs();
+    
+    if(sdme){
+
+    }
+  }
+    /*double JpacModelst::Intensity() const
   {
   
    
-    auto parent = ParentVector();
-    double s = parent.M();
-    s*=s;
-
+    double s=Parent->P4().M2();
   
-    //For t, must rotate into the parent g*N z-axis frame
-    /*
-    auto cmBoost=parent.BoostToCM();
-    ROOT::Math::RotationY rotateToZaxis;
-    rotateToZaxis.SetAngle(parent.Theta());
-
-    auto cmMeson = _meson->P4();
-    cmMeson=ROOT::Math::VectorUtil::boost(cmMeson,cmBoost);
-    cmMeson=rotateToZaxis*cmMeson;
-     */
     double t = (_meson->P4()-*_photon).M2();//_amp->kinematics->t_man(s,cmMeson.Theta());
 
-    MomentumVector decayAngles;
-    kine::electroCMDecay(&parent,_ebeam,_photon,_meson->P4ptr(),&decayAngles);
-    _photonPol->SetPhi(decayAngles.Phi());
-    
-     //jpac photo amp depends on s, t, and meson mass
     _amp->kinematics->set_vectormass( _meson->Mass() );
-    double weight = _amp->differential_xsection(s,t)/_max;
+
+
+    double weight = _amp->probability_distribution(s,t)*PhaseSpaceFactor();
+    
+      
 
     
+    // double weight2 = _amp->differential_xsection(s,t);//* (2.56819E-6)*4*64*TMath::Pi() * s * (TMath::Power(std::real(_amp->kinematics->initial->momentum(s)), 2.));
+    //double weight2 = _amp->differential_xsection(s,t);
+    // std::cout<<"Compare "<<weight2<<" "<<weight<<" "<<weight2/weight <<std::endl;
+
+    weight/=_max; //normalise range 0-1
+    
+    //  std::cout<<"flux "<<kine::FluxPhaseSpaceFactor(*_photon,*get_t()arget)<<" "<<kine::PDK(W,_meson->Mass(),_baryon->Mass())*W<<std::endl;
+    //std::cout<<"dt "<<kine::FluxPhaseSpaceFactor(*_photon,*get_t()arget)*kine::PDK(W,_meson->Mass(),_baryon->Mass())/W<<" "<< kine::PhaseSpaceFactorDt(W,_photon->M(),get_t()arget->M(),_meson->Mass(),_baryon->Mass())<<std::endl;
+    
     //Meson spin density marix elements, note this is photoproduced
-    if(_sdmeMeson){
-      _sdmeMeson->SetElement(0,0,0,(_amp->SDME(0, 0, 0, s, t)));
-      _sdmeMeson->SetElement(0,1,0,(_amp->SDME(0, 1, 0, s, t)));
-      _sdmeMeson->SetElement(0,1,-1,(_amp->SDME(0, 1, -1, s, t)));
-      _sdmeMeson->SetElement(1,1,1,(_amp->SDME(1, 1, 1, s, t)));
-      _sdmeMeson->SetElement(1,0,0,(_amp->SDME(1, 0, 0, s, t)));
-      _sdmeMeson->SetElement(1,1,0,(_amp->SDME(1, 1, 0, s, t)));
-      _sdmeMeson->SetElement(1,1,-1,(_amp->SDME(1, 1, -1, s, t)));
-      _sdmeMeson->SetElement(2,1,0,(_amp->SDME(2, 1, 0, s, t)));
-      _sdmeMeson->SetElement(2,1,-1,(_amp->SDME(2, 1, -1, s, t)));
-      //_sdmeMeson->SetElement(3,1,0,(_amp->SDME(3, 1, 0, s, t)));
-      // _sdmeMeson->SetElement(3,1,-1,(_amp->SDME(3, 1, -1, s, t)));
+    if(get_s()dmeMeson){
+      get_s()dmeMeson->SetElement(0,0,0,(_amp->SDME(0, 0, 0, s, t)));
+      get_s()dmeMeson->SetElement(0,1,0,(_amp->SDME(0, 1, 0, s, t)));
+      get_s()dmeMeson->SetElement(0,1,-1,(_amp->SDME(0, 1, -1, s, t)));
+      get_s()dmeMeson->SetElement(1,1,1,(_amp->SDME(1, 1, 1, s, t)));
+      get_s()dmeMeson->SetElement(1,0,0,(_amp->SDME(1, 0, 0, s, t)));
+      get_s()dmeMeson->SetElement(1,1,0,(_amp->SDME(1, 1, 0, s, t)));
+      get_s()dmeMeson->SetElement(1,1,-1,(_amp->SDME(1, 1, -1, s, t)));
+      get_s()dmeMeson->SetElement(2,1,0,(_amp->SDME(2, 1, 0, s, t)));
+      get_s()dmeMeson->SetElement(2,1,-1,(_amp->SDME(2, 1, -1, s, t)));
+      //get_s()dmeMeson->SetElement(3,1,0,(_amp->SDME(3, 1, 0, s, t)));
+      // get_s()dmeMeson->SetElement(3,1,-1,(_amp->SDME(3, 1, -1, s, t)));
     }
 
     if(weight>1){
-      auto oldmax=_max;
-      _max=weight*oldmax;
-      std::cout<<"JpacModelst::Intensity changing max from  "<<oldmax<<" to "<<_max<<std::endl;
+      //don't change weight, likely due to large Q2 value....
+      
+      //auto oldmax=_max;
+      //_max=weight*oldmax;
+      std::cout<<"JpacModelst::Intensity weight too high but won't change max (prob Q2 too high) from  "<<_max<<" to "<<weight*_max<<std::endl;
     }
     
     //Correct for Q2&W weighting which has already been applied
-    weight/=_prodInfo->_sWeight;
+    weight/=_prodInfo->get_s()Weight;
     
     if(weight>1){
-      std::cout<<"JpacModelst::Intensity sWeight corrected weight too large "<<weight <<" "<<_prodInfo->_sWeight<<std::endl;
+      std::cout<<" s weight "<<_prodInfo->get_s()Weight<<" Q2 "<<-_photon->M2()<<" 2Mmu "<<2*get_t()arget->M()*_photon->E() <<" W "<<W<<" t "<<t<<" new weight "<<weight*_prodInfo->get_s()Weight<<" meson "<<_meson->Mass()<<std::endl;
+      std::cout<<"JpacModelst::Intensity sWeight corrected weight too large "<<weight <<" "<<_prodInfo->get_s()Weight<<" diff Xsect "<<_amp->differential_xsection(s,t)<<std::endl;
+																				    std::cout<<"flux "<<kine::FluxPhaseSpaceFactor(*_photon,*get_t()arget)<<" "<<4*kine::PDK(W,_meson->Mass(),_baryon->Mass())*W<<" "<< kine::PhaseSpaceFactorDt(W,P1,_meson->Mass(),_baryon->Mass())<<std::endl;				    
+      std::cout<<"Pi check "<<P1 <<" versus "<< kine::PDK(W,_photon->M(),get_t()arget->M())<<std::endl;
     }
+     
+ 
     return weight;
   }
-  
+  */
 }

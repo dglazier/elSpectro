@@ -64,7 +64,7 @@ namespace elSpectro{
   
 
      //set the lorentz vectors of the decay children
-    products[0]->SetXYZT( x_a, y_a, z_a, e_a);
+    // products[0]->SetXYZT( x_a, y_a, z_a, e_a);
     // products[1]->SetXYZT(-x_a,-y_a,-z_a, e_b);
 
     
@@ -79,7 +79,7 @@ namespace elSpectro{
     products[0]->SetP4(_a);
     products[1]->SetP4( parent - _a );
     
-    return _weight; //this is already a pure phase space distribuition
+    return _weight; 
   }
 
 

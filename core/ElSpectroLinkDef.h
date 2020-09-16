@@ -14,6 +14,7 @@
 
 #pragma link C++ class elSpectro::DecayModel+;
 #pragma link C++ class elSpectro::DecayModelQ2W+;
+#pragma link C++ class elSpectro::DecayModelst+;
 #pragma link C++ class elSpectro::JpacModelQ2W+;
 #pragma link C++ class elSpectro::JpacModelst+;
 #pragma link C++ class elSpectro::DecayGammaN_Test+;
@@ -32,6 +33,8 @@
 #pragma link C++ class elSpectro::DistTF1+;
 #pragma link C++ class elSpectro::DistTH1+;
 #pragma link C++ class elSpectro::DistTH2+;
+#pragma link C++ class elSpectro::DistFlatMass+;
+#pragma link C++ class elSpectro::DistFlatMassMaster+;
 #pragma link C++ class elSpectro::DistVirtPhotFlux_xy+;
 
 #pragma link C++ class elSpectro::Writer+;

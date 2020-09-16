@@ -78,44 +78,128 @@ namespace elSpectro{
       
       //std::cout<<"DecayModelQ2W::PostInit "<<std::endl;
       DecayModel::PostInit(_prodInfo);
-     // std::cout<<"DecayModelQ2W::PostInit done"<<std::endl;
-    
-    }
+      
+ 
+      FindExcitationSpectra();
+     
+
+  }
   
   ////////////////////////////////////////////////////////
   double  DecayModelQ2W::Intensity() const{
     // std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<ParentVector().M()<<std::endl;
-    if(CheckThreshold()==false){
+    /*if(CheckThreshold()==false){
       return 0.;
-    }
-    if(GetGammaN()->P4().M()<GetGammaN()->MinimumMassPossible()) return 0;
-    if(_gstarNuc->P4().M() < _threshold ) return 0.;
+      }*/
+
+    double W = getW();
+    //if(W <GetGammaN()->MinimumMassPossible()) return 0;
+    if(W  < _threshold ) return 0.;
  
-    //auto parent = ParentVector(); //e' + g*N
-    //  auto parent = _electron->P4() + _gstarNuc->P4();
-
-    //  std::cout<<"DecayModelQ2W::Intensity "<<parent<<" "<<_electron->P4()<<std::endl;
-    //note we are in the nuc rest frame, so parent momentum = e- beam momentum
-    // auto ebeam = parent;
-    //ebeam.SetE(escat::E_el(parent.P()));
-
+  
     //calculate virtual photon
     const auto& p4beam=*(_prodInfo->_ebeam);
     const auto& p4tar=*(_prodInfo->_target);
     const auto& p4scat=_electron->P4();
-    
-    //    _gamma = *(_prodInfo->_ebeam) - _electron->P4();
-    _gamma = p4beam-p4scat;
+
+    _gamma = p4beam-p4scat;//can now use getQ2
     
     //calculate photon polarisation
     auto epsilon = escat::virtualPhotonPolarisation(p4beam,p4tar,p4scat);
-    auto delta = 2*escat::M2_el()/(-_gamma.M2())*(1-epsilon);
+    auto delta = 2*escat::M2_el()/getQ2()*(1-epsilon);
     
     _photonPol.SetEpsilon(epsilon);
     _photonPol.SetDelta(delta);
+
+    //Get envelope weight from integrated cross section
+    double weight=_Wrealphoto_Dist->GetWeightFor( W  );
+
+    if(getQ2() > 2*p4tar.M()*_gamma.E()){
+      std::cout<<"Q2 above max how ? "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<std::endl;
+      exit(0);
+    }
     
-    return 1.;
+    auto cmBoost=_gstarNuc->P4().BoostToCM();
+    auto p1cm=boost(_gamma,cmBoost);
+ 
+    //  std::cout<<" Q2 DEPENDENECE "<<PhaseSpaceFactorToQ2eq0(W,p4tar.M() )<<"      "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<"             PDKs     "<< kine::PDK(W, -getQ2(),p4tar.M())<<" "<< kine::PDK(W, getQ2(),p4tar.M())<<" "<< kine::PDK(W, 0 ,p4tar.M())<<" "<< p1cm.P()<<std::endl;
+
+
+    _prodInfo->_sWeight=weight; //might be used in s and t
+
+    //now add Q2 depedence to get weighted here
+    
+    //Q2 dependence of phase space needed to effectively multiply st max value
+    //Here the Q2 dependence would multiply weight value and max ,thus cancelling
+    //i.e do not do weight*=PhaseSpaceFactorToQ2eq0(W,p4tar.M() );
+    _prodInfo->_sWeight*=PhaseSpaceFactorToQ2eq0(W,p4tar.M() );
+
+    if(weight>1){
+      std::cout<<" Q2 DEPENDENECE "<<PhaseSpaceFactorToQ2eq0(W,p4tar.M() )<<"      "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<"             PDKs     "<< kine::PDK(W, -getQ2(),p4tar.M())<<" "<< kine::PDK(W, getQ2(),p4tar.M())<<" "<< kine::PDK(W, 0 ,p4tar.M())<<" "<< p1cm.P()<<std::endl;
+    }
+    
+    //Q2 dependence of cross section
+    weight*=Q2H1Rho();
+  
+    return weight;
   
   }
+
+  void DecayModelQ2W::FindExcitationSpectra(){
+
+    //Make excitation spectra envelope which should be greater than the cross section
+    //for all values of meson mass, to do this take maximum from values at
+    //meson threshold and pdg mass values
+    //note the point is phase space and therefore xsection changes with mass
+    double maxW = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
+
+    std::cout<<"DecayModelQ2W::PostInit generating total cross section, may take some time... "<<std::endl;
+    auto gNprods=dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->Products();
+      
+    //auto baryon = gNprods[1];
+    auto meson=gNprods[0];
+ 
+    DecayModelst* mesonBaryon = nullptr;
+    TH1D histlow("Wdistlow","Wdistlow",50,0,maxW);
+    TH1D histpeak("Wdisthigh","Wdisthigh",50,0,maxW);
+    double minMesonMass=-1;
+    if( ( mesonBaryon=dynamic_cast<DecayModelst*>(GetGammaN()->Model())) != nullptr){
+      //check for low mass meson limits
+      if(dynamic_cast<DecayingParticle*>(meson)){ //meson
+	dynamic_cast<DecayingParticle*>(meson)->TakeMinimumMass();//to get threshold behaviour
+	minMesonMass=meson->Mass();
+	mesonBaryon->HistIntegratedXSection(histlow);
+	//back to PDg mass if exists
+	if(meson->PdgMass()>minMesonMass)
+	  dynamic_cast<DecayingParticle*>(meson)->TakePdgMass();
+
+      }
+      //now for PDG mass
+      //only needs to be done if meson does not decay
+      //or pdg mass is different from minMesonMass (possible if !=0)
+      if(meson->PdgMass()!=minMesonMass)
+      	mesonBaryon->HistIntegratedXSection(histpeak);
+   
+     auto hist = HistFromLargestBinContents(histlow,histpeak);
+     
+     _Wrealphoto_Dist.reset( new DistTH1(hist) );
+    }
+    else{
+      std::cerr<<"DecayModelQ2W::FindExcitationSpectra()Need a DecayModelst"<<std::endl;
+      exit(0);
+    }
+  }
+    
+  
+   TH1D HistFromLargestBinContents(const TH1D& h1,const TH1D& h2){
+      auto hist= TH1D{h1};
+      for(int ibin=1;ibin<=hist.GetNbinsX();ibin++){
+	auto val = h1.GetBinContent(ibin)>h2.GetBinContent(ibin) ? h1.GetBinContent(ibin):h2.GetBinContent(ibin);
+	hist.SetBinContent(ibin,val);
+	std::cout<<"HistFromLargestBins "<<hist.GetBinCenter(ibin)<<" "<<val<<std::endl;
+	
+      }
+      return hist;
+   }
   
 }

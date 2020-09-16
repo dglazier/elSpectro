@@ -35,7 +35,7 @@ namespace elSpectro{
   protected :
 
     double W() const noexcept{return _W;}
-    void RotateZaxisToCMDirection(const LorentzVector& parent);
+    // void RotateZaxisToCMDirection(const LorentzVector& parent);
 
   private:
 

@@ -42,7 +42,7 @@ namespace elSpectro{
     
     virtual DecayStatus GenerateProducts();
     
-    virtual const CurrentEventInfo* EventInfo() const {return nullptr;}
+    // virtual const CurrentEventInfo* EventInfo() const {return nullptr;}
 
     double MinimumMassPossible() const  noexcept override {
       
@@ -57,7 +57,12 @@ namespace elSpectro{
       //std::cout<<"min masss "<<Pdg()<<" "<<minmass<<std::endl;
       return minmass;
     };
-
+    void TakeMinimumMass(){
+      SetP4M( MinimumMassPossible() );
+    }
+    void TakePdgMass(){
+      SetP4M( PdgMass() );
+    }
     void Print() const override;
 
 

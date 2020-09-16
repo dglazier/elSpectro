@@ -17,7 +17,7 @@ namespace elSpectro {
 
     double FindMaxOfProbabilityDistribution(jpacPhoto::amplitude* amp,double Wmax);
 
-    
+    TH1D HistFromLargestBins(const TH1D& h1,const TH1D& h2);
   }
 
 }

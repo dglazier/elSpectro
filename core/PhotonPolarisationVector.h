@@ -55,7 +55,10 @@ namespace elSpectro{
     void Calc(){SetEpsilonDeltaPhi(_epsilon,_delta,_phi);}
     
     double& operator[](int i)  {return _elements[i];}
-    
+
+    double Epsilon()const noexcept{return _epsilon;}
+    double Delta()const noexcept{return _delta;}
+    double Phi()const noexcept{return _phi;}
   private:
 
     std::array<double,8> _elements={1,0,0,0,0,0,0,0};

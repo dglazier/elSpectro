@@ -47,9 +47,7 @@ namespace elSpectro{
 
   protected:
 
-    void DetermineAllMasses(){
-      DetermineProductMasses();
-    }
+   
     
   private:
     ProductionProcess()=default;

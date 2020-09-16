@@ -8,7 +8,7 @@
 
 #include "Particle.h"
 #include "DecayModel.h"
-#include <Math/RotationY.h>
+#include <Math/RotationZYX.h>
 #include <Math/RotationZ.h>
 #include <vector>
 
@@ -44,13 +44,14 @@ namespace elSpectro{
   
       if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
 	_cachedParent = parent;
-	_rotateToZaxis.SetAngle(_cachedParent.Theta());
-      }
+	//	_rotateToZaxis.SetAngle(_cachedParent.Theta());
+	_rotateToZaxis.SetComponents(-_cachedParent.Phi(),-_cachedParent.Theta(),0);
+        }
       
-      //Apply random phi angle now z-axis is in correct direction
+      //Apply random phi angle when z-axis is in correct direction
       _rotateAroundZaxis.SetAngle(RandomPhi());
       //boost from parent rest frame 
-      auto boostFromParent=-parent.BoostToCM();
+      auto boostFromParent=-_cachedParent.BoostToCM();
 
       for(auto& child : products){
 	auto p4=child->P4();
@@ -65,25 +66,29 @@ namespace elSpectro{
   
       if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
 	_cachedParent = parent;
-	_rotateToZaxis.SetAngle(_cachedParent.Theta());
+	_rotateToZaxis.SetComponents(-_cachedParent.Phi(),-_cachedParent.Theta(),0);
       }
       
-      //Apply random phi angle now z-axis is in correct direction
+      //Apply random phi angle when z-axis is in correct direction
       _rotateAroundZaxis.SetAngle(RandomPhi());
+ 
       //boost from parent rest frame 
-      auto boostFromParent=-parent.BoostToCM();
+      auto boostFromParent=-_cachedParent.BoostToCM();
       
       child=_rotateToZaxis * child;
       child=_rotateAroundZaxis * child; 
       child=boost(child,boostFromParent);//ROOT::Math::VectorUtil::boost;
       
+      auto check = _cachedParent;
+      check=_rotateToZaxis*check;
    }
    virtual void RotateToParent(const LorentzVector& parent, LorentzVector& child){
   
       if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
 	_cachedParent = parent;
-	_rotateToZaxis.SetAngle(_cachedParent.Theta());
-      }
+	//	_rotateToZaxis.SetAngle(_cachedParent.Theta());
+	_rotateToZaxis.SetComponents(-_cachedParent.Phi(),-_cachedParent.Theta(),0);
+        }
       
       //Apply random phi angle now z-axis is in correct direction
       _rotateAroundZaxis.SetAngle(RandomPhi());
@@ -98,7 +103,7 @@ namespace elSpectro{
   private:
     
     LorentzVector _cachedParent;
-    ROOT::Math::RotationY _rotateToZaxis; //save memory allocation
+    ROOT::Math::RotationZYX _rotateToZaxis; //save memory allocation
     ROOT::Math::RotationZ _rotateAroundZaxis;//save memory allocation
  
     

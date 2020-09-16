@@ -22,6 +22,7 @@ namespace elSpectro{
     PhaseSpaceDecay( particle_ptrs , const std::vector<int> pdgs );
 
     // Each model must define its intensity
+    // Phase space intensity is handled by MassPhaseSpace
     double Intensity() const final{
       if(CheckThreshold())
 	return 1.;
@@ -29,14 +30,17 @@ namespace elSpectro{
 	return 0.;
     }
     bool RegenerateOnFail() const  noexcept final {return false;}
-
+    void SetParent(DecayingParticle* pa);
     
   private:
- 
-    mutable CurrentEventInfo _myInfo;//!
+    
+    void nBodyDecayer(DecayingParticle* parent,  const particle_ptrs stable,  const decaying_ptrs unstable );
 
+ 
     ClassDef(elSpectro::PhaseSpaceDecay,1); //class PhaseSpaceDecay
     
   };//class PhaseSpaceDecay
+
+
 
 }//namespace elSpectro

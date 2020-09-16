@@ -73,10 +73,12 @@ namespace elSpectro{
  
   inline ProductionProcess*  mesonex(double ep,DecayModelQ2W *totalXsec=nullptr,int ionpdg=2212){
   
-     if(totalXsec!=nullptr)
-      generator().Reaction(new ElectronScattering(ep,0,0,TMath::Pi(),totalXsec ));
+    if(totalXsec!=nullptr){
+      model(totalXsec); //register ownership of model with manager
+      generator().Reaction(new ElectronScattering(ep,0,0,0, totalXsec ));
+    }
     else	
-      generator().Reaction(new ElectronScattering(ep,0,0,TMath::Pi()));
+      generator().Reaction(new ElectronScattering(ep,0,0,0));
 	
     return  generator().Reaction();
   }

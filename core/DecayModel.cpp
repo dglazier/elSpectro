@@ -27,7 +27,23 @@ namespace elSpectro{
     }
 	    
   }
+  void  DecayModel::ResetProducts(particle_ptrs ps){
+    _products.clear();
+    _unstables.clear();
+    _stables.clear();
+       //store list of unstable particles which decay
+    for(auto prod: ps){
+      _products.push_back(prod);
+      auto dp=dynamic_cast<DecayingParticle*>(prod);
+      if(dp!=nullptr)
+	_unstables.push_back(dp);
+      else
+	_stables.push_back(prod);
+    }
 
+  }
+
+  
   void DecayModel::PostInit(ReactionInfo* info){
     if(_unstables.empty()) return;
     for(auto& p:_unstables){
@@ -55,33 +71,37 @@ namespace elSpectro{
  
   }
   double DecayModel::PhaseSpaceWeightSq(double W){
-    // std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq "<<MinimumMassPossible()<<" "<<W<<std::endl;
+    //if(Parent()->Pdg()==-2211)std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq start "<<MinimumMassPossible()<<" "<<W<<std::endl;
     //Note use weight squared to reduce sqrt calls
 
+    if(_products.size()!=2){
+      std::cerr<<"DecayModel::PhaseSpaceWeightSq must be 2-body decay"<<std::endl;
+      exit(0);
+    }
     double result=1;
     
     double TCM=W;
+   
     for(auto* p:_unstables){
       //This should be the only call to DetermineDynamicMass in the code.
+      //Unless somewhere else uses LockMass in which case
+      //this call to DetermineDynamicMass will not change its value
       p->DetermineDynamicMass();
       TCM-=p->Mass();
-      if(TCM<0)  return 0;//below threshold, start again
+      if(TCM<0){  return 0;}//below threshold, start again
     }
-    for(auto* p:_stables)
-      TCM-=p->Mass();
+    //std::cout<<std::endl;
+      for(auto* p:_stables){
+	TCM-=p->Mass();
+      }
+
+      if(TCM<0)  return 0;//below threshold, start again
+      result  *= kine::PDK2(W,_products[0]->Mass(),_products[1]->Mass());
     
-    // std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq "<<TCM<<std::endl;
-     
-    if(TCM<0)  return 0;//below threshold, start again
-    
-    result  *= kine::PDK2(W,_products[0]->Mass(),_products[1]->Mass());
-    // std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq result "<<result<<std::endl;
-   
     for(auto* p:_unstables)
       result*=p->PhaseSpaceWeightSq();
     
-    //std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq result "<<result<<std::endl;
-    return result;
+   return result;
     
   }
   

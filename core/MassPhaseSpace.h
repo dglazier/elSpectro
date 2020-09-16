@@ -16,6 +16,7 @@ namespace elSpectro{
 
   class Manager;
   
+ 
   class MassPhaseSpace{
 
   public:
@@ -27,7 +28,7 @@ namespace elSpectro{
 
     double PhaseSpaceWeight(double parentM) const noexcept{
       double result=TMath::Sqrt(_model->PhaseSpaceWeightSq(parentM));
-       return result;
+      return result;
     }
 
     void Find(double parentM,const  DecayModel* amodel){
@@ -41,7 +42,7 @@ namespace elSpectro{
 
       //Note PhaseSpaceWeightMaxFromEquDist does not quite get to max, so increase by 10% to be safe....will give warning if event weight is above this....
       double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses)*1.1;
-    
+
       //accept or reject mass combinations until got one
       //as W dependence accounted for elsewere
       //PhaseSpaceWeight will try alternative masses
@@ -49,13 +50,13 @@ namespace elSpectro{
       while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max ){
 	//reject this combintation
 	//	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
-     }
+      }
       if(wee>_sampledMax){
 	_sampledMax = wee;
 	if(_sampledMax>max )
 	  std::cerr<<"MassPhaseSpace weight > max "<<std::endl;
       }
-    
+      
     }
     bool AcceptPhaseSpace(double parentM){
       if(_model==nullptr) {
@@ -83,7 +84,10 @@ namespace elSpectro{
     DecayModel* _model=nullptr;
     std::vector<double> _masses;
     double _sampledMax = 0;
+
+    
     ClassDef(elSpectro::MassPhaseSpace,1); //class MassPhaseSpace
   };
+
 
 }//namespace elSpectro

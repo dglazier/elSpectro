@@ -41,14 +41,14 @@ namespace elSpectro{
     
     DecayStatus  GenerateProducts( ) override;
 
-    // const CurrentEventInfo* EventInfo() const override{ return &_info; }
-
+ 
     void InitGen() override;
 
     double W2Max()const noexcept{
       return  sqrt(_massIon*_massIon + 2 * (_nuclRestElec.E() -escat::M_el())
 		   *(_massIon - escat::M_el()));
     }
+    
   private:
     
     ElectronScattering()=default;

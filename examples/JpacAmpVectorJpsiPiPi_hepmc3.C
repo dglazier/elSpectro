@@ -49,7 +49,8 @@ TH1F hRecoilPt("RecoilPt","; p_{T} (GeV)",200,0,5.0);
 
 TH1F  hVectorCosTh("CosThGJ","cos(#theta_{GJ})",100,-1,1);
 TH1F  hVectorPhi("PhiGJ","#phi_{GJ}",100,-180,180);
-TH1F  hScatPhi("Phi_{Y}","#phi_{Y}",100,-180,180);
+TH1F  hScatPhi("Phi_Y","#phi_{Y}",100,-180,180);
+TH2F  hVectorvScatPhi("PhiGJPhi_Y","#phi_{GJ} v #phi_{Y}",50,-180,180,50,-180,180);
 
 void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEvents = 5e4) {
 
@@ -101,7 +102,7 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
 
   // Sum individual contributions together incoherently
   // amplitude_sum sum(ptr, {&Y, &Y2}, "Sum");
-  amplitude_sum sum(ptr, {&Y2}, "Sum");
+  amplitude_sum sum(ptr, {&Y}, "Sum");
  
   // ---------------------------------------------------------------------------
   // elSpectro
@@ -118,11 +119,16 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
   mass_distribution(9995,new DistTF1{TF1("hh","TMath::BreitWigner(x,4.22,0.05)",3.9,4.5)});
   //auto v=particle(9995,model(new PhaseSpaceDecay{{jpsi,rho},{}}));
   auto v=particle(9995,model(new VectorSDMEDecay{{jpsi,rho},{}}));
-  // 
+  v->SetPdgMass(4.22);
+
+  
   //create eic electroproduction of X + proton
   auto pr=particle(2212);
-  auto jpac = new JpacModelQ2W{&sum, {pr,v},{}, 0, 1, 0.5};
-  auto production=eic( ebeamE, pbeamE, jpac );
+  //  auto jpac = new JpacModelQ2W{&sum, {pr,v},{}, 0., 1, 0.5};
+   
+  auto jpac = new JpacModelst{&sum, {pr,v},{} };
+  auto photoprod = new DecayModelQ2W{0,jpac,new TwoBody_stu{0., 1, 0.5,0,0}};
+  auto production=eic( ebeamE, pbeamE, photoprod );
 
   //just produce events with st given distribution and no jpac amplitude
   //auto jpac = new DecayModelQ2W{0, new PhaseSpaceDecay( {v},{2212}),new TwoBody_stu{0,1, 0.5 ,0,0}};
@@ -136,8 +142,8 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
   auto posJ = static_cast<DecayingParticle*>(jpsi)->Model()->Products()[0];
   auto eleJ = static_cast<DecayingParticle*>(jpsi)->Model()->Products()[1];
   
-  auto electron = jpac->GetScatteredElectron();
-  auto proton = jpac->GetDecayBaryon();
+  auto electron = photoprod->GetScatteredElectron();
+  auto proton = photoprod->GetDecayBaryon();
 
   // ---------------------------------------------------------------------------
   // Initialize HepMC3
@@ -160,7 +166,7 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
   for(int i=0;i<nEvents;i++){
     if(i%100==0) std::cout<<"event number "<<i<<std::endl;
     nextEvent();
-
+    //continue;
     //fill diagnostic histograms
     auto photon = elbeam - electron->P4();
     double Q2 = -photon.M2();
@@ -193,9 +199,9 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
     //SDME related angles
     MomentumVector elScatAngles;
     auto gStarN=(photon+prbeam);
-    //   kine::electroCMDecay(&gStarN,&elbeam,&photon,&jpsi_rho,&elScatAngles);
     kine::electroCMDecay(&gStarN,&elbeam,&photon,&jpsi_rho,&elScatAngles);
     hScatPhi.Fill(elScatAngles.Phi()*TMath::RadToDeg());
+    // cout<<" recon phi "<< elScatAngles.Phi()<<endl;
     hYTh.Fill(jpsi_rho.Theta()*TMath::RadToDeg());
     hgTh.Fill(photon.Theta()*TMath::RadToDeg());
     MomentumVector vectorAngles;
@@ -203,6 +209,7 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
     kine::mesonDecayGJ(&photon,&jpsi_rho,&(proton->P4()),&jpsiP4,&vectorAngles);
     hVectorCosTh.Fill(TMath::Cos(vectorAngles.Theta()));
     hVectorPhi.Fill(vectorAngles.Phi()*TMath::RadToDeg());
+    hVectorvScatPhi.Fill(elScatAngles.Phi()*TMath::RadToDeg(),vectorAngles.Phi()*TMath::RadToDeg());
     //std::cout<<"***************************************** in script vector  th = "<<vectorAngles.Theta()<<" "<<vectorAngles.Phi()<<std::endl<<std::endl<<std::endl;
 
     
@@ -215,7 +222,7 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
   TH1D *hWdist = (TH1D*)gDirectory->FindObject("Wdist");
   TH1D *hGenWdist = (TH1D*)gDirectory->FindObject("genWdist");
 
-  TFile *fout = TFile::Open(Form("out/vectorJpsiPiPi_elspectro_%d_%d_diagnostic2.root",(int)ebeamE,(int)pbeamE), "recreate");
+  TFile *fout = TFile::Open(Form("out/vectorJpsiPiPi_elspectro_%d_%d_diagnosticY.root",(int)ebeamE,(int)pbeamE), "recreate");
   // total ep cross section inputs
   if(hWdist)hWdist->Write();
   if(hGenWdist)hGenWdist->Write();
@@ -240,6 +247,7 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
   hScatPhi.Write();
   hVectorPhi.Write();
   hVectorCosTh.Write();
+  hVectorvScatPhi.Write();
   fout->Close();
  
   // compute total ep cross section from internally stored histograms

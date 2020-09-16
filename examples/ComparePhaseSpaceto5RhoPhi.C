@@ -1,3 +1,5 @@
+#include "FunctionsForKinematics.h"
+
 void ComparePhaseSpaceto5RhoPhi() {
 
   
@@ -6,16 +8,14 @@ void ComparePhaseSpaceto5RhoPhi() {
   TLorentzVector W = beam + target;
 
  
-   //(Momentum, Energy units are Gev/C, GeV)
+  
   Double_t masses[5] = { 0.938, 0.139, 0.139,0.494,0.494} ;
-  
   TGenPhaseSpace event;
-  
   event.SetDecay(W, 5, masses);
 
    TH1F* h1rho = new TH1F("hrho","hrho", 100,0,1.5);
    TH1F* h1phi = new TH1F("hphi","hphi", 100,0.9,1.5);
-   TH1F* h1X = new TH1F("hX","hrho", 100,0,5);
+   TH1F* h1X = new TH1F("hX","hrho", 100,0,50);
   
    
    auto bwRho = TF1("hh","TMath::BreitWigner(x,0.78,0.1)",0.3,3.5);
@@ -34,19 +34,20 @@ void ComparePhaseSpaceto5RhoPhi() {
    TLorentzVector *pPim    = event.GetDecay(2);
    TLorentzVector *pKp    = event.GetDecay(3);
    TLorentzVector *pKm    = event.GetDecay(4);
-   
+ 
    for (Int_t n=0;;n++) {
    
      Double_t weight = event.Generate();
-  
+     
      TLorentzVector pRho = *pPip + *pPim;
      TLorentzVector pPhi = *pKp + *pKm;
-
+     
+   
      if(weight > gRandom->Uniform() ){//phase space weight
-
+      
        if(bwRho.Eval(pRho.M()) > bwmaxRho*gRandom->Uniform() && pRho.M()>0.2){ //weight with rho
 	 if(bwPhi.Eval(pPhi.M()) > bwmaxPhi*gRandom->Uniform() && pPhi.M()>1){ //weight with phi
-	   
+  
 	   h1rho->Fill(pRho.M());
 	   h1phi->Fill(pPhi.M());
 	   h1X->Fill((pPhi+pRho).M());
@@ -56,7 +57,6 @@ void ComparePhaseSpaceto5RhoPhi() {
        }
      }
    }
-   
    gBenchmark->Stop("tgenphasespace");
    gBenchmark->Print("tgenphasespace");
    TCanvas* can =new TCanvas();
@@ -76,7 +76,7 @@ void ComparePhaseSpaceto5RhoPhi() {
    h1rho_el->SetLineColor(2);
    TH1F* h1phi_el = new TH1F("hphi_el","hphi", 100,0.9,1.5);
    h1phi_el->SetLineColor(2);
-   TH1F* h1X_el = new TH1F("hX_el","hX", 100,0,5);
+   TH1F* h1X_el = new TH1F("hX_el","hX", 100,0,50);
    h1X_el->SetLineColor(2);
  
    mass_distribution(113,new DistTF1{TF1("Mrho","TMath::BreitWigner(x,0.78,0.1)",0.2,3.5)});
@@ -85,10 +85,9 @@ void ComparePhaseSpaceto5RhoPhi() {
    mass_distribution(333,new DistTF1{TF1("Mphi","TMath::BreitWigner(x,1.19,0.05)",0.9,1.8)});
    auto phi=dynamic_cast<DecayingParticle*>( particle(333,model(new PhaseSpaceDecay{{},{321,-321}})));
 
-   mass_distribution(9995,new DistTF1{TF1("MX","1",1.2,5)});//phase space mass
+   mass_distribution(9995,new DistTF1{TF1("MX","1",1.2,14)});//phase space mass
    auto X=dynamic_cast<DecayingParticle*>( particle(9995,model(new PhaseSpaceDecay{{rho,phi},{}})));
 
-   
    auto pX=dynamic_cast<DecayingParticle*>( particle(-2211,model(new PhaseSpaceDecay{{X},{2212}})));
    generator().SetModelForMassPhaseSpace(pX->Model());
    
@@ -105,14 +104,12 @@ void ComparePhaseSpaceto5RhoPhi() {
 
    
    gBenchmark->Start("elspectro");
-   int extra=100;
+   int extra=1000;
  
    for (Int_t n=0;n<Nevents*extra;n++) {
      pX->GenerateProducts();
 
-     // auto p4rho =pionp->P4()+pionm->P4();
      h1rho_el->Fill(rho->P4().M());
-     // auto p4phi =pionp->P4()+pionm->P4();
      h1phi_el->Fill(phi->P4().M());
      h1X_el->Fill(X->P4().M());
       

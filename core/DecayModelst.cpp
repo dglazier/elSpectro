@@ -1,0 +1,247 @@
+#include "DecayModelst.h"
+#include "FunctionsForGenvector.h"
+#include <TDatabasePDG.h>
+#include <Math/GSLIntegrator.h>
+#include <Math/IntegrationTypes.h>
+#include <Math/Functor.h>
+#include <Math/Minimizer.h>
+#include <Math/Factory.h>
+#include <TRandom3.h>
+
+namespace elSpectro{
+  ///////////////////////////////////////////////////////
+  ///constructor includes subseqent decay of Ngamma* system
+  DecayModelst::DecayModelst(particle_ptrs parts, const std::vector<int> pdgs) :
+    DecayModel{ parts, pdgs }
+  {
+    _name={"DecayModelst"};
+
+    //need to find meson and baryon
+    if(TDatabasePDG::Instance()->GetParticle(Products()[0]->Pdg())->ParticleClass()==TString("Baryon") ){
+      _baryon=Products()[0];
+      _meson=Products()[1]; 
+    }
+    else {
+      _baryon=Products()[1];
+      _meson=Products()[0];
+    }
+    
+  }
+  /////////////////////////////////////////////////////////////////
+  void DecayModelst::PostInit(ReactionInfo* info){
+
+    if( dynamic_cast<DecayingParticle*>(_meson) ){
+      if( dynamic_cast<DecayingParticle*>(_meson)->Model()->CanUseSDME() ){
+	_sdmeMeson = _meson->InitSDME(1,4);
+	//could have electroproduced baryon spin 3/2
+	//_sdmeBaryon = _baryon->InitSDME(3,9);
+      }
+    }
+    
+    DecayModel::PostInit(info);
+    
+    _prodInfo= dynamic_cast<ReactionElectroProd*> (info); //I need Reaction info
+
+    _photon = _prodInfo->_photon;
+    _target = _prodInfo->_target;
+    _ebeam = _prodInfo->_ebeam;
+    _photonPol = _prodInfo->_photonPol;
+    
+     double maxW = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
+
+     _max = FindMaxOfIntensity()*1.2; //add 20% for Q2,meson mass effects etc.
+
+     std::cout<<"DecayModelst::PostInit max value "<<_max<<" "<<_meson<<" "<<_meson->Pdg()<<" "<<_sdmeMeson<<std::endl;
+  }
+  
+  //////////////////////////////////////////////////////////////////
+  double DecayModelst::Intensity() const
+  {
+
+    _W = Parent()->P4().M();
+    _s=_W*_W;
+    _t = (_meson->P4()-*_photon).M2();//_amp->kinematics->t_man(s,cmMeson.Theta());
+
+    //now we can define production/polarisation plane
+    MomentumVector decayAngles;
+    kine::electroCMDecay(&Parent()->P4(),_ebeam,_photon,_meson->P4ptr(),&decayAngles);
+    _photonPol->SetPhi(decayAngles.Phi());
+
+   //weight==differential cross section //See Seyboth and Wolf eqn (70)
+    double weight = DifferentialXSect(); 
+    
+    CalcMesonSDMEs();
+    CalcBaryonSDMEs();
+ 
+    weight/=_max; //normalise range 0-1
+    
+
+    if(weight>1){
+      //don't change weight, likely due to large Q2 value....
+      
+      //auto oldmax=_max;
+      //_max=weight*oldmax;
+      std::cout<<"DecayModelst::Intensity weight too high but won't change max (prob Q2 too high) from  "<<_max<<" to "<<weight*_max<<std::endl;
+    }
+    
+    //Correct for Q2&W weighting which has already been applied
+    weight/=_prodInfo->_sWeight;
+    
+    if(weight>1){
+      std::cout<<" s weight "<<_prodInfo->_sWeight<<" Q2 "<<-_photon->M2()<<" 2Mmu "<<2*_target->M()*_photon->E() <<" W "<<_W<<" t "<<_t<<" new weight "<<weight*_prodInfo->_sWeight<<" meson "<<_meson->Mass()<<std::endl;
+      std::cout<<"DecayModelst::Intensity sWeight corrected weight too large "<<weight <<" "<<_prodInfo->_sWeight<<"  max "<<_max<<" val "<< weight*_prodInfo->_sWeight*_max<<std::endl;
+      //std::cout<<"flux "<<kine::FluxPhaseSpaceFactor(*_photon,*_target)<<" "<<4*kine::PDK(W,_meson->Mass(),_baryon->Mass())*W<<" "<< kine::PhaseSpaceFactorDt(W,P1,_meson->Mass(),_baryon->Mass())<<std::endl;				    
+      //std::cout<<"Pi check "<<P1 <<" versus "<< kine::PDK(W,_photon->M(),_target->M())<<std::endl;
+    }
+     
+ 
+    return weight;
+    
+  }
+  
+  double DecayModelst::FindMaxOfIntensity(){
+
+    
+    auto M1 = 0;//assum real photon for max calculation
+    auto M2 = _target->M();
+    auto M3 = _meson->Mass(); //should be pdg value here
+    auto M4 = _baryon->Mass();
+    // auto Wmin = M3+M4;
+    auto Wmin = Parent()->MinimumMassPossible();
+  
+    auto Wmax = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
+   
+    auto Fmax = [&M1,&M2,&M3,&M4,&Wmin,this](const double *x)
+	{
+	  _s = x[0]*x[0];
+	  _W=x[0];
+	  if( _W < Wmin ) return 0.;
+	  if( x[1] > kine::t0(_W,M1,M2,M3,M4) ) return 0.;
+	  if( x[1]< kine::tmax(_W,M1,M2,M3,M4) ) return 0.;
+	  _t=x[1];
+	  double val = DifferentialXSect();
+	  
+	  if( TMath::IsNaN(val) ) return 0.;
+	  return -val; //using a minimiser!
+	};
+      
+      //First perform grid search for intital values
+      double Wrange=Wmax-Wmin;
+      double tmax=kine::tmax(Wmax,M1,M2,M3,M4);
+       
+      double gridMin=0;
+      double gridW=0;
+      double gridt=0;
+      double WtVals[2];
+      int Npoints=50;
+      for(int iW=1;iW<Npoints;iW++){
+	WtVals[0]=Wmin+iW*Wrange/Npoints;
+	double tming=kine::t0(WtVals[0],M1,M2,M3,M4);
+	double tmaxg=kine::tmax(WtVals[0],M1,M2,M3,M4);
+	double trange= tming-tmaxg;
+
+	for(int it=0;it<Npoints;it++){
+	  WtVals[1]=tming-it*trange/Npoints;
+	  auto val = Fmax(WtVals);
+	  if(val<gridMin) {
+	    gridMin=val;
+	    gridW=WtVals[0];
+	    gridt=WtVals[1];
+	  }
+	}
+      }
+
+      std::cout<<"FindMaxOfProbabilityDistribution grid search max= "<<-gridMin<<" at W = "<<gridW<<" and t = "<<gridt<<std::endl;
+      ROOT::Math::Minimizer* minimum =
+	ROOT::Math::Factory::CreateMinimizer("Minuit2", "");
+      // set tolerance , etc...
+      minimum->SetMaxFunctionCalls(1000000); // for Minuit/Minuit2
+      minimum->SetMaxIterations(10000);  // for GSL
+      minimum->SetTolerance(0.0001);
+      minimum->SetPrintLevel(1);
+      
+      // create function wrapper for minimizer
+      // a IMultiGenFunction type
+      ROOT::Math::Functor wrapf(Fmax,2);
+
+      //variable = W, variable 1 = t
+      double step[2] = {0.1,0.1};
+      // starting point
+      
+      double variable[2] = { gridW,gridt};
+      
+      minimum->SetFunction(wrapf);
+      
+      // Set the free variables to be minimized !
+      minimum->SetVariable(0,"W",variable[0], step[0]);
+      minimum->SetVariable(1,"t",variable[1], step[1]);
+      minimum->SetVariableLimits(0,Wmin,Wmax);
+      minimum->SetVariableLimits(1,tmax,0);
+      
+      // do the minimization
+      minimum->Minimize();
+     const double *xs = minimum->X();
+ 
+      auto minVal = minimum->MinValue();
+      auto minW= xs[0];
+      auto mint= xs[1];
+   
+      std::cout << "Maximum : Probabiltiy Dist at ( W=" << minW << " , t = "  << mint << "): "<< -minimum->MinValue()  << std::endl;
+      return -minVal ;
+  }
+
+  void DecayModelst::HistIntegratedXSection(TH1D& hist){
+
+ 
+    auto F = [this](double t)
+      {
+	//_W=W;
+	_s=_W*_W;
+	_t=t;
+	return DifferentialXSect();
+      };
+    
+      ROOT::Math::GSLIntegrator ig(ROOT::Math::IntegrationOneDim::kADAPTIVE,
+				   ROOT::Math::Integration::kGAUSS61);
+      ROOT::Math::Functor1D wF(F);
+      ig.SetFunction(wF);
+
+      
+      auto M1 = 0;//assum real photon for calculation
+      auto M2 = _target->M();
+      auto M3 = _meson->Mass(); //should be pdg value here
+      auto M4 = _baryon->Mass();
+      auto Wmin = M3+M4;
+
+      for(int ih=1;ih<=hist.GetNbinsX();ih++){
+	_W=hist.GetXaxis()->GetBinCenter(ih);
+	_W=_W+hist.GetXaxis()->GetBinWidth(ih); //take right limit so do not miss threshold
+	//	std::cout<<"Going to integrate from t "<<kine::tmax(_W,M1,M2,M3,M4)<<" "<<kine::t0(_W,M1,M2,M3,M4)<<" at W "<<" and "<<_W<<std::endl;
+	if( _W < Wmin )
+	  hist.SetBinContent(ih, 0);
+	else
+	  hist.SetBinContent(ih, ig.Integral(kine::tmax(_W,M1,M2,M3,M4),kine::t0(_W,M1,M2,M3,M4)) );
+	
+	if(ih%10==0)std::cout<<(hist.GetNbinsX() - ih)/10<<" "<<std::endl;
+      }
+      std::cout<<std::endl;
+      //done
+  }
+  
+}
+    /* perhaps this can go in script for fixed values of sdmes
+    //Meson spin density marix elements, note this is photoproduced
+    if(_sdmeMeson){
+      _sdmeMeson->SetElement(0,0,0,);
+      _sdmeMeson->SetElement(0,1,0,);
+      _sdmeMeson->SetElement(0,1,-1,);
+      _sdmeMeson->SetElement(1,1,1,);
+      _sdmeMeson->SetElement(1,0,0,);
+      _sdmeMeson->SetElement(1,1,0,);
+      _sdmeMeson->SetElement(1,1,-1,);
+      _sdmeMeson->SetElement(2,1,0,);
+      _sdmeMeson->SetElement(2,1,-1,);
+      //_sdmeMeson->SetElement(3,1,0,(_amp->SDME(3, 1, 0, s, t)));
+      // _sdmeMeson->SetElement(3,1,-1,(_amp->SDME(3, 1, -1, s, t)));
+    }
+    */

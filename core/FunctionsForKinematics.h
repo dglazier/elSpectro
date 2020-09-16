@@ -82,7 +82,22 @@ namespace elSpectro {
       
       return wt;
     } 
-    
+    inline double PhaseSpaceFactorDt(double W,double P1,double M3,double M4){
+      //this version takes initial momentum P1, allows high Q2
+      //if xsect is dt, need change of variables, cosTh -> t and dt/dcosTh = 2*p1*p3 where p1 and p3 in CM frame
+      return 1./2/P1/TMath::Sqrt(PDK2(W,M3,M4)); //1 sqrt call
+    }
+    inline double PhaseSpaceFactorDt(double W,double M1,double M2,double M3,double M4){
+      //if xsect is dt, need change of variables, cosTh -> t and dt/dcosTh = 2*p1*p3 where p1 and p3 in CM frame
+      return 1./2/TMath::Sqrt(PDK2(W,M1,M2)*PDK2(W,M3,M4)); //1 sqrt call
+    }
+    inline double FluxPhaseSpaceFactor(const LorentzVector v1,const LorentzVector v2){
+      //eqn 47.27 https://pdg.lbl.gov/2019/reviews/rpp2019-rev-kinematics.pdf
+      //v1 and v2 are 2 incident particles
+      double pdot = v1.T()*v2.T() - (v1.X()*v2.X() + v1.Y()*v2.Y() + v1.Z()*v2.Z());
+      return 4*TMath::Sqrt( pdot*pdot  - v1.M2()*v2.M2() );
+    }
+      
     inline double tmin(double W,double Mx,double Mg,double Mt,double Mr){
 
       return ( (Mr*Mr-Mx*Mx-Mt*Mt)/2/W )* ( (Mr*Mr-Mx*Mx-Mt*Mt)/2/W)

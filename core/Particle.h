@@ -12,6 +12,7 @@
 
 #include "LorentzVector.h"
 #include "Distribution.h"
+//#include "DistFlatMass.h"
 #include "SDME.h"
 #include <TObject.h> //for ClassDef
 #include <TMath.h> //for Sqrt
@@ -22,6 +23,7 @@
 namespace elSpectro{
   
   class DecayModel; //so can make friend
+  class DistFlatMassMaster; //so can make friend
  
   enum class DistType {kMass, kMassSquared};
   enum class DecayType{ Stable, Attached, Detached, Production };
@@ -72,16 +74,12 @@ namespace elSpectro{
     
     void SetMassDist(Distribution* dist){
       _massDist=dist;
-      //_distType=DistType::kMass;
     }
     const Distribution* MassDistribution() const{return _massDist;}
     
-    /* void SetMassSquaredDist(Distribution* dist){ */
-    /*   _massDist=dist; */
-    /*   _distType=DistType::kMassSquared; */
-    /* } */
 
-  
+    void SetPdgMass(double val){ _pdgMass=val; SetP4M(val); }
+    
     double PdgMass()const  noexcept{return _pdgMass;}
 
     virtual double MinimumMassPossible()const  noexcept{return PdgMass(); }
@@ -94,7 +92,6 @@ namespace elSpectro{
 
     void SetVertex(int vertexID,const LorentzVector* v){
       _vertexID=vertexID;
-      //_vertex.SetXYZT(v.X(),v.Y(),v.Z(),v.T());
       _vertex=v;
     }
     const LorentzVector* VertexPosition()const noexcept{return _vertex;}
@@ -108,28 +105,36 @@ namespace elSpectro{
       return &_sdme;
     }
     const SDME* GetSDME() const noexcept{ return &_sdme; }
+
+    void LockMass(){_massLocked=true;}
+    void UnlockMass(){_massLocked=false;}
     
   protected:
  
     void SetP4M(double mm){
       auto P2=_vec.P2();
       _vec.SetXYZT(_vec.X(),_vec.Y(),_vec.Z(),TMath::Sqrt(P2+mm*mm));
+      _dynamicMass=mm;
     }
 
   private:
 
     friend DecayModel; //for  DetermineDynamicMass()
+    friend DistFlatMassMaster; //for  DetermineDynamicMass()
     
     //if mass comes from a distribution
-    void  DetermineDynamicMass(){
+    void  DetermineDynamicMass(double xmin=-1,double xmax=-1){
       
       if(_massDist==nullptr ) return; //stick at pdgMass
+      if(_massLocked==true) return; //someone else in charge...
       
       _dynamicMass=-1;
-      auto min = MinimumMassPossible();
-      while(_dynamicMass<min){
+      auto minposs = MinimumMassPossible();
+      while(_dynamicMass<minposs){
+	auto minRange = xmin==-1?minposs:xmin;
+	auto maxRange = xmax==-1?_massDist->GetMaxX():xmax;
+	_dynamicMass= _massDist->SampleSingle(minRange,maxRange);
 	
-	_dynamicMass= _massDist->SampleSingle();
 	//need a weight for "envelope"
 	_massWeight =_massDist->GetCurrentWeight();
 	//	std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<" "<<_massWeight<<std::endl;
@@ -151,7 +156,8 @@ namespace elSpectro{
     const LorentzVector* _vertex={nullptr};
     
     Distribution* _massDist={nullptr};
-
+    bool _massLocked={false};
+    
     // DistType _distType={DistType::kMass};
     
     ClassDef(elSpectro::Particle,1); //class Particle
