@@ -31,6 +31,7 @@ namespace elSpectro{
     }
     bool RegenerateOnFail() const  noexcept final {return false;}
     void SetParent(DecayingParticle* pa);
+    void PostInit(ReactionInfo* info);
     
   private:
     

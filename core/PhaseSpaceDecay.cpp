@@ -16,9 +16,23 @@ namespace elSpectro{
 
   void PhaseSpaceDecay::SetParent(DecayingParticle* pa){
     DecayModel::SetParent(pa);
-    //now can make cascde of decays
+    //now can make cascade of decays
     if( Products().size()>2 )
       nBodyDecayer(pa,StableProducts(),UnstableProducts());
+ 
+  }
+  void PhaseSpaceDecay::PostInit(ReactionInfo* info){
+    DecayModel::PostInit(info);
+    if(Parent()->MassDistribution()==nullptr){//production proces does not have mass distribution
+      if(dynamic_cast<ProductionProcess*>(Parent())==nullptr){
+	std::cerr<<"PhaseSpaceDecay::PostInit parent needs a mass distribution for pdg = "<<Parent()->Pdg();
+	std::cerr<<"\n  you need to use \n >>   mass_distribution(PDG,new DistTF1{TF1(\"massDist\",\"1\",MINMASS,MAXMASS)});";
+	std::cerr<<" \n where PDG (9995-9999) is the pdg number you assigned the decaying particle, and MINMAMSS and MAXMASS is the mass limits it will be allowed to have, for pure phase space this must be at least the kinematically allowed range";
+	std::cerr<<"\n NOTE eventually this will be automated! "<<std::endl;
+	
+	exit(0);
+      }
+    }
   }
   
   void PhaseSpaceDecay::nBodyDecayer(DecayingParticle* parent, const particle_ptrs stable,  const decaying_ptrs unstable ) //take copies of particle vectors
@@ -39,9 +53,6 @@ namespace elSpectro{
       ps.push_back( sp );
 
  
-    if(ps.size() < 3){//in case ony two particle just use 2 body decay
-      return ;
-    }
    std::cout<<"Particle* nBodyDecayer "<<ps.size()<<std::endl;
  
     //Register our X-1 particle type
@@ -51,7 +62,11 @@ namespace elSpectro{
  
     auto massMaster  = static_cast<DistFlatMassMaster*>(particleMan.GetMassDist(pdgXNm1));
     std::cout<<"Particle* nBodyDecayer pdg "<< massMaster <<std::endl;
-    
+
+    //if(ps.size() < 3){//in case ony two particle just use 2 body decay
+    // return ;
+    //}
+ 
     //    auto massMaster  = mass_distribution(_nextPdg,new DistFlatMassMaster(parent,ps));
     // _nextPDG++;
     //Start with X(2)

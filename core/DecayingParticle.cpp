@@ -65,7 +65,6 @@ namespace elSpectro{
     bool decayed=false;
 
     double _maxWeight=1;
-
   
     // std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<_decay->Products().size()<<" "<<" "<<_decay->Products()[0]->Pdg()<<" "<<_decay->Products()[1]->Pdg()<<std::endl;
     //if in charge of phase space calculate masses for full decay chain
@@ -74,7 +73,8 @@ namespace elSpectro{
     //generate decay product vectors
     //samplingWeight = 1 for phase space decay
     //for others it allows to weigth phase space back in 
-    auto samplingWeight=Decay();
+    auto samplingWeight= Decay();
+    if(Model()->HasAngularDistribution()==false)samplingWeight=1; //Model has no angular distribution
     
     //samplingWeight ==0 => not physical (below threshold)
     if(samplingWeight==0) return DecayStatus::ReGenerate;

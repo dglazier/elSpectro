@@ -111,12 +111,13 @@ namespace elSpectro{
     }
     inline double K_xy(double e_in,double xx, double yy){
       double K= (1-xx) * e_in*yy;
+      //  double K= e_in*yy;
       return K<0 ? 0 : K; //protect -ve
     }
     inline double L_xy(double e_in,double xx, double yy){
       double m1y=1-yy;
       double L= ( (1 + m1y*m1y) / yy)  - ( 2 * M2_el() * yy ) / Q2_xy(e_in,yy,xx);
-      return L<0 ? 0 : L; //protect -ve
+       return L<0 ? 0 : L; //protect -ve
     }
     inline double KLbyE_xy(double e_in,double xx, double yy){
       double m1y=1-yy;
@@ -150,14 +151,14 @@ namespace elSpectro{
     }
     
     inline double flux_dlnxdlny(double e_in,double ln_xx, double ln_yy){
+      if(ln_xx>0||ln_yy>0) return 0;
       //Range of ln_xx [-infinity , 0 ]
       //protect zero values on denominator
       //mimimum escatter = M_el
       // auto m1y=(1-yy);
-      double xx = TMath::Exp(ln_yy);
-      double yy = TMath::Exp(ln_xx);
+      double xx = TMath::Exp(ln_xx);
+      double yy = TMath::Exp(ln_yy);
       auto m1y=(1-yy);
-         
       return ((1-yy)*e_in>=M_el()) * xx  ==0 ? 0 :
 	Alpha_by2Pi() * K_xy(e_in,xx,yy) * L_xy(e_in,xx,yy) / e_in ; 
     }

@@ -33,8 +33,9 @@ namespace elSpectro{
     
     double Esc = Ee - Egamma;
     histy.Fill(yy);
+    histyQ2.Fill(escat::Q2_xy( Ee,xx,yy),yy);
     histW.Fill(W);
-
+  
     //calculate cos(theta) from e,x,y (via Q2 and Mass proton)
     double costh = escat::CosTh_xy(Ee,xx,yy);
     costh = costh>1 ? 1 : costh; //protect <=1

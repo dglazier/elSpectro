@@ -11,6 +11,7 @@
 #include <Math/VectorUtil.h> //for boosts etc.
 #include <Math/RotationY.h>
 #include <TH1.h>
+#include <TH2.h>
 
 namespace elSpectro{
 
@@ -49,6 +50,7 @@ namespace elSpectro{
     
     // TH1D *hist, *histW;
     TH1D histy={"ydist","ydist",1000,0,1};
+    TH2D histyQ2={"yQ2dist","yQ2dist",100,0,20,100,0,1};
     TH1D histW={"genWdist","genWdist",1000,0,100};
     
     ClassDefOverride(elSpectro::ScatteredElectron_xy,1); //class DecayVectors

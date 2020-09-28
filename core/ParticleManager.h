@@ -33,6 +33,13 @@ namespace elSpectro{
     void RegisterMassDistribution(int pdg, Distribution* dist){
       _massDist[pdg]=dist_uptr{dist};
       dist=nullptr;
+      //Check if any predefined particles need this distribution
+      for(auto& particle:_particles){
+	if(pdg==particle->Pdg()){
+	  particle->SetMassDist( _massDist.at(pdg).get());
+	}
+      }
+
     }
     
     int RegisterNewPdgParticle(double nominalMass,Distribution* dist=nullptr){

@@ -57,7 +57,8 @@ namespace elSpectro{
     }
     
     virtual bool RegenerateOnFail() const noexcept =0;
-
+    virtual bool HasAngularDistribution(){return true; }
+    
     bool CheckThreshold() const{
       SumAllProducts();
       //  std::cout<<"CheckThreshold() "<<_sumOfMasses<<" "<<_parent.M()<<std::endl;

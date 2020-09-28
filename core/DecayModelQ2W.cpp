@@ -139,7 +139,7 @@ namespace elSpectro{
     }
     
     //Q2 dependence of cross section
-    weight*=Q2H1Rho();
+    //   weight*=Q2H1Rho();
   
     return weight;
   

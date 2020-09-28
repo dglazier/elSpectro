@@ -30,7 +30,8 @@ namespace elSpectro{
     JpacModelst( jpacAmp_ptr amp, particle_ptrs parts,
 		  const std::vector<int> pdgs  );
     
- 
+    bool HasAngularDistribution() override{return true; } //I have an angular distribution
+
     //double Intensity() const override;
 
     //void PostInit(ReactionInfo* info) override;

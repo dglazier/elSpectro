@@ -59,6 +59,8 @@ namespace elSpectro{
     double _lnymax{0};
     double _Wthresh2{0};
     double _max_val{0};
+    double _requestQ2min{-1};
+    double _requestQ2max{1E10};
 
     
     ClassDef(elSpectro::DistVirtPhotFlux_xy,1); //class DistVirtPhotFlux_xy

@@ -35,6 +35,7 @@ namespace elSpectro{
     void PostInit(ReactionInfo* info) override;
 
     bool RegenerateOnFail() const noexcept override {return true;};
+    bool HasAngularDistribution() override{return false; }
 
     const Particle* GetMeson() const noexcept{return _meson; }
     const Particle* GetBaryon() const noexcept{return _baryon; }
