@@ -67,7 +67,7 @@ void JpacAmpRho(){
   auto rho=particle(113,model(new PhaseSpaceDecay{{},{211,-211}}));
 
   //construct elSpectro Jpac decay model {jpac_amp, {decaying particles},and/or{pdg codes}, s_strength, t_strength, t_slope} where the latter 3 arguments define the decay angle distribution envelope
-  auto jpac = new JpacModelQ2W{&sum, {rho},{2212}, 0, 1,1 };
+  auto jpac = new JpacModelQ2W{&sum, {rho},{2212}, 1, 0,1 };
    
   //give generator decay model for g*N system
   auto production=eic( 10 , 100, jpac  ); 

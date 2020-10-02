@@ -62,19 +62,30 @@ Note the double cmake ../; make install; is required for ROOT pcm files
 
 ### Examples of ElectroProduction of Jpac amplitudes
 
-1) e + p -> e' rho(pi+,pi-) p
+1) e + p -> e' Y (Jpsi (e+e-)rho(pi+,pi-)) p
 
-       root Load.C JpacAmpRho.C+
-       hW.Draw()
-       hQ2.Draw()
-       hRhoM.Draw()
-       ht.Draw()
+       root Load.C JpacAmpVectorJpsiPiPi_hepmc3.C
 
-2) Pentaquark e + p -> e' Jpsi(e+,e-) p
+### Examples of MesonEx Quasi-real PhotoProduction
 
-       root Load.C JpacAmpPenta.C+
-       hW.Draw()
-       hQ2.Draw()
-       hJpsiM.Draw()
-       ht.Draw()
-       hWt.Draw()
+Note forward tagger acceptance can be included with lines like
+
+     production->SetLimitTarRest_eThmin(1.5*TMath::DegToRad());
+     production->SetLimitTarRest_eThmax(5.5*TMath::DegToRad());
+     production->SetLimitTarRest_ePmin(0.4);
+     production->SetLimitTarRest_ePmax(6);
+
+
+1) e + p -> e' X (pi+pi-) p
+
+      root Load.C MesonEx_p2pi.C
+
+2) e + p -> e' X (pi+pi+pi-) n
+
+      root Load.C MesonEx_n3pi.C
+ 
+3)  e + p -> e' P_c -> Jpsi(e+e-) p
+
+      root Load.C MesonEx_JpsiPenta.C
+
+Also just does phase space Jpsi, which does not need jpacPhoto, see code for details
