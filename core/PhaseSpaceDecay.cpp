@@ -30,7 +30,7 @@ namespace elSpectro{
 	std::cerr<<" \n where PDG (9995-9999) is the pdg number you assigned the decaying particle, and MINMAMSS and MAXMASS is the mass limits it will be allowed to have, for pure phase space this must be at least the kinematically allowed range";
 	std::cerr<<"\n NOTE eventually this will be automated! "<<std::endl;
 	
-	exit(0);
+	//	exit(0);
       }
     }
   }

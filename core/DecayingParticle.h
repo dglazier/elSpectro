@@ -45,18 +45,22 @@ namespace elSpectro{
     // virtual const CurrentEventInfo* EventInfo() const {return nullptr;}
 
     double MinimumMassPossible() const  noexcept override {
+      if(_minMass) return _minMass;
       
-      double minmass= _decay->MinimumMassPossible();
+      auto minMass= _decay->MinimumMassPossible();
       if(MassDistribution()!=nullptr){
-	if(MassDistribution()->GetMinX() > minmass)
-	  minmass=MassDistribution()->GetMinX();
+	if(MassDistribution()->GetMinX() > minMass)
+	  minMass=MassDistribution()->GetMinX();
       }
       else if(Pdg()!=-2211)
-	minmass = PdgMass();
+	minMass = PdgMass();
       
       //std::cout<<"min masss "<<Pdg()<<" "<<minmass<<std::endl;
-      return minmass;
-    };
+      return minMass;
+    }
+    
+    void SetMinMass(double mass){_minMass=mass;}
+    
     void TakeMinimumMass(){
       SetP4M( MinimumMassPossible() );
     }
@@ -98,10 +102,13 @@ namespace elSpectro{
     DecayModel* _decay={nullptr}; //not owner
     
     std::unique_ptr<DecayVectors> _decayer={nullptr}; //owner
-    
+
+    double _minMass={0};
     LorentzVector _decayVertex;
     int _decayVertexID={0};
     DecayType _decayType;
+
+    long _generateCalls={0};
     
     ClassDefOverride(elSpectro::DecayingParticle,1); //class DecayingParticle
     

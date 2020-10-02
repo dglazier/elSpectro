@@ -76,7 +76,7 @@ namespace elSpectro{
       _prodInfo->_meson=gNprods[0]->P4ptr();
       
       
-      //std::cout<<"DecayModelQ2W::PostInit "<<std::endl;
+      std::cout<<"DecayModelQ2W::PostInit "<<std::endl;
       DecayModel::PostInit(_prodInfo);
       
  
@@ -119,8 +119,6 @@ namespace elSpectro{
       exit(0);
     }
     
-    auto cmBoost=_gstarNuc->P4().BoostToCM();
-    auto p1cm=boost(_gamma,cmBoost);
  
     //  std::cout<<" Q2 DEPENDENECE "<<PhaseSpaceFactorToQ2eq0(W,p4tar.M() )<<"      "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<"             PDKs     "<< kine::PDK(W, -getQ2(),p4tar.M())<<" "<< kine::PDK(W, getQ2(),p4tar.M())<<" "<< kine::PDK(W, 0 ,p4tar.M())<<" "<< p1cm.P()<<std::endl;
 
@@ -135,6 +133,8 @@ namespace elSpectro{
     _prodInfo->_sWeight*=PhaseSpaceFactorToQ2eq0(W,p4tar.M() );
 
     if(weight>1){
+    auto cmBoost=_gstarNuc->P4().BoostToCM();
+    auto p1cm=boost(_gamma,cmBoost);
       std::cout<<" Q2 DEPENDENECE "<<PhaseSpaceFactorToQ2eq0(W,p4tar.M() )<<"      "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<"             PDKs     "<< kine::PDK(W, -getQ2(),p4tar.M())<<" "<< kine::PDK(W, getQ2(),p4tar.M())<<" "<< kine::PDK(W, 0 ,p4tar.M())<<" "<< p1cm.P()<<std::endl;
     }
     
@@ -160,8 +160,8 @@ namespace elSpectro{
     auto meson=gNprods[0];
  
     DecayModelst* mesonBaryon = nullptr;
-    TH1D histlow("Wdistlow","Wdistlow",50,0,maxW);
-    TH1D histpeak("Wdisthigh","Wdisthigh",50,0,maxW);
+    TH1D histlow("Wdistlow","Wdistlow",50,_threshold,maxW);
+    TH1D histpeak("Wdisthigh","Wdisthigh",50,_threshold,maxW);
     double minMesonMass=-1;
     if( ( mesonBaryon=dynamic_cast<DecayModelst*>(GetGammaN()->Model())) != nullptr){
       //check for low mass meson limits
@@ -193,10 +193,11 @@ namespace elSpectro{
   
    TH1D HistFromLargestBinContents(const TH1D& h1,const TH1D& h2){
       auto hist= TH1D{h1};
+      auto maxVal= h1.GetMaximum();
       for(int ibin=1;ibin<=hist.GetNbinsX();ibin++){
 	auto val = h1.GetBinContent(ibin)>h2.GetBinContent(ibin) ? h1.GetBinContent(ibin):h2.GetBinContent(ibin);
-	hist.SetBinContent(ibin,val);
-	std::cout<<"HistFromLargestBins "<<hist.GetBinCenter(ibin)<<" "<<val<<std::endl;
+	hist.SetBinContent(ibin,val + 0.1*maxVal);
+	std::cout<<"HistFromLargestBins "<<hist.GetBinCenter(ibin)<<" "<<hist.GetBinContent(ibin)<<" "<< maxVal<<std::endl;
 	
       }
       return hist;

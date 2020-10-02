@@ -48,7 +48,19 @@ namespace elSpectro{
       return  sqrt(_massIon*_massIon + 2 * (_nuclRestElec.E() -escat::M_el())
 		   *(_massIon - escat::M_el()));
     }
-    
+
+
+    void SetLimit_Q2min(double val){_Q2min=val;}
+    void SetLimit_Q2max(double val){_Q2max=val;}
+    void SetLimit_Xmin(double val){_Xmin=val;}
+    void SetLimit_Xmax(double val){_Xmax=val;}
+
+    //Note these limits apply to target rest frame!!
+    void SetLimitTarRest_ePmin(double val){_ePmin=val;}
+    void SetLimitTarRest_ePmax(double val){_ePmax=val;}
+    void SetLimitTarRest_eThmin(double val){_eThmin=val;}
+    void SetLimitTarRest_eThmax(double val){_eThmax=val;}
+ 
   private:
     
     ElectronScattering()=default;
@@ -56,13 +68,24 @@ namespace elSpectro{
     
     void SetBeamCondtion();
     
-    double _pElectron; //nominal e- beam energy
-    double _pIon; //nominal ion beam energy
-    double _angleElectron; //nominal electron crossing angle
-    double _angleIon;  //nominal proton crossing angle
-    double _massIon;  //nominal proton crossing angle
-    int _pdgIon; //species of ion
+    double _pElectron={0}; //nominal e- beam energy
+    double _pIon={0}; //nominal ion beam energy
+    double _angleElectron={0}; //nominal electron crossing angle
+    double _angleIon={0};  //nominal proton crossing angle
+    double _massIon={0};  //nominal proton crossing angle
+    int _pdgIon={2212}; //species of ion
 
+    //user specified limits
+    double _Q2min={0};
+    double _Q2max={0};
+    double _eThmin={0};
+    double _eThmax={0};
+    double _ePmin={0};
+    double _ePmax={0};
+    double _Xmin={0};
+    double _Xmax={0};
+
+    
     long _nsamples=0;
 
     Particle _beamElec;

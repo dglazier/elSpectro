@@ -68,6 +68,10 @@ namespace elSpectro{
      
      }
 
+     void Summary(){
+       _process->Print();
+      _massPhaseSpace.Print();
+      }
   private:
 
     ParticleManager _particles;

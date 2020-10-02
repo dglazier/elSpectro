@@ -20,6 +20,9 @@ namespace elSpectro{
   class MassPhaseSpace{
 
   public:
+    void Print(){
+      std::cout<<"MassPhaseSpace number calcs= "<<_weightCalcN<<" number of successes = "<<_successN<<" ratio  ="<< double(_successN)/_weightCalcN <<std::endl;
+    }
     
   private:
     
@@ -28,6 +31,7 @@ namespace elSpectro{
 
     double PhaseSpaceWeight(double parentM) const noexcept{
       double result=TMath::Sqrt(_model->PhaseSpaceWeightSq(parentM));
+      _weightCalcN++;
       return result;
     }
 
@@ -41,7 +45,8 @@ namespace elSpectro{
       // double max= kine::PhaseSpaceWeightMax(parentM,_masses);//TGenPhaseSpace max . Note this is too high an estimate
 
       //Note PhaseSpaceWeightMaxFromEquDist does not quite get to max, so increase by 10% to be safe....will give warning if event weight is above this....
-      double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses)*1.1;
+      double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses)*1.05;
+      //double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses);
 
       //accept or reject mass combinations until got one
       //as W dependence accounted for elsewere
@@ -49,14 +54,14 @@ namespace elSpectro{
       double wee=0;
       while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max ){
 	//reject this combintation
-	//	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
+	if(wee==0)	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
       }
       if(wee>_sampledMax){
 	_sampledMax = wee;
 	if(_sampledMax>max )
 	  std::cerr<<"MassPhaseSpace weight > max "<<std::endl;
       }
-      
+      _successN++;
     }
     bool AcceptPhaseSpace(double parentM){
       if(_model==nullptr) {
@@ -84,7 +89,8 @@ namespace elSpectro{
     DecayModel* _model=nullptr;
     std::vector<double> _masses;
     double _sampledMax = 0;
-
+    mutable long _weightCalcN=0;
+    mutable long _successN=0;
     
     ClassDef(elSpectro::MassPhaseSpace,1); //class MassPhaseSpace
   };

@@ -58,6 +58,12 @@ namespace elSpectro{
 
     double getQ2() const noexcept{return -_gamma.M2();}
     double getW() const noexcept{ return GetGammaN()->Mass();}
+    double getThreshold() const noexcept{return _threshold;}
+    void setThreshold(double val) noexcept{
+      std::cout<<"set threshold "<<val<<" "<<_threshold<<std::endl;
+      if(val<_threshold) return;
+      _threshold=val;
+    }
     
     void FindExcitationSpectra();
     

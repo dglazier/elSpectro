@@ -93,25 +93,38 @@ namespace elSpectro{
       return Q2(e_in,e_sc)/(2*M_pr()*PhotonE(e_in,e_sc));
     }
 
-
+    inline double ymin_Th(double e_in,double Th,double mTar){
+      auto cosTh=TMath::Cos(Th);
+      auto cosSqTh=cosTh*cosTh;
+      auto sinSqTh = 1 - cosSqTh;
+      auto Pel=P_el(e_in);
+      auto sinSqThby2 = TMath::Sin(Th/2)*TMath::Sin(Th/2);
+      auto n = (1+cosTh)*2*Pel*Pel/mTar/e_in* sinSqThby2;
+      auto d = 1 + cosTh*TMath::Sqrt(1 - M2_el()/mTar*mTar*sinSqTh)
+	+ (1+cosTh)*2*e_in/mTar*sinSqThby2;
+      return n/d;
+	
+    }
     //Virtual photon flux from x and y
     //egamma=e_sc = e_in * y
     inline double Q2_xy(double e_in,double xx, double yy){
       return 2 * escat::M_pr() * e_in * yy * xx;
     }
-    inline double CosTh_xy(double e_in,double xx, double yy){
+    inline double Q2_cosThy(double e_in,double cosTh, double yy){
       double e_sc=e_in*(1-yy);
-      //  double m1y=(1-yy);
-      //std::cout<<"Q2 "<< Q2_xy(e_in,xx,yy)<<" "<<M2_el()*yy*yy/m1y<<" "<<e_in*e_sc<<" "<<e_in*e_sc - M2_el()<<std::endl;
-      //std::cout<< (e_in*e_sc - 0.5*Q2_xy(e_in,xx,yy) - M2_el() )<<" "<<P_el(e_in)*P_el(e_sc)<<std::endl;
-      
-      //std::cout<<" other "<< 1- Q2_xy(e_in,xx,yy)/2/e_in/(e_sc)<<std::endl;
-      
+      return 2*(e_in*e_sc - P_el(e_in)*P_el(e_sc)*cosTh - M2_el());
+    }
+    inline double y_cosThQ2(double e_in,double cosTh, double Q2){
+      double e_sc = (P_el(e_in)*P_el(e_sc)*cosTh + M2_el() + 0.5*Q2)/e_in;
+      double y = 1 - e_sc/e_in ;
+      return y;
+    }
+    inline double CosTh_xy(double e_in,double xx, double yy){
+      double e_sc=e_in*(1-yy);     
       return  (e_in*e_sc - 0.5*Q2_xy(e_in,xx,yy) - M2_el() )/P_el(e_in)/P_el(e_sc);
     }
     inline double K_xy(double e_in,double xx, double yy){
       double K= (1-xx) * e_in*yy;
-      //  double K= e_in*yy;
       return K<0 ? 0 : K; //protect -ve
     }
     inline double L_xy(double e_in,double xx, double yy){

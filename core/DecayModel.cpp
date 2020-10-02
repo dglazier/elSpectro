@@ -81,21 +81,21 @@ namespace elSpectro{
     double result=1;
     
     double TCM=W;
-   
+    for(auto* p:_stables){
+      TCM-=p->Mass();
+    }
+
     for(auto* p:_unstables){
       //This should be the only call to DetermineDynamicMass in the code.
       //Unless somewhere else uses LockMass in which case
       //this call to DetermineDynamicMass will not change its value
-      p->DetermineDynamicMass();
+      p->DetermineDynamicMass(-1,TCM);
       TCM-=p->Mass();
-      if(TCM<0){  return 0;}//below threshold, start again
+      if(TCM<0){ std::cout<<Parent()->Pdg()<<" "<<GetName()<<" "<< MinimumMassPossible()<<" W "<<W<<" T "<<TCM<<" "<<p->Mass()<<" "<<std::endl;return 0;}//below threshold, start again
     }
     //std::cout<<std::endl;
-      for(auto* p:_stables){
-	TCM-=p->Mass();
-      }
-
-      if(TCM<0)  return 0;//below threshold, start again
+  
+      if(TCM<0){  std::cout<<Parent()->Pdg()<<" "<<GetName()<<" "<< MinimumMassPossible()<<" W "<<W<<" T "<<TCM<<" after stables "<<std::endl; return 0;}//below threshold, start again
       result  *= kine::PDK2(W,_products[0]->Mass(),_products[1]->Mass());
     
     for(auto* p:_unstables)

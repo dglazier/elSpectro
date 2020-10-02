@@ -32,7 +32,7 @@ TH1F hQ2("Q2","Q2",1000,0,100);
 TH1D heE("eE","eE",1000,0,20);
 TH1D heTh("eTh","eTh",1000,0,180);
 TH1D hYTh("YTh","YTh",1000,0,180);
-TH1F hW("W","W",1000,0,100);
+TH1F hW("W","W",1000,0,30);
 TH1F ht("t","t",1000,0,10);
 TH1F hgE("gE","gE",1000,0,20);
 TH1F hgTh("gTh","gTh",1000,0,180);
@@ -107,35 +107,38 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
   // ---------------------------------------------------------------------------
   // elSpectro
   // ---------------------------------------------------------------------------
-  
+  elSpectro::LorentzVector elbeam(0,0,-1*ebeamE,elSpectro::escat::E_el(ebeamE));
+  elSpectro::LorentzVector prbeam(0,0,pbeamE,elSpectro::escat::E_pr(pbeamE));
+
   //create a V decaying to J/psi pi+pi-
-  auto jpsi=particle(443,model(new PhaseSpaceDecay({},{11,-11})));
+  //  mass_distribution(443,new DistTF1{TF1("hhjpsi","TMath::BreitWigner(x,3.0969160,0.0000929)",2.5,3.5)});
+   auto jpsi=particle(443,model(new PhaseSpaceDecay({},{11,-11})));
   
   //mass_distribution(113,new DistTF1{TF1("hhRho","1",0.2,0.9)});
-  mass_distribution(113,new DistTF1{TF1("hhRho","TMath::BreitWigner(x,0.775,0.151)",0.2,1.2)});
+  mass_distribution(113,new DistTF1{TF1("hhRho","TMath::BreitWigner(x,0.775,0.151)",0,(elbeam+prbeam).M())});
   auto rho=particle(113,model(new PhaseSpaceDecay({},{211,-211})));
 
   //mass_distribution(9995,new DistTF1{TF1("hh","1",3.9,4.5)});
-  mass_distribution(9995,new DistTF1{TF1("hh","TMath::BreitWigner(x,4.22,0.05)",3.9,4.5)});
+  mass_distribution(9995,new DistTF1{TF1("hh","TMath::BreitWigner(x,4.22,0.05)",3.5,(elbeam+prbeam).M())});
   //auto v=particle(9995,model(new PhaseSpaceDecay{{jpsi,rho},{}}));
   auto v=particle(9995,model(new VectorSDMEDecay{{jpsi,rho},{}}));
   v->SetPdgMass(4.22);
 
   
   //create eic electroproduction of X + proton
-  auto pr=particle(2212);
+  // auto pr=particle(2212);
   //  auto jpac = new JpacModelQ2W{&sum, {pr,v},{}, 0., 1, 0.5};
    
-  auto jpac = new JpacModelst{&sum, {pr,v},{} };
-  auto photoprod = new DecayModelQ2W{0,jpac,new TwoBody_stu{0., 1, 0.5,0,0}};
+  auto jpac = new JpacModelst{&sum, {v},{2212} };
+  auto photoprod = new DecayModelQ2W{0,jpac,new TwoBody_stu{0., 1, 2,0,0}};
+  // auto no_amp = new DecayModelst{ {v},{2212} };
+  //auto photoprod = new DecayModelQ2W{0,no_amp,new TwoBody_stu{1., 0, 0,0,0}};
   auto production=eic( ebeamE, pbeamE, photoprod );
 
   //just produce events with st given distribution and no jpac amplitude
   //auto jpac = new DecayModelQ2W{0, new PhaseSpaceDecay( {v},{2212}),new TwoBody_stu{0,1, 0.5 ,0,0}};
   //auto production=eic( ebeamE, pbeamE, jpac );
 
-  elSpectro::LorentzVector elbeam(0,0,-1*ebeamE,elSpectro::escat::E_el(ebeamE));
-  elSpectro::LorentzVector prbeam(0,0,pbeamE,elSpectro::escat::E_pr(pbeamE));
   
   auto pionp = static_cast<DecayingParticle*>(rho)->Model()->Products()[0];
   auto pionm = static_cast<DecayingParticle*>(rho)->Model()->Products()[1];
@@ -268,4 +271,7 @@ void JpacAmpVectorJpsiPiPi_hepmc3(double ebeamE = 5, double pbeamE = 41, int nEv
      cout<<"Total cross section ("<<(int)ebeamE<<","<<(int)pbeamE<<"): sigma_ep = "<<integrated_xsection<<" nb "<<endl;
    }
   }
+
+    generator().Summary();
+
 }

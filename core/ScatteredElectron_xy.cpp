@@ -10,7 +10,8 @@ namespace elSpectro{
   ScatteredElectron_xy::ScatteredElectron_xy(double eb, double mion, double Wmin):
     _random_xy{eb,mion,Wmin}
   {
-   }
+
+  }
   
   ////////////////////////////////////////////////////////////////////
   ///Caclulate electron scattering kinematics from
@@ -39,7 +40,9 @@ namespace elSpectro{
     //calculate cos(theta) from e,x,y (via Q2 and Mass proton)
     double costh = escat::CosTh_xy(Ee,xx,yy);
     costh = costh>1 ? 1 : costh; //protect <=1
-     
+
+    histyCosTh.Fill(costh,yy);
+
     auto sinth=TMath::Sqrt(1-costh*costh);
 
     //random phi done in RotatetoParent

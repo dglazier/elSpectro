@@ -82,7 +82,9 @@ namespace elSpectro{
     
     double PdgMass()const  noexcept{return _pdgMass;}
 
-    virtual double MinimumMassPossible()const  noexcept{return PdgMass(); }
+    virtual double MinimumMassPossible()const  noexcept{
+      return  PdgMass();
+    }
     
     double MassWeight() const noexcept {
       return _massWeight;

@@ -49,6 +49,8 @@ namespace elSpectro{
       //else PDK does not qork for virtual photons
       auto cmBoost=Parent()->P4().BoostToCM();
       auto p1cm=boost(*_photon,cmBoost);
+
+      //     std::cout<<"PgammaCMsq M"<<_photon->M()<<" PLAB "<<_photon->P()<<" PCM "<<p1cm.P()<<" or "<<kine::PDK(_W,_photon->M(),_target->M())<<" or "<<kine::PDK(_W,_photon->M2(),_target->M())<<" or "<<kine::PDK(_W,0,_target->M())<<std::endl;
       return p1cm.P()*p1cm.P(); //for dt phase space factor
     }
 
@@ -114,6 +116,7 @@ namespace elSpectro{
     mutable double _s={0};
     mutable double _t={0};
     mutable double _W={0};
+    double _Wmax={0};
  
     bool _useSDME={false};
 

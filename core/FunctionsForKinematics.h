@@ -99,12 +99,14 @@ namespace elSpectro {
     }
       
     inline double tmin(double W,double Mx,double Mg,double Mt,double Mr){
+      // if(Mg!=0)exit(0);
 
       return ( (Mr*Mr-Mx*Mx-Mt*Mt)/2/W )* ( (Mr*Mr-Mx*Mx-Mt*Mt)/2/W)
 	- ( PDK(W,Mg,Mt)-PDK(W,Mx,Mr) )*( PDK(W,Mg,Mt)-PDK(W,Mx,Mr) );
     }
     
     inline double t0(double W,double M1,double M2,double M3,double M4){
+      //if(M1!=0)exit(0);
       double p1 = PDK(W,M1,M2);
       double p3 = PDK(W,M3,M4);
       
@@ -114,7 +116,8 @@ namespace elSpectro {
 
     }
     inline double tmax(double W,double M1,double M2,double M3,double M4){
-      
+      //if(M1!=0)exit(0);
+     
       double p1 = PDK(W,M1,M2);
       double p3 = PDK(W,M3,M4);
       double tmax = t0(W,M1,M2,M3,M4) - 4*p1*p3;
@@ -122,6 +125,7 @@ namespace elSpectro {
       
     }
     inline double costhFromt(double t, double W,double M1,double M2,double M3,double M4){
+      //if(M1!=0)exit(0);
       double p1 = PDK(W,M1,M2);
       double p3 = PDK(W,M3,M4);
       
@@ -133,6 +137,7 @@ namespace elSpectro {
       return 1 - (t0-t)/2/p1/p3;
     }
     inline double tFromcosthW(double costh, double W,double M1,double M2,double M3,double M4){
+      //if(M1!=0)exit(0);
       double p1 = PDK(W,M1,M2);
       double p3 = PDK(W,M3,M4);
       double E1 = sqrt(M1*M1 + p1*p1);
@@ -143,6 +148,7 @@ namespace elSpectro {
       
     }
     inline double tFromcosthWP1P3(double costh, double W,double p1,double p3,double M1,double M2,double M3,double M4){
+      //if(M1!=0)exit(0);
       //with M1<0 PDK can sometimes not return finite number
       double E1 = sqrt(M1*M1 + p1*p1);
       double E3 = sqrt(M3*M3 + p3*p3);
@@ -159,7 +165,7 @@ namespace elSpectro {
       auto p1rest=ROOT::Math::VectorUtil::boost(p,restBoost);
       return p1rest.P();
     }
-    
+ 
     ////////////////////////////////////////////////////////
     ///z-axis along gamma direction in meson rest frame
     inline void mesonDecayGJ(const LorentzVector* gamma,const LorentzVector* meson,const LorentzVector* baryon,const LorentzVector* d1,MomentumVector* angles){

@@ -133,38 +133,132 @@ namespace elSpectro{
    }
   /////////////////////////////////////////////////////////////////////////
   void ElectronScattering::InitGen(){
+    std::cout<<"Electron Scattering InitGen "<<std::endl;
     //pass on lorentzvectors in nucleon rest frame
     //This is the internal frame for the generator
     _reactionInfo._target=&_nuclRestNucl;
     _reactionInfo._ebeam =&_nuclRestElec;
     
-    DecayingParticle::PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
-    //now scattered electron should be set
-    //_scattered= _reactionInfo._scattered;
-    
+     
+ 
     auto& unproducts=Model()->UnstableProducts();
-    if(unproducts.empty()==true) return;
+    //if(unproducts.empty()==true) return;
     
     if(unproducts.size()!=1) {
       std::cerr<<"ElectronScattering::PostInit need a Q2W model with just a gamma*N decay product"<<std::endl;
     }
 
-    _gStarN = unproducts[0];//should only be gamma*N decaying product
+    double minMass=_massIon;
+    if(unproducts.empty()==false){
+      _gStarN = unproducts[0];//should only be gamma*N decaying product
+      std::cout<<"Electron Scattering min mass "<<_gStarN->MinimumMassPossible()<<std::endl;
+      minMass=_gStarN->MinimumMassPossible();
+    }
+    if(auto Q2WModel=dynamic_cast<DecayModelQ2W*>(Model())){
+      auto thresh=Q2WModel->getThreshold();
+      if(minMass<thresh)minMass=thresh;
+    }
+    std::cout<<"E scatter go t a threshold "<<minMass<<std::endl;
 
-    std::cout<<"Electron Scattering min mass "<<_gStarN->MinimumMassPossible()<<std::endl;
+    
     //default scatteredelectron_xy, now have all parameters
     if(Decayer()==nullptr){
       //Need to give ebeam (in ion rest), mass of ion, W threshold
-      auto tempDecayer=new ScatteredElectron_xy(_nuclRestElec.P(), _massIon, _gStarN->MinimumMassPossible());
+      auto tempDecayer=new ScatteredElectron_xy(_nuclRestElec.P(), _massIon, minMass);
       tempDecayer->SetModel(Model());
       SetDecayer(tempDecayer); //give it to a sink
-      mutableDecayer()->PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
+      
     }
-    generator().SetModelForMassPhaseSpace(_gStarN->Model());
+    mutableDecayer()->PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
 
+    auto decayer= dynamic_cast<ScatteredElectron_xy* >(mutableDecayer());
+    
+    if(decayer!=nullptr){
+      //Set any thresholds and ranges
+      std::cout<<"ELECTRON "<<_Q2min<<" "<<_Q2max<<std::endl;
+      if(_Q2min!=0)  decayer->Dist().SetQ2min(_Q2min);
+      if(_Q2max!=0)  decayer->Dist().SetQ2max(_Q2max);
+      if(_Xmin!=0)  decayer->Dist().SetXmin(_Xmin);
+      if(_Xmax!=0)  decayer->Dist().SetXmax(_Xmax);
+      if(_eThmin!=0)  decayer->Dist().SetThmin(_eThmin);
+      if(_eThmax!=0)  decayer->Dist().SetThmax(_eThmax);
+
+      //Do momemntum =>y, W limits last
+      auto Wmin=  minMass;
+      /* if(_ePmax!=0) {
+	
+	auto minMass2=minMass*minMass;
+	//W^2 - M^2 + Q2 = 2M(Eg) = 2M(ebeam-escat) = 2M*ebeam*y
+	if( (_nuclRestElec.E() < escat::E_el(_ePmax)) ){
+	  std::cerr<<"ElectronScattering::InitGen() Error, requested Maximum electron momentum (in proton rest frame) higher than beam energy "<< escat::E_el(_ePmax)<<" > "<<_nuclRestElec.E()<<std::endl;
+	  exit(0);
+	}
+	auto W2min= 2*_massIon * (_nuclRestElec.E() - escat::E_el(_ePmax) )
+	  + _massIon*_massIon + 0;//take Q2=0 for W2 threshold, any Q2 limit will be handled in DistVirtPhotFlux
+	//take largest from requested or threshold
+	if( W2min>minMass2){
+	  Wmin=TMath::Sqrt(W2min);
+	  minMass=Wmin;
+	}
+
+      }
+      */
+      if(_ePmax!=0) { //convert to y limit
+	auto y = (_nuclRestElec.E()-escat::E_el(_ePmax))/_nuclRestElec.E();
+	decayer->Dist().SetYmin(y);
+
+	//we can limit the W threshold if we have a given Q2max value
+	//This can greatly speed up sampling when the max value is higher
+	//below the Q2 allowed minimum W.
+	double  Q2PQ2max=0;
+	double  ThPQ2max=0;
+	if(_Q2max!=0) Q2PQ2max=(_Q2max);
+	if(_eThmax!=0) ThPQ2max=escat::Q2_cosThy(_nuclRestElec.E(),TMath::Cos(_eThmax),y);
+	double useQ2max=0;
+
+	if(Q2PQ2max ==0 && ThPQ2max) useQ2max = ThPQ2max ;//need lowest allowed max
+	else  useQ2max = Q2PQ2max;
+	
+	if(useQ2max!=0){
+	  auto W2min= 2*_massIon * (_nuclRestElec.E() - escat::E_el(_ePmax) )
+	    + _massIon*_massIon - useQ2max;
+	  if( W2min>minMass*minMass){
+	    Wmin=TMath::Sqrt(W2min);
+	    minMass=Wmin;
+	  }
+	}
+	
+      }
+       if(_ePmin!=0) { //convert to y limit
+	if( (_nuclRestElec.E() < escat::E_el(_ePmin)) ){
+	  std::cerr<<"ElectronScattering::InitGen() Error, requested Minimum electron momentum (in proton rest frame) higher than beam energy "<< escat::E_el(_ePmin)<<" > "<<_nuclRestElec.E()<<std::endl;
+	  exit(0);
+	}
+	decayer->Dist().SetYmax((_nuclRestElec.E()-escat::E_el(_ePmin))/_nuclRestElec.E());
+      }
+      //Finally set reaction threshold and this calcualte ylimits
+      std::cout<<" setting lowest W as "<<minMass<<std::endl;
+      decayer->Dist().SetWThreshold(minMass);
+ 
+    }
+    
+  
+    if(_gStarN!=nullptr){
+      _gStarN->SetMinMass(minMass);
+      std::cout<<"CHECK "<<dynamic_cast<DecayModelQ2W*>(Model())<<std::endl;
+      if(auto Q2WModel=dynamic_cast<DecayModelQ2W*>(Model())){
+	Q2WModel->setThreshold(minMass);
+      }
+      generator().SetModelForMassPhaseSpace(_gStarN->Model());
+    }
+
+    DecayingParticle::PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
+    //now scattered electron should be set
+    //_scattered= _reactionInfo._scattered;
+ 
   }
-  /////////////////////////////////////////////////////////////////////////
-  DecayStatus  ElectronScattering::GenerateProducts(){
+/////////////////////////////////////////////////////////////////////////
+DecayStatus  ElectronScattering::GenerateProducts(){
     //First, Eventually want to sample from beam divergence distributions
     LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
 

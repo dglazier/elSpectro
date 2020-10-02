@@ -23,8 +23,6 @@ namespace elSpectro{
       //might need a while loop to make sure TCM>0 when
       //sample product dymamic mass
       auto Tcm=_parent->Mass();
-      std::cout<<" DistFlatMassMaster::SampleSingle() "<<_parent<<" "<<_products.size()<<std::endl;
-      std::cout<<" DistFlatMassMaster::SampleSingle() "<<_parent->Mass()<<std::endl;
       uint imass=0;
       for(const auto& p : _products ){
 	//throw a value of child mass if it has a distribution

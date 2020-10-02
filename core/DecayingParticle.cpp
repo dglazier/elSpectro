@@ -59,6 +59,7 @@ namespace elSpectro{
   //////////////////////////////////////////////////////////////////////
   DecayStatus   DecayingParticle::GenerateProducts(){
 
+    _generateCalls++;
     
     if(Model()->CheckThreshold()==false) return DecayStatus::ReGenerate;
     
@@ -131,7 +132,9 @@ namespace elSpectro{
  //////////////////////////////////////////////////////////////////////
   void DecayingParticle::Print() const {
     Particle::Print();
+    std::cout<<"\t DecayParticle GenerateProducts calls "<<_generateCalls<<std::endl;
     if(Model()) Model()->Print();
+    
   }
 
 
