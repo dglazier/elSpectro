@@ -4,8 +4,10 @@
 namespace elSpectro{
 
   ///Constructor to create ouput file and intialise data structures
-  LundWriter::LundWriter(const std::string &filename):
-    _file(filename)
+  LundWriter::LundWriter(const std::string &filename,long evPerFile):
+    _filename(filename),
+    _file(filename),
+    _eventsPerFile(evPerFile)
   {
     if(!_file.is_open()){
       std::cerr<<"LundWriter::LundWriter file "<<filename<<" cannot be opened, exiting..."<<std::endl;
@@ -24,11 +26,19 @@ namespace elSpectro{
     _file.close();
 
   }
+  ///////////////////////////////////////////////////////////////
+  ///Reached max events for this file start another
+  void LundWriter::NewFile(){
+    End();
+    auto newfilename=TString(_filename);
+    newfilename.ReplaceAll(".dat",Form("__%d.dat",_nFile++));
+    _file.open(newfilename.Data());
+  }
+
   /////////////////////////////////////////////////////////////
   //write all the info required for this event
   void LundWriter::FillAnEvent(){
 
-    
     
     ////fill _stream
     StreamEventInfo();
@@ -43,6 +53,9 @@ namespace elSpectro{
     }
       
     _nEvent++;
+    
+    if(_nEvent%_eventsPerFile==0)
+      NewFile();
   }
 
   /////////////////////////////////////////////////////////

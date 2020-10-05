@@ -23,7 +23,7 @@ namespace elSpectro{
      //so other 5 constructors also defaulted(rule of 5)
 
    public:
-     LundWriter(const std::string& filename);
+     LundWriter(const std::string& filename,long evPerFile=1E18);
      ~LundWriter() final;
      LundWriter(const LundWriter& other); //need the virtual destructor...so rule of 5
      LundWriter(LundWriter&&)=default;
@@ -34,7 +34,8 @@ namespace elSpectro{
      void FillAnEvent() final;
      void Write() final;
      void End() final;
-
+     void NewFile();
+     
    private:
      //streaming functions
      
@@ -61,9 +62,12 @@ namespace elSpectro{
      std::ofstream _file; //! output file
      //std::ostream _stream; //! output stream
      std::stringstream _stream;
-
+     std::string _filename;
+     
      long _nEvent={0};
-   
+     int _nFile={1};
+     long _eventsPerFile=static_cast<long>(1E18);
+     
      int _id=1;
      
      ClassDef(elSpectro::LundWriter,1); //class Writer
