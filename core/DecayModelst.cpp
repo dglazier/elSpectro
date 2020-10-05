@@ -164,6 +164,10 @@ namespace elSpectro{
       std::cout<<"FindMaxOfProbabilityDistribution grid search max= "<<-gridMin<<" at W = "<<gridW<<" and t = "<<gridt<<std::endl;
       ROOT::Math::Minimizer* minimum =
 	ROOT::Math::Factory::CreateMinimizer("Minuit2", "");
+
+      if(minimum==nullptr) //Minuit2 not always installed!
+	minimum = ROOT::Math::Factory::CreateMinimizer("Minuit", "");
+      
       // set tolerance , etc...
       minimum->SetMaxFunctionCalls(1000000); // for Minuit/Minuit2
       minimum->SetMaxIterations(10000);  // for GSL
