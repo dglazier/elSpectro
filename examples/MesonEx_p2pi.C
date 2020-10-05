@@ -71,10 +71,10 @@ void MesonEx_p2pi(double ebeamE=10.4,int nEvents = 5e4) {
   auto proton = pGammaStarDecay->GetBaryon();
   auto electron = dynamic_cast<DecayModelQ2W*>(production->Model())->GetScatteredElectron();
   // ---------------------------------------------------------------------------
-  // Initialize LUND
+  // Initialize LUND with 10000 events per file
   // ---------------------------------------------------------------------------
   
-  writer(new LundWriter{Form("out_mesonex/ep_to_pX2pi_%d.dat",(int)ebeamE)});
+  writer(new LundWriter{Form("out_mesonex/ep_to_pX2pi_%d.dat",(int)ebeamE),10000});
   
   //initilase the generator, may take some time for making distribution tables 
   initGenerator();
