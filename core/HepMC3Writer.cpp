@@ -99,6 +99,7 @@ namespace elSpectro{
 		  return findVertex.second;
 
 	      }
+	      return -1;//default, shouldn't ever happen!
 	    };
 	    auto decayParticleID=findVertex();
 	    
