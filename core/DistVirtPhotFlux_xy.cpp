@@ -109,23 +109,16 @@ namespace elSpectro{
       double avail_xmin = XMin(y);
   
       if(avail_xmin>=1){ lnx=1;return; }
-      /*auto xrange= (TMath::Log(avail_xmax)-TMath::Log(avail_xmin))/_maxPossiblexRange;
-      //std::cout<<xrange<<std::endl;
-      if(xrange<1) //correct integral over x for x-range that is not 0-1, i.e.e to get the correct y dependendence
-	if( gRandom->Uniform()> (xrange) ){ lnx=1;return; }
-      lnx = gRandom->Uniform(TMath::Log(avail_xmin),TMath::Log(avail_xmax));
-      */
+
       if(_maxPossiblexRange)
+	//for efficiecny we need not sample below lowest possible x value
 	lnx = gRandom->Uniform(TMath::Log(_maxPossiblexRange),TMath::Log(1));
       else 
  	lnx = gRandom->Uniform(TMath::Log(1E-50),TMath::Log(1));
-     // lnx = gRandom->Uniform(TMath::Log(avail_xmin),TMath::Log(1));
-      // if(avail_xmax-avail_xmin==1) return; //no limits
-
+  
       //check if we are within allowed x-range
       //if not return and throw another y value
       auto currx=TMath::Exp(lnx);
-      //std::cout<<currx<<" "<<avail_xmin<< " "<<avail_xmax<<std::endl;
       if(currx>avail_xmax){ lnx=1;return; }
       if(currx<avail_xmin){ lnx=1;return; }
     };
