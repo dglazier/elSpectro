@@ -51,6 +51,7 @@ namespace elSpectro{
     // TH1D *hist, *histW;
     TH1D histy={"ydist","ydist",1000,0,1};
     TH2D histyQ2={"yQ2dist","yQ2dist",200,0,20,100,0,1};
+    TH2D histyx={"yxdist","yxdist",100,0,1,100,0,1};
     TH2D histyCosTh={"yCosThdist","yCosThdist",100,-1,1,100,0,1};
     TH1D histW={"genWdist","genWdist",1000,0,100};
     

@@ -80,7 +80,8 @@ namespace elSpectro{
     double _requestCosThmax={-1};
     double _requestThmin={0};
     double _requestThmax={0};
-
+    double _maxPossiblexRange={1};
+    
     //no Ymin as set by threshold
     double _requestYmax={0};
     double _requestYmin={0};

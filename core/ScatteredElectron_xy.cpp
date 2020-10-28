@@ -33,8 +33,10 @@ namespace elSpectro{
  
     
     double Esc = Ee - Egamma;
+    // if(escat::Q2_xy( Ee,xx,yy)<0.3&&escat::Q2_xy( Ee,xx,yy)>0.01) histy.Fill(yy);
     histy.Fill(yy);
     histyQ2.Fill(escat::Q2_xy( Ee,xx,yy),yy);
+    histyx.Fill(xx,yy);
     histW.Fill(W);
   
     //calculate cos(theta) from e,x,y (via Q2 and Mass proton)

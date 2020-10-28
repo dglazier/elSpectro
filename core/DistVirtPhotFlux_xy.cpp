@@ -39,7 +39,7 @@ namespace elSpectro{
     }
     
     double ymin = rmin/(2*_mTar*_ebeam);
-    if(ymin==0) ymin=1E-30;
+    if(ymin==0) ymin=1E-50;
        //now find the y limits with this threshold
     std::cout<<"ymin "<<ymin<<" "<<rmin<<" "<<_Wthresh2<<" "<<_mTar<<" "<<_ebeam<<" "<<_Wthresh2-_mTar*_mTar<<" "<<_requestQ2min<<std::endl;
  
@@ -66,9 +66,20 @@ namespace elSpectro{
     }
     _max_val*=1.01; //to be sure got max
 
+    _maxPossiblexRange=1;
+    for(int i=0;i<1E5;i++){
+      double avail_xmin = XMin(static_cast<double>(i)/1E5);
+      if(avail_xmin<_maxPossiblexRange)
+	_maxPossiblexRange=avail_xmin;
+    }
     
-    std::cout<<"DistVirtPhotFlux_xy max "<<_max_val<<" within y limits "<<TMath::Exp(_lnymin)<<" "<<TMath::Exp(_lnymax)<<std::endl;
+    std::cout<<"DistVirtPhotFlux_xy max "<<_max_val<<" within y limits "<<TMath::Exp(_lnymin)<<" "<<TMath::Exp(_lnymax)<<" minimum possible x "<<_maxPossiblexRange<<std::endl;
     std::cout<<"  Other limits : "<<std::endl;
+
+    // if(_maxPossiblexRange==0)
+    // _maxPossiblexRange=200;
+    //else
+    //  _maxPossiblexRange=-TMath::Log(_maxPossiblexRange);
     
     if(_requestQ2min!=0)std::cout<<"\tQ2min "<<_requestQ2min<<std::endl;
     if(_requestQ2max!=0)std::cout<<"\tQ2max "<<_requestQ2max<<std::endl;
@@ -97,13 +108,26 @@ namespace elSpectro{
       double avail_xmax = XMax(y);
       double avail_xmin = XMin(y);
   
-      auto xrange= avail_xmax-avail_xmin;
+      if(avail_xmin>=1){ lnx=1;return; }
+      /*auto xrange= (TMath::Log(avail_xmax)-TMath::Log(avail_xmin))/_maxPossiblexRange;
+      //std::cout<<xrange<<std::endl;
       if(xrange<1) //correct integral over x for x-range that is not 0-1, i.e.e to get the correct y dependendence
 	if( gRandom->Uniform()> (xrange) ){ lnx=1;return; }
-      
-    
       lnx = gRandom->Uniform(TMath::Log(avail_xmin),TMath::Log(avail_xmax));
-      
+      */
+      if(_maxPossiblexRange)
+	lnx = gRandom->Uniform(TMath::Log(_maxPossiblexRange),TMath::Log(1));
+      else 
+ 	lnx = gRandom->Uniform(TMath::Log(1E-50),TMath::Log(1));
+     // lnx = gRandom->Uniform(TMath::Log(avail_xmin),TMath::Log(1));
+      // if(avail_xmax-avail_xmin==1) return; //no limits
+
+      //check if we are within allowed x-range
+      //if not return and throw another y value
+      auto currx=TMath::Exp(lnx);
+      //std::cout<<currx<<" "<<avail_xmin<< " "<<avail_xmax<<std::endl;
+      if(currx>avail_xmax){ lnx=1;return; }
+      if(currx<avail_xmin){ lnx=1;return; }
     };
 
     getRandomXY();//intial sample
