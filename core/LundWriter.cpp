@@ -1,4 +1,5 @@
 #include "LundWriter.h"
+#include <TDatabasePDG.h>
 #include <iostream>
 
 namespace elSpectro{
@@ -18,6 +19,25 @@ namespace elSpectro{
   
   LundWriter::~LundWriter(){
     End();
+  }
+  ///////////////////////////////////////////////////////////////
+  ///Get beam and target, or e-/gamma and nucleus
+  void LundWriter::Init(){
+
+    Writer::Init();
+    
+    //need to find e- and baryon
+    if(TDatabasePDG::Instance()->GetParticle(_initialParticles[0]->Pdg())->ParticleClass()==TString("Baryon") ){
+      _inTarget=_initialParticles[0];
+      _inBeam=_initialParticles[1]; 
+    }
+    else {
+      _inTarget=_initialParticles[1];
+      _inBeam=_initialParticles[0];
+    }
+ 
+    _beamPdg=_inBeam->Pdg();
+    _targetPdg=_inTarget->Pdg();
   }
   ///////////////////////////////////////////////////////////////
   ///Close the file stream

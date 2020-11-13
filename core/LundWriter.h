@@ -34,6 +34,7 @@ namespace elSpectro{
      void FillAnEvent() final;
      void Write() final;
      void End() final;
+     void Init() final;
      void NewFile();
      
    private:
@@ -42,16 +43,18 @@ namespace elSpectro{
      void StreamEventInfo(){
        // Header (Event Info):
        // # of Particles, # of Target Nucleons, # of Target Protons,
-       // Pol. of Target, Pol. of Electron, x, y, W2, Q2, nu
+       // Pol. of Target, Pol. of Electron,
+       // BeamType, BeamEnergy,Target ID, ProcessID, Weight
 
-       _stream<< "\t "<<_finalParticles.size()<<" "<<1<<" "<<1<<" "<<0.<<" "<<0.
-	      <<" "<<0.<<" "<<0.<<" "<<0.<<" "<<0.<<" "<<0.<<"\n";
+       _stream<< "\t "<<_finalParticles.size()<<" "<<1<<" "<<1
+	      <<" "<<0.<<" "<<0.
+	      <<" "<<_beamPdg<<" "<<_inBeam->P4().E()<<" "<<_targetPdg<<" "<< _inTarget->P4().E() <<" "<<0.<<"\n";
      }
      void StreamParticle(const Particle* p,int status){
        auto p4=p->P4();
        auto ver=p->VertexPosition();
 
-       //second entry 0. == charge Could add to Particle.h
+       //second entry 0. == lifetime Could add to Particle.h
        _stream<<_id++<<" "<<0.<<" "<<status
 	      <<" "<<p->Pdg()<<" "<<0<<" "<<0<<" "
 	      <<p4.X()<<" "<<p4.Y()<<" "<<p4.Z()<<" "<<p4.T()<<" "
@@ -69,6 +72,11 @@ namespace elSpectro{
      long _eventsPerFile=static_cast<long>(1E18);
      
      int _id=1;
+     int _beamPdg=0;
+     int _targetPdg=0;
+     
+     const Particle* _inBeam={nullptr};
+     const Particle* _inTarget={nullptr};
      
      ClassDef(elSpectro::LundWriter,1); //class Writer
    };
