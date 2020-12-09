@@ -161,7 +161,7 @@ namespace elSpectro{
 	for(int it=0;it<Npoints;it++){
 	  WtVals[1]=tming-it*trange/Npoints;
 	  auto val = Fmax(WtVals);
-	  if(it==0)std::cout<<WtVals[0]<<" "<<WtVals[1]<<" val "<<val<<std::endl;
+	  // if(it==0)std::cout<<WtVals[0]<<" "<<WtVals[1]<<" val "<<val<<std::endl;
 	  if(val<gridMin) {
 	    gridMin=val;
 	    gridW=WtVals[0];
