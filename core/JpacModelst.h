@@ -37,7 +37,7 @@ namespace elSpectro{
     //void PostInit(ReactionInfo* info) override;
 
     double MatrixElementsSquared_T() const override {
-     _amp->kinematics->set_vectormass( GetMeson()->Mass() );
+     _amp->kinematics->set_mX( GetMeson()->Mass() );
 
 
      // std::cout<<" MatrixElementsSquared_T s "<<get_s()<<" t "<<get_t()<<" mm "<<GetMeson()->Mass()<<" "<<_amp->probability_distribution(get_s(),get_t())<<std::endl;

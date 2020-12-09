@@ -7,6 +7,12 @@ Event Generator framework for incorporating Spectroscopy into electro / photopro
 ROOT 6
 (optional) HepMC3
 
+JpacPhoto if you wish to include amplitudes
+
+     git clone https://github.com/dwinney/jpacPhoto
+
+Then follow buil instructions.
+
 # Installation
 
      git clone https://github.com/dglazier/elSpectro
