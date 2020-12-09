@@ -111,7 +111,7 @@ namespace elSpectro{
       if(avail_xmin>=1){ lnx=1;return; }
 
       if(_maxPossiblexRange)
-	//for efficiecny we need not sample below lowest possible x value
+	//for efficiency we need not sample below lowest possible x value
 	lnx = gRandom->Uniform(TMath::Log(_maxPossiblexRange),TMath::Log(1));
       else 
  	lnx = gRandom->Uniform(TMath::Log(1E-50),TMath::Log(1));
@@ -133,14 +133,97 @@ namespace elSpectro{
 	std::cout<<" MAX REACHED "<<_val<<" "<<_max_val<<std::endl;
 	exit(0);
       }
-    
-      getRandomXY(); //sample anothe pair
-    
+      getRandomXY(); //sample another pair
     }
     
-  
-  _xy=std::make_pair(TMath::Exp(lnx),TMath::Exp(lny));
+
+    //now we want the value of ths function to be Photon flux as function of x and y
+    auto x=TMath::Exp(lnx);
+    auto y=TMath::Exp(lny);
+    
+    _val=escat::flux_dxdy(_ebeam,x,y);
+     
+    //return x and y values
+    _xy=std::make_pair(x,y);
   
   }
- 
+   void DistVirtPhotFlux_xy::FindFlat(){
+
+     _val=0;
+     _xy=std::make_pair(-1,-1); //unphysical should never be used
+    
+     double y = gRandom->Uniform( TMath::Exp(_lnymin),TMath::Exp(_lnymax) );
+     
+     //calculate the fraction of x-space available
+     //now calculate x limits
+     //y = r/2ME and x = Q2/r 
+     double avail_xmax = XMax(y);
+     double avail_xmin = XMin(y);
+  
+     if(avail_xmin>=1){ return; }
+
+     
+     double x=-1;
+     if(_maxPossiblexRange)
+       //for efficiency we need not sample below lowest possible x value
+       x = gRandom->Uniform(_maxPossiblexRange,1);
+     else 
+       x = gRandom->Uniform(0,1);
+     
+     //check if we are within allowed x-range
+     if( x<avail_xmax && x>avail_xmin )
+       _val=escat::flux_dxdy(_ebeam,x,y);
+     
+     //return x and y values
+     _xy=std::make_pair(x,y);
+     
+     
+      
+     return;
+     
+   }
+  /*
+   void DistVirtPhotFlux_xy::FindFlat(){
+
+     TF1 sampleX("sampleX","TMath::Exp(-x[0])",0,1);
+     sampleX.SetRange(0,1);
+     sampleX.SetNpx(1E4);
+     TF1 sampleY("sampleY","TMath::Exp(-x[0])",0,1);
+     sampleY.SetRange(TMath::Exp(_lnymin),TMath::Exp(_lnymax));
+     sampleY.SetNpx(1E4);
+    
+     _val=0;
+     _xy=std::make_pair(-1,-1); //unphysical should never be used
+    
+      double y = sampleY.GetRandom();
+      double sampleYVal=sampleY.Eval(y)/sampleYIntegral;
+     
+     //calculate the fraction of x-space available
+     //now calculate x limits
+     //y = r/2ME and x = Q2/r 
+     double avail_xmax = XMax(y);
+     double avail_xmin = XMin(y);
+  
+     if(avail_xmin>=1){ return; }
+
+     double x=-1;
+     while(x<_maxPossiblexRange)
+        x = sampleX.GetRandom();
+     
+     double sampleXVal=sampleX.Eval(x)/sampleXIntegral;
+    
+     //check if we are within allowed x-range
+     if( x<avail_xmax && x>avail_xmin )
+       _val=escat::flux_dxdy(_ebeam,x,y)/sampleYVal/sampleXVal;
+     
+     //return x and y values
+     _xy=std::make_pair(x,y);
+     
+     
+      
+     return;
+     
+   }
+
+  */
 }//namespace

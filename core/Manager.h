@@ -35,8 +35,16 @@ namespace elSpectro{
        _writer->FillAnEvent();
        _writer->Write();
      }
+
+     void Integrate_dsigma(){
+       // _sum_dsigma+=_process->dsigma();
+       //_sum_1bydsigma+=1./_process->dsigma();
+       ++_nevents;
+     }
+     double IntegratedXSection()const {return _sum_dsigma/_sum_1bydsigma;}
+
      
-      void Reaction(ProductionProcess* prod){
+     void Reaction(ProductionProcess* prod){
        _process.reset(prod);
      }
      
@@ -71,6 +79,7 @@ namespace elSpectro{
      void Summary(){
        _process->Print();
       _massPhaseSpace.Print();
+      std::cout<<"Average Total Cross Section (nb) = "<<IntegratedXSection()<<std::endl;
       }
   private:
 
@@ -83,7 +92,11 @@ namespace elSpectro{
     std::vector<const LorentzVector*> _vertices;
     
     MassPhaseSpace _massPhaseSpace;
-      
+
+
+    double _sum_dsigma=0;
+    double _sum_1bydsigma=0;
+    long long _nevents=0;
     ClassDef(elSpectro::Manager,1); //class Manager
   };
 

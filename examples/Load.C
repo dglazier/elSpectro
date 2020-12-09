@@ -1,4 +1,15 @@
-{
+namespace elSpectro{};
+using namespace elSpectro;
+
+namespace elSpectro{namespace escat{}};
+using namespace escat;
+
+namespace jpacPhoto{};
+using namespace jpacPhoto;
+
+
+
+void Load(){
   gSystem->Load("libEG");
  
   TString JPAC = gSystem->Getenv("JPACPHOTO");
@@ -21,5 +32,9 @@
   }
   
   ROOT::Math::LorentzRotation ddd;
- 
+
+  // gROOT->ProcessLine("#include \"Interface.h\"");
+  //gROOT->ProcessLine("#include \"Manager.h\"");
+  gROOT->ProcessLine("elSpectro::Manager::Instance();");
+
 }

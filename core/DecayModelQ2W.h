@@ -60,7 +60,6 @@ namespace elSpectro{
     double getW() const noexcept{ return GetGammaN()->Mass();}
     double getThreshold() const noexcept{return _threshold;}
     void setThreshold(double val) noexcept{
-      std::cout<<"set threshold "<<val<<" "<<_threshold<<std::endl;
       if(val<_threshold) return;
       _threshold=val;
     }
@@ -71,6 +70,9 @@ namespace elSpectro{
     constexpr double Q2H1RhoAt0() const  noexcept {return 3.0610097;}//1./TMath::Power((0.77549000*0.77549000),2.2); 
     double Q2H1Rho() const noexcept {return 1./TMath::Power((getQ2() + 0.77549000*0.77549000),2.2)/Q2H1RhoAt0(); }
 
+
+    double dsigma() const override { return  dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->dsigma();}// * Q2 factor }
+
   protected:
     
     //mutable PhotoProdInfo _myInfo;//!
@@ -78,7 +80,8 @@ namespace elSpectro{
     mutable LorentzVector _gamma;
     mutable PhotonPolarisationVector _photonPol;
 
-
+  public:
+    
     double PhaseSpaceFactorToQ2eq0(double W, double targetM) const noexcept {
       auto cmBoost=_gstarNuc->P4().BoostToCM();
       auto p1cm=boost(_gamma,cmBoost);

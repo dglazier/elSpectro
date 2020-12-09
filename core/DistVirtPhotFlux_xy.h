@@ -27,7 +27,7 @@ namespace elSpectro{
     }
     
     dist_pair SamplePair()   noexcept final {
-      FindWithAcceptReject();
+      _forIntegral==false ? FindWithAcceptReject() : FindFlat();
       return _xy;
     }
 
@@ -41,6 +41,7 @@ namespace elSpectro{
     double GetMaxX() const noexcept final{return 1;}
 
     void FindWithAcceptReject();
+    void FindFlat();
     
     void SetElecE(double ee){_ebeam=ee;}
     void SetM(double m){_mTar=m;}
@@ -56,6 +57,8 @@ namespace elSpectro{
     void SetYmax(double val){_requestYmax=val;}
     void SetYmin(double val){_requestYmin=val;}
 
+
+    void ForIntegrate(bool integ){_forIntegral=integ;}
   protected:
     double XMin(double y);
     double XMax(double y);
@@ -88,6 +91,7 @@ namespace elSpectro{
     double _requestXmin={0};
     double _requestXmax={1};
 
+    bool _forIntegral=false;
     
     ClassDef(elSpectro::DistVirtPhotFlux_xy,1); //class DistVirtPhotFlux_xy
  

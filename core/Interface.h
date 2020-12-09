@@ -23,6 +23,7 @@ namespace elSpectro{
   inline void nextEvent(){
     generator().Clear();
     generator().Reaction()->GenerateProducts();
+    generator().Integrate_dsigma();
     generator().Write();
   }
   //////////////////////////////////////////////////////////////
@@ -35,6 +36,12 @@ namespace elSpectro{
   //////////////////////////////////////////////////////////////
   inline Particle* particle(int pdg,DecayModel* const model){
     return particles().Take(new DecayingParticle{pdg,model});
+  }
+  //////////////////////////////////////////////////////////////
+  inline Particle* particle(int pdg,double mass,DecayModel* const model){
+    auto p = particles().Take(new DecayingParticle{pdg,model});
+    p->SetPdgMass(mass);
+    return p;
   }
   //////////////////////////////////////////////////////////////
   inline void mass_distribution(int pdg,Distribution *dist){

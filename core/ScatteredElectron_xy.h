@@ -31,7 +31,10 @@ namespace elSpectro{
 
 
     void SetModel(DecayModel* model){_gStarNmodel=model;}
-   protected:
+
+    double dsigma() const override{return _random_xy.CurrentValue();} // dxdy=1
+
+  protected:
 
     void RotateZaxisToCMDirection(const LorentzVector& parent);
     
@@ -53,7 +56,7 @@ namespace elSpectro{
     TH2D histyQ2={"yQ2dist","yQ2dist",200,0,20,100,0,1};
     TH2D histyx={"yxdist","yxdist",100,0,1,100,0,1};
     TH2D histyCosTh={"yCosThdist","yCosThdist",100,-1,1,100,0,1};
-    TH1D histW={"genWdist","genWdist",1000,0,100};
+    TH1D histW={"genWdist","genWdist",1000,0,10};
     
     ClassDefOverride(elSpectro::ScatteredElectron_xy,1); //class DecayVectors
  

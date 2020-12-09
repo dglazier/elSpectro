@@ -57,12 +57,14 @@ namespace elSpectro{
     const ReactionElectroProd* ProductionInfo() const { return _prodInfo; }
 
     void HistIntegratedXSection(TH1D& hist);
+    void HistMaxXSection(TH1D& hist);
+    
   protected:
     
     virtual double MatrixElementsSquared_L() const {return 0; }
     virtual double MatrixElementsSquared_T() const {return 1; } //just real photon by default
     
-    constexpr double  PhaseSpaceNorm() const {return 1./(2.56819E-6)/64/TMath::Pi();}
+    constexpr double  PhaseSpaceNorm() const {return 1./(2.56819E-6)/64/TMath::Pi();}// Convert from GeV^-2 -> nb
     double PhaseSpaceFactor() const noexcept {
        /* auto fluxPhaseSpace = p1*_W;//eqn 47.28b https://pdg.lbl.gov/2019/reviews/rpp2019-rev-kinematics.pdf
       auto ans =  1./fluxPhaseSpace
@@ -86,6 +88,7 @@ namespace elSpectro{
 
     double FindMaxOfIntensity();
 
+  public:
     double get_s() const noexcept{ return _s; }
     double get_t() const noexcept { return _t; }
     double get_W() const noexcept { return _W; }
@@ -95,10 +98,15 @@ namespace elSpectro{
     double DifferentialXSect() const{//dont let others call this as need _s, _W and _t set
       //Note if your derived model already gives differential cross section
       //you will need to divide by PhaseSpaceFactor to get MatrixElementSquared from it
-      return PhaseSpaceFactor() * ( MatrixElementsSquared_T() +
-				    (_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()); //eqn from Seyboth and Wolf
+
+      // return _dsigma=MatrixElementsSquared_T();
+
+      //std::cout<<" DifferentialXSect()  "<<PhaseSpaceFactor()<<" "<<MatrixElementsSquared_T()<<std::endl;
+      return _dsigma=PhaseSpaceFactor() * ( MatrixElementsSquared_T() +
+          				    (_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()); //eqn from Seyboth and Wolf
     }
- 
+    double dsigma() const override {return _dsigma*_dt;}
+      
     SDME* _sdmeMeson={nullptr};
     SDME* _sdmeBaryon={nullptr};
     PhotonPolarisationVector* _photonPol={nullptr};
@@ -116,6 +124,8 @@ namespace elSpectro{
     mutable double _s={0};
     mutable double _t={0};
     mutable double _W={0};
+    mutable double _dt={0};
+    mutable double _dsigma={0};
     double _Wmax={0};
  
     bool _useSDME={false};

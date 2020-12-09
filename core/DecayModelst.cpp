@@ -49,7 +49,7 @@ namespace elSpectro{
     
      double maxW = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
 
-     _max = FindMaxOfIntensity()*1.2; //add 20% for Q2,meson mass effects etc.
+     _max = FindMaxOfIntensity(); //add 20% for Q2,meson mass effects etc.
 
      std::cout<<"DecayModelst::PostInit max value "<<_max<<" "<<_meson<<" "<<_meson->Pdg()<<" "<<_sdmeMeson<<std::endl;
   }
@@ -66,21 +66,28 @@ namespace elSpectro{
     _W = Parent()->P4().M();
     _s=_W*_W;
     _t = (_meson->P4()-*_photon).M2();//_amp->kinematics->t_man(s,cmMeson.Theta());
-
-    //now we can define production/polarisation plane
+       //now we can define production/polarisation plane
     MomentumVector decayAngles;
     kine::electroCMDecay(&Parent()->P4(),_ebeam,_photon,_meson->P4ptr(),&decayAngles);
     _photonPol->SetPhi(decayAngles.Phi());
 
+    //   std::cout<<_W <<" and "<<_t<<" "<<_meson->P4().E()<<" "<<_photon->E()<<" cos costheta "<<TMath::Cos(decayAngles.Theta())<<std::endl;
+
    //weight==differential cross section //See Seyboth and Wolf eqn (70)
    // double trangeRatio=4* kine::PDK(_W,0,_target->M())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() );// / (  kine::PDK(_Wmax,0,_target->M() )* kine::PDK(_Wmax,_meson->P4().M(),_baryon->P4().M() ) );
-    double trangeFactor=4* TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() );    
-    double weight = DifferentialXSect()* trangeFactor  ; 
+    _dt=4* TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() );
+    //double otherdt=4*kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() )   * kine::PDK(_W,0,_baryon->P4().M() );
+    // std::cout<<" dt "<<  _dt<<" "<<otherdt<<std::endl;
     
+    double weight = DifferentialXSect() * _dt ;
+
+    // _dt=otherdt;
+    //_dt/=(2*(TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() )));
     CalcMesonSDMEs();
     CalcBaryonSDMEs();
  
     weight/=_max; //normalise range 0-1
+    weight/=TMath::Sqrt(PgammaCMsq()/kine::PDK2(_W,0,_baryon->Mass())); //correct max for finite Q2 phase space
     
 
     if(weight>1){
@@ -88,16 +95,18 @@ namespace elSpectro{
       
       //auto oldmax=_max;
       //_max=weight*oldmax;
-      std::cout<<"DecayModelst::Intensity weight too high but won't change max (prob Q2 too high) from  "<<_max<<" to "<<weight*_max<<std::endl;
+      std::cout<<"DecayModelst::Intensity weight too high but won't change maxprobable low meson mass and W from  "<<_max<<" to "<<weight*_max<<" meson "<<_meson->Mass()<<" W "<<_W<<std::endl;
+      //std::cout<<"DX "<<DifferentialXSect()<<" "<< _dt<<" pgam "<<PgammaCMsq()<<" M^2 "<<MatrixElementsSquared_T()<<" Q2 factor "<<PgammaCMsq()/kine::PDK(_W,_meson->Mass(),_baryon->Mass())<<std::endl;
     }
     
-    //Correct for Q2&W weighting which has already been applied
+    //Correct for W weighting which has already been applied
     weight/=_prodInfo->_sWeight;
     
     if(weight>1){
       std::cout<<" s weight "<<_prodInfo->_sWeight<<" Q2 "<<-_photon->M2()<<" 2Mmu "<<2*_target->M()*_photon->E() <<" W "<<_W<<" t "<<_t<<" new weight "<<weight*_prodInfo->_sWeight<<" meson "<<_meson->Mass()<<std::endl;
       std::cout<<"DecayModelst::Intensity sWeight corrected weight too large "<<weight <<" "<<_prodInfo->_sWeight<<"  max "<<_max<<" val "<< weight*_prodInfo->_sWeight*_max<<std::endl;
-      //std::cout<<"flux "<<kine::FluxPhaseSpaceFactor(*_photon,*_target)<<" "<<4*kine::PDK(W,_meson->Mass(),_baryon->Mass())*W<<" "<< kine::PhaseSpaceFactorDt(W,P1,_meson->Mass(),_baryon->Mass())<<std::endl;				    
+      std::cout<<"DX "<<DifferentialXSect()<<" "<< _dt<<" pgam "<<TMath::Sqrt(PgammaCMsq())<<" M^2 "<<MatrixElementsSquared_T()<<" Q2 factor "<<TMath::Sqrt(PgammaCMsq())/kine::PDK(_W,0,_baryon->Mass())<<std::endl;
+    //std::cout<<"flux "<<kine::FluxPhaseSpaceFactor(*_photon,*_target)<<" "<<4*kine::PDK(W,_meson->Mass(),_baryon->Mass())*W<<" "<< kine::PhaseSpaceFactorDt(W,P1,_meson->Mass(),_baryon->Mass())<<std::endl;				    
       //std::cout<<"Pi check "<<P1 <<" versus "<< kine::PDK(W,_photon->M(),_target->M())<<std::endl;
     }
      
@@ -253,8 +262,7 @@ namespace elSpectro{
 
       for(int ih=1;ih<=hist.GetNbinsX();ih++){
 	_W=hist.GetXaxis()->GetBinCenter(ih);
-	_W=_W+hist.GetXaxis()->GetBinWidth(ih); //take right limit so do not miss threshold
-	//std::cout<<"Going to integrate from t "<<kine::tmax(_W,M1,M2,M3,M4)<<" "<<kine::t0(_W,M1,M2,M3,M4)<<" at W "<<" and "<<_W<<std::endl;
+	//	_W=_W+hist.GetXaxis()->GetBinWidth(ih); //take right limit so do not miss threshold
 	if( _W < Wmin )
 	  hist.SetBinContent(ih, 0);
 	if( TMath::IsNaN(kine::tmax(_W,M1,M2,M3,M4)) )
@@ -264,14 +272,86 @@ namespace elSpectro{
 	else
 	  hist.SetBinContent(ih, ig.Integral(kine::tmax(_W,M1,M2,M3,M4),kine::t0(_W,M1,M2,M3,M4)) );
 	
+	std::cout<<ih<<" "<<"Going to integrate from t "<<kine::tmax(_W,M1,M2,M3,M4)<<" "<<kine::t0(_W,M1,M2,M3,M4)<<" at W "<<" and "<<_W<<" "<<Wmin<<" with result "<<hist.GetBinContent(ih)<<"t rage "<< kine::tmax(_W,M1,M2,M3,M4) - kine::t0(_W,M1,M2,M3,M4)<<std::endl;
+	//or try histogram method
+	TH1F histi("histi","integral",100, kine::tmax(_W,M1,M2,M3,M4),kine::t0(_W,M1,M2,M3,M4));
+	for(int it=1;it<=histi.GetNbinsX();it++){histi.SetBinContent(it,F(histi.GetBinCenter(it)));}
+	std::cout<<"alternative "<<histi.Integral("width")<<std::endl;
 	if(ih%10==0)std::cout<<(hist.GetNbinsX() - ih)/10<<" "<<std::endl;
       }
       std::cout<<std::endl;
       //done
   }
   
+  void DecayModelst::HistMaxXSection(TH1D& hist){
+
+ 
+    auto M1 = 0;//assum real photon for calculation
+    auto M2 = _target->M();
+    auto M3 = _meson->Mass(); //should be pdg value here
+    auto M4 = _baryon->Mass();
+    //auto Wmin = M3+M4;
+    auto Wmin = Parent()->MinimumMassPossible();
+ 
+    auto F = [this,&Wmin](double t)
+      {
+	//_W=W;
+	if(_W<Wmin)return 0.;
+	_s=_W*_W;
+	_t=t;
+	return DifferentialXSect();
+      };
+    
+   
+      
+ 
+      for(int ih=1;ih<=hist.GetNbinsX();ih++){
+	_W=hist.GetXaxis()->GetBinCenter(ih);
+	if( _W < Wmin )
+	  hist.SetBinContent(ih, 0);
+	if( TMath::IsNaN(kine::tmax(_W,M1,M2,M3,M4)) )
+	  hist.SetBinContent(ih, 0);
+	if( TMath::IsNaN(kine::t0(_W,M1,M2,M3,M4)) )
+	  hist.SetBinContent(ih, 0);
+	else{
+	  double max_at_W=0;
+	  double tmax=kine::tmax(_W,M1,M2,M3,M4);
+	  double tmin=kine::t0(_W,M1,M2,M3,M4);
+	  int Ntpoints=100;
+	  double tstep=(tmax-tmin)/Ntpoints;
+	  double tval=tmin;
+	  for(int itt=0;itt<Ntpoints;itt++){
+	    _W=hist.GetXaxis()->GetBinCenter(ih);
+
+	    double val_at_t = F(tval)*(tmin-tmax);
+	    if(val_at_t>max_at_W)
+	      max_at_W=val_at_t;
+
+	    
+	    _W=_W+hist.GetXaxis()->GetBinWidth(ih)/2; //take right limit
+	    val_at_t = F(tval)*(tmin-tmax);
+	    if(val_at_t>max_at_W)
+	      max_at_W=val_at_t;
+	    
+	    _W=_W-hist.GetXaxis()->GetBinWidth(ih); //take left limit 
+	    val_at_t = F(tval)*(tmin-tmax);
+	    if(val_at_t>max_at_W)
+	      max_at_W=val_at_t;
+	    
+	    //move on
+	    tval+=tstep;
+	  }
+	  hist.SetBinContent(ih, max_at_W );
+
+	}
+      }
+      //	if(ih%10==0)std::cout<<(hist.GetNbinsX() - ih)/10<<" "<<std::endl;
+  
+      std::cout<<std::endl;
+      //done
+  }
 }
-    /* perhaps this can go in script for fixed values of sdmes
+/* perhaps this can go in script for fixed values of sdmes
     //Meson spin density marix elements, note this is photoproduced
     if(_sdmeMeson){
       _sdmeMeson->SetElement(0,0,0,);

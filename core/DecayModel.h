@@ -101,7 +101,9 @@ namespace elSpectro{
 
     virtual void SetParent(DecayingParticle* pa){ _parentPtr=pa;}
     DecayingParticle* Parent()const noexcept{return _parentPtr;}
-    
+
+    virtual double dsigma() const {return 1;}
+
   protected:
 
     std::string _name;

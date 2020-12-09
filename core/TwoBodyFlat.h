@@ -30,7 +30,14 @@ namespace elSpectro{
     double Generate(const LorentzVector& parent,
 		    const particle_ptrs& products)  final;
 
-    virtual double RandomCosTh() const noexcept{ return gRandom->Uniform(-1,1); }
+    virtual double MyRandomCosTh() const noexcept{ return gRandom->Uniform(-1,1); }
+    virtual double RandomCosTh() const noexcept{
+      if(_forIntegral==true)
+	//integration requires flat distribution
+	return gRandom->Uniform(-1,1);
+      return MyRandomCosTh();
+    }
+ 
 
   protected :
 

@@ -60,7 +60,12 @@ namespace elSpectro{
     void SetLimitTarRest_ePmax(double val){_ePmax=val;}
     void SetLimitTarRest_eThmin(double val){_eThmin=val;}
     void SetLimitTarRest_eThmax(double val){_eThmax=val;}
- 
+
+
+    double dsigma() const override {return _gStarN->Model()->dsigma()* Decayer()->dsigma();}
+    //double dsigma() const override {return _gStarN->Model()->dsigma();}
+    // double dsigma() const override {return Decayer()->dsigma();}
+    
   private:
     
     ElectronScattering()=default;

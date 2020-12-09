@@ -45,7 +45,7 @@ namespace elSpectro{
     auto y_a = 0;//p_a * sinth * sinphi;
     auto z_a = p_a * costh;
 
-
+    // std::cout<<"COS TH "<<costh<<std::endl;
 
     
     /* 

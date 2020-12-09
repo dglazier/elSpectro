@@ -36,6 +36,10 @@ namespace elSpectro{
     
     virtual void PostInit(ReactionInfo* info){};
 
+    virtual double dsigma() const {return 1;}
+
+    void ForIntegrate(bool integ){_forIntegral=integ;}
+
   protected:
     
     mutable double _weight={1};
@@ -99,6 +103,10 @@ namespace elSpectro{
    }
 
     virtual double RandomPhi() const noexcept { return gRandom->Uniform(-TMath::Pi(),TMath::Pi()); }
+ 
+  protected:
+    
+    bool _forIntegral=false;
 
   private:
     
@@ -106,7 +114,7 @@ namespace elSpectro{
     ROOT::Math::RotationZYX _rotateToZaxis; //save memory allocation
     ROOT::Math::RotationZ _rotateAroundZaxis;//save memory allocation
  
-    
+ 
     ClassDef(elSpectro::DecayVectors,1); //class DecayVectors
  
 

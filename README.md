@@ -62,9 +62,14 @@ Note the double cmake ../; make install; is required for ROOT pcm files
 
 ### Examples of ElectroProduction of Jpac amplitudes
 
-1) e + p -> e' Y (Jpsi (e+e-)rho(pi+,pi-)) p
+1) e + p -> e' X (Jpsi (e+e-)rho(pi+,pi-)) p
 
-       root Load.C JpacAmpVectorJpsiPiPi_hepmc3.C
+       root Load.C EIC_JPAC_X3872.C
+
+       Or with diagnostic histgra,s
+
+       root Load.C EIC_JPAC_X3872_Hists.C
+       
 
 ### Examples of MesonEx Quasi-real PhotoProduction
 

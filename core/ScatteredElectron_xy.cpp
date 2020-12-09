@@ -38,7 +38,7 @@ namespace elSpectro{
     histyQ2.Fill(escat::Q2_xy( Ee,xx,yy),yy);
     histyx.Fill(xx,yy);
     histW.Fill(W);
-  
+   
     //calculate cos(theta) from e,x,y (via Q2 and Mass proton)
     double costh = escat::CosTh_xy(Ee,xx,yy);
     costh = costh>1 ? 1 : costh; //protect <=1
@@ -48,10 +48,6 @@ namespace elSpectro{
     auto sinth=TMath::Sqrt(1-costh*costh);
 
     //random phi done in RotatetoParent
-    //double phi=0;
-    //auto cosphi=1;
-    //auto sinphi=0;
-     
     double Psc=escat::P_el(Esc);
     
     auto x_sc = Psc * sinth ;
@@ -72,7 +68,7 @@ namespace elSpectro{
       products[1]->SetP4(_scattered);
       products[0]->SetP4(parent -_scattered);
     }
-    return 1;//in this case distribition already accounts for virtual photon flux
+    return 1;//in this case distribution already accounts for virtual photon flux
     
     
   }

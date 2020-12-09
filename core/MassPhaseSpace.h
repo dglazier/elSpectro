@@ -47,7 +47,6 @@ namespace elSpectro{
       //Note PhaseSpaceWeightMaxFromEquDist does not quite get to max, so increase by 10% to be safe....will give warning if event weight is above this....
       double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses)*1.05;
       //double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses);
-
       //accept or reject mass combinations until got one
       //as W dependence accounted for elsewere
       //PhaseSpaceWeight will try alternative masses

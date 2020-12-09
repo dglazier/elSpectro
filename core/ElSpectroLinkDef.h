@@ -8,6 +8,7 @@
 #pragma link C++ namespace elSpectro;
 
 
+//#pragma link C++ class elSpectro::LorentzVector+;
 #pragma link C++ class elSpectro::Particle+;
 
 #pragma link C++ class elSpectro::DecayingParticle+;
@@ -48,6 +49,9 @@
 #pragma link C++ class elSpectro::Manager+;
 
 #pragma link C++ defined_in "Interface.h";
+#pragma link C++ defined_in "FunctionsForElectronScattering.h";
+#pragma link C++ defined_in "FunctionsForKinematics.h";
+#pragma link C++ defined_in "FunctionsForGenvector.h";
 
 
 #endif

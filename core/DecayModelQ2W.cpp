@@ -87,13 +87,14 @@ namespace elSpectro{
   
   ////////////////////////////////////////////////////////
   double  DecayModelQ2W::Intensity() const{
-    // std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<ParentVector().M()<<std::endl;
+    // std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<ParentVector().M()<<" "<<getW()<<std::endl;
     /*if(CheckThreshold()==false){
       return 0.;
       }*/
 
     double W = getW();
     //if(W <GetGammaN()->MinimumMassPossible()) return 0;
+    if(TMath::IsNaN(W)) return 0.0;
     if(W  < _threshold ) return 0.;
  
   
@@ -126,12 +127,13 @@ namespace elSpectro{
     _prodInfo->_sWeight=weight; //might be used in s and t
 
     //now add Q2 depedence to get weighted here
-    
+ 
     //Q2 dependence of phase space needed to effectively multiply st max value
     //Here the Q2 dependence would multiply weight value and max ,thus cancelling
     //i.e do not do weight*=PhaseSpaceFactorToQ2eq0(W,p4tar.M() );
-    _prodInfo->_sWeight*=PhaseSpaceFactorToQ2eq0(W,p4tar.M() );
-
+    //_prodInfo->_sWeight*=PhaseSpaceFactorToQ2eq0(W,p4tar.M() );
+    
+    
     if(weight>1){
     auto cmBoost=_gstarNuc->P4().BoostToCM();
     auto p1cm=boost(_gamma,cmBoost);
@@ -139,7 +141,7 @@ namespace elSpectro{
     }
     
     //Q2 dependence of cross section
-    //   weight*=Q2H1Rho();
+    weight*=Q2H1Rho();
   
     return weight;
   
@@ -160,15 +162,16 @@ namespace elSpectro{
     auto meson=gNprods[0];
  
     DecayModelst* mesonBaryon = nullptr;
-    TH1D histlow("Wdistlow","Wdistlow",50,_threshold,maxW);
-    TH1D histpeak("Wdisthigh","Wdisthigh",50,_threshold,maxW);
+    TH1D histlow("Wdistlow","Wdistlow",100,_threshold,maxW);
+    TH1D histpeak("Wdisthigh","Wdisthigh",100,_threshold,maxW);
     double minMesonMass=-1;
     if( ( mesonBaryon=dynamic_cast<DecayModelst*>(GetGammaN()->Model())) != nullptr){
       //check for low mass meson limits
       if(dynamic_cast<DecayingParticle*>(meson)){ //meson
 	dynamic_cast<DecayingParticle*>(meson)->TakeMinimumMass();//to get threshold behaviour
 	minMesonMass=meson->Mass();
-	mesonBaryon->HistIntegratedXSection(histlow);
+	//mesonBaryon->HistIntegratedXSection(histlow);
+	mesonBaryon->HistMaxXSection(histlow);
 	//back to PDg mass if exists
 	if(meson->PdgMass()>minMesonMass)
 	  dynamic_cast<DecayingParticle*>(meson)->TakePdgMass();
@@ -178,7 +181,8 @@ namespace elSpectro{
       //only needs to be done if meson does not decay
       //or pdg mass is different from minMesonMass (possible if !=0)
       if(meson->PdgMass()!=minMesonMass)
-      	mesonBaryon->HistIntegratedXSection(histpeak);
+ 	mesonBaryon->HistMaxXSection(histpeak);
+      //mesonBaryon->HistIntegratedXSection(histpeak);
    
      auto hist = HistFromLargestBinContents(histlow,histpeak);
      
@@ -196,7 +200,7 @@ namespace elSpectro{
       auto maxVal= h1.GetMaximum();
       for(int ibin=1;ibin<=hist.GetNbinsX();ibin++){
 	auto val = h1.GetBinContent(ibin)>h2.GetBinContent(ibin) ? h1.GetBinContent(ibin):h2.GetBinContent(ibin);
-	hist.SetBinContent(ibin,val + 0.1*maxVal);
+	hist.SetBinContent(ibin,val + 0.05*maxVal);
 	std::cout<<"HistFromLargestBins "<<hist.GetBinCenter(ibin)<<" "<<hist.GetBinContent(ibin)<<" "<< maxVal<<std::endl;
 	
       }

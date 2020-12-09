@@ -4,6 +4,8 @@
 #include "Interface.h" //for generator
 #include "ScatteredElectron_xy.h"
 #include <TDatabasePDG.h>
+#include <TH1F.h>
+#include <TFile.h>
 
 
 namespace elSpectro{
@@ -239,7 +241,7 @@ namespace elSpectro{
       //Finally set reaction threshold and this calcualte ylimits
       std::cout<<" setting lowest W as "<<minMass<<std::endl;
       decayer->Dist().SetWThreshold(minMass);
- 
+      Wmin=minMass;
     }
     
   
@@ -252,10 +254,78 @@ namespace elSpectro{
       generator().SetModelForMassPhaseSpace(_gStarN->Model());
     }
 
+    
     DecayingParticle::PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
     //now scattered electron should be set
     //_scattered= _reactionInfo._scattered;
+
+    //integration
+
+    /*
+    long _NIntegrateW=100;
+    long _NIntegratet=10000;
+    long Npass=0;
+    double integral=0;
+
+    
+    static_cast<DistVirtPhotFlux_xy*>(&decayer->Dist())->ForIntegrate(true);
+    // _gStarN->mutableDecayer()->ForIntegrate(true);
+    for(long iW=0;iW<_NIntegrateW;++iW){
+      LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
+
+      //Boost into ion rest frame
+      auto prBoost=_beamNucl.P4().BoostToCM();
+      collision=boost(collision,prBoost);
+      _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.Mass());
+      _nuclRestElec= boost(_beamElec.P4(),prBoost);
+      //set decay parent for e -> e'g*
+      SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
  
+      Decay(); //e'
+      auto pass=Model()->Intensity();
+      if(pass==0) continue;
+      
+      double intet=0;
+      Npass++;
+      //TH1D histt("t","t",100,-30,0);
+     for(long it=0;it<_NIntegratet;++it){
+	_gStarN->Decay(); //random t/cosTh
+	_gStarN->Model()->Intensity();
+	//histt.Fill(static_cast<DecayModelst*>(_gStarN->Model())->get_t());
+	
+	intet+=dsigma();
+      }
+      //integral+=intet;
+      TH1D histCross("XSection","XSection",1,_gStarN->Mass()-0.001,_gStarN->Mass()+0.001);
+      //double Wmid=gRandom->Uniform(5.5,6.5);
+      //TH1D histCross("XSection","XSection",1,Wmid-0.001,Wmid+0.001);
+      static_cast<DecayModelst*>(_gStarN->Model())->HistIntegratedXSection(histCross);
+      std::cout<<"Integral for t "<<_gStarN->Mass()<<" "<<intet/_NIntegratet<<" integration "<<histCross.GetBinContent(1)<<" at "<<_reactionInfo._photon->M2()<<"phase Q2 "<<histCross.GetBinContent(1)*static_cast<DecayModelQ2W*>(Model())->PhaseSpaceFactorToQ2eq0(_gStarN->Mass(),_beamNucl.Mass())<<std::endl <<std::endl <<std::endl ;
+      
+      integral+=intet/_NIntegratet;
+      // TFile * crossFile=new TFile("XSection.root","recreate");
+      //histt.Write();
+      //delete crossFile;
+      //exit(0); 
+    }
+
+
+    //samint=myFns.Integral(0,100);sum=0;for(int i=0;i<1E6;i++){auto val=myFns.GetRandom();sum+=myFn2.Eval(val)/myFns.Eval(val)*samint;}
+    
+    static_cast<DistVirtPhotFlux_xy*>(&decayer->Dist())->ForIntegrate(false);
+    double Wmax = (_nuclRestNucl + _nuclRestElec).M();
+    double Wmin=minMass;
+    std::cout<<"Integral "<< Wmin<<" - "<<Wmax<<" mean "<<integral/Npass<<"  int  "<<integral/_NIntegrateW*(Wmax-Wmin) << " "<<integral/_NIntegrateW/_NIntegratet*(Wmax-_nuclRestNucl.M()) <<std::endl <<std::endl <<std::endl;
+
+    /*TH1D histCross("XSection","XSection",10,Wmin,Wmax);
+    std::cout<< "hist integral for "<<_gStarN->Model()->GetName()<<std::endl;
+    static_cast<DecayModelst*>(_gStarN->Model())->HistIntegratedXSection(histCross);
+    TFile * crossFile=new TFile("XSection.root","recreate");
+    histCross.Write();
+    delete crossFile;
+   
+    exit(0);
+    */
   }
 /////////////////////////////////////////////////////////////////////////
 DecayStatus  ElectronScattering::GenerateProducts(){

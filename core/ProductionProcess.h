@@ -45,6 +45,7 @@ namespace elSpectro{
     
     DecayType IsDecay() const noexcept override {return DecayType::Production;}
 
+    virtual double dsigma() const{return 1;}
   protected:
 
    
