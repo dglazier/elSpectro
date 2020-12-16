@@ -76,7 +76,7 @@ namespace elSpectro{
     virtual void PostInit(ReactionInfo* info);
 
     //temporary until deal with vertices properly i.e. non zero
-    void GenerateVertexPosition()  noexcept{
+    virtual void GenerateVertexPosition()  noexcept{
       //auto old=VertexPosition();
       if( IsDecay()==DecayType::Detached){
 
@@ -91,6 +91,10 @@ namespace elSpectro{
     }
   
     DecayType IsDecay() const noexcept override {return _decayType;}
+
+    void SetVertexXYZT(double x,double y,double z,double t){
+      _decayVertex.SetXYZT(x,y,z,t);
+    }
     
   protected:
     

@@ -30,6 +30,8 @@
 #pragma link C++ class elSpectro::ElectronScattering+;
 
 #pragma link C++ class elSpectro::Distribution+;
+#pragma link C++ class elSpectro::DistConst+;
+#pragma link C++ class elSpectro::DistUniform+;
 #pragma link C++ class elSpectro::DistTF1+;
 #pragma link C++ class elSpectro::DistTH1+;
 #pragma link C++ class elSpectro::DistTH2+;

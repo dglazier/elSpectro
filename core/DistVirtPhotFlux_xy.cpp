@@ -87,11 +87,30 @@ namespace elSpectro{
     if(_requestThmax!=0)std::cout<<"\tThmax "<<_requestThmax*TMath::RadToDeg()<<std::endl;
     if(_requestXmin!=0)std::cout<<"\tXmin "<<_requestXmin<<std::endl;
     if(_requestXmax!=1)std::cout<<"\tXmax "<<_requestXmax<<std::endl;
-    
+
+
+    _flambda = [this](const double *x)
+      {
+	if(x[0]==0) return 0.;
+	if(x[1]==0) return 0.;
+	//return x[0]+x[1];
+	
+	return Eval(x);
+      };
+  
+    _wrapPdf.reset(new ROOT::Math::Functor( _flambda , 2));
+    _xvar.reset( new RooRealVar("x","x",-1,-50,0,"") );
+    //_yvar.reset( new RooRealVar("y","y",-1,-50,0,""));
+    //_xvar.reset( new RooRealVar("x","x",-1,-50,0,"") );
+    _yvar.reset( new RooRealVar("y","y",-1,_lnymin,_lnymax,""));
+    _pdf.reset(new RooFunctorPdfBinding("PdfDistVirtPhotFlux_xy", "PdfDistVirtPhotFlux_xy", *_wrapPdf.get(), RooArgList(*_xvar.get(),*_yvar.get())));
+
+    auto roovars= RooArgSet(*_xvar.get(),*_yvar.get());
+    std::cout<<"INTEGRAL "<<_pdf->getNorm(roovars)<<" at "<<_ebeam<<std::endl;;
+								    // exit(0);
   }
   
 
-  
   void DistVirtPhotFlux_xy::FindWithAcceptReject(){
     
     double lny=0;
@@ -210,7 +229,7 @@ namespace elSpectro{
      while(x<_maxPossiblexRange)
         x = sampleX.GetRandom();
      
-     double sampleXVal=sampleX.Eval(x)/sampleXIntegral;
+     double sampleXVal=sampleX.Eval(x)/sampleXIntegral;  //value of PDF
     
      //check if we are within allowed x-range
      if( x<avail_xmax && x>avail_xmin )

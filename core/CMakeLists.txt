@@ -26,6 +26,8 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   ElectronScattering.h
   Distribution.h
   DistTF1.h
+  DistConst.h
+  DistUniform.h
   DistTH1.h
   DistTH2.h
   DistFlatMass.h

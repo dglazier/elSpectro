@@ -10,7 +10,12 @@
 #include "Distribution.h"
 #include "FunctionsForElectronScattering.h"
 #include <TMath.h>
+#include <Math/Functor.h>
+#include <RooFunctorBinding.h>
+#include <RooRealVar.h>
+#include <RooArgList.h>
 #include <utility>
+#include <functional>
 
 namespace elSpectro{
 
@@ -59,14 +64,22 @@ namespace elSpectro{
 
 
     void ForIntegrate(bool integ){_forIntegral=integ;}
+    double Eval(const double *x) const;
+    
   protected:
-    double XMin(double y);
-    double XMax(double y);
+    double XMin(double y) const;
+    double XMax(double y) const;
     
   private:
     //no one should use default constructor
     DistVirtPhotFlux_xy()=default;
 
+    std::unique_ptr<RooFunctorPdfBinding> _pdf;
+    std::unique_ptr<RooRealVar> _xvar;
+    std::unique_ptr<RooRealVar> _yvar;
+    std::function<double(const double*)> _flambda;
+    std::unique_ptr<ROOT::Math::Functor> _wrapPdf;
+      
     dist_pair _xy{0,0};
     double _val{0};
 
@@ -97,8 +110,29 @@ namespace elSpectro{
  
 
   };
-  
-  inline  double DistVirtPhotFlux_xy::XMin(double y){
+  inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
+
+    double lnx=x[0];
+    double lny=x[1];
+    if(lny<_lnymin || lny>_lnymax)
+      return 0;
+    
+    double y = TMath::Exp(lny);
+   
+    //calculate the fraction of x-space available
+    //now calculate x limits
+    //y = r/2ME and x = Q2/r
+    
+    double avail_xmax = XMax(y);
+    double avail_xmin = XMin(y);
+    auto currx=TMath::Exp(lnx);
+    if(currx>avail_xmax){ return 0; }
+    if(currx<avail_xmin){ return 0; }
+    
+    return escat::flux_dlnxdlny(_ebeam,lnx,lny);
+  }
+
+  inline  double DistVirtPhotFlux_xy::XMin(double y) const{
       double r = 2*_mTar*_ebeam*y;
       double Q2min = escat::M2_el()*y*y/(1-y);
       // double Q2max = r + _mTar*_mTar - _Wthresh2;
@@ -114,7 +148,7 @@ namespace elSpectro{
       if(_requestXmin> avail_xmin) avail_xmin=_requestXmin;
       return avail_xmin;
     }
-   inline  double DistVirtPhotFlux_xy::XMax(double y){
+   inline  double DistVirtPhotFlux_xy::XMax(double y) const{
       double r = 2*_mTar*_ebeam*y;
       double Q2max = r + _mTar*_mTar - _Wthresh2;
       double avail_xmax = 1 + (_mTar*_mTar - _Wthresh2 )/r;

@@ -12,6 +12,8 @@
 #include "DecayModel.h"
 #include "ParticleManager.h"
 #include "DecayingParticle.h"
+#include "Distribution.h"
+#include "DistConst.h"
 
 namespace elSpectro{
   
@@ -46,14 +48,32 @@ namespace elSpectro{
     DecayType IsDecay() const noexcept override {return DecayType::Production;}
 
     virtual double dsigma() const{return 1;}
+
+    virtual void GenerateVertexPosition()  noexcept override{
+      SetVertexXYZT(_xvertexDist->SampleSingle(),
+		    _yvertexDist->SampleSingle(),
+		    _zvertexDist->SampleSingle(),
+		    _tvertexDist->SampleSingle());
+    }
+
+    void GiveXVertexDist(Distribution* dist){_xvertexDist.reset(dist);}
+    void GiveYVertexDist(Distribution* dist){_yvertexDist.reset(dist);}
+    void GiveZVertexDist(Distribution* dist){_zvertexDist.reset(dist);}
+    void GiveTVertexDist(Distribution* dist){_tvertexDist.reset(dist);}
+
+    
   protected:
 
    
     
   private:
     ProductionProcess()=default;
-    
     particle_constptrs _initialParticles;
+    
+    dist_uptr _xvertexDist=dist_uptr{new DistConst{0}};
+    dist_uptr _yvertexDist=dist_uptr{new DistConst{0}};
+    dist_uptr _zvertexDist=dist_uptr{new DistConst{0}};
+    dist_uptr _tvertexDist=dist_uptr{new DistConst{0}};
     
   };
 
