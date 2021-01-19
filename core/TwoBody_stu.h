@@ -17,7 +17,7 @@ namespace elSpectro{
 
   public:
 
-    TwoBody_stu(double s,double t,double t_slope,double u,double u_slope);
+    TwoBody_stu(double s,double t,double t_slope,double u=0,double u_slope=0);
 
     double MyRandomCosTh() const noexcept final{
       _weight=1;
@@ -156,7 +156,7 @@ namespace elSpectro{
       double M3=_p3->M();
       double M4=_p4->M();
       
-   //PDK does not always have a valid solution for g*
+      //PDK does not always have a valid solution for g*
       //Direct boost of g* into cm rest frame
       auto cmBoost=_CM->BoostToCM();
       auto p1cm=boost(*_p1,cmBoost);

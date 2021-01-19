@@ -18,17 +18,22 @@ namespace elSpectro{
   
    //////////////////////////////////////////////////////////////
   inline Manager& generator(){return Manager::Instance();}
+  
   //////////////////////////////////////////////////////////////
-
+  inline bool finishedGenerator(){ return generator().Finished();}
+  
+  //////////////////////////////////////////////////////////////
+  inline void countGenEvent(){generator().CountEvent();}
+  
+  //////////////////////////////////////////////////////////////
   inline void nextEvent(){
     generator().Clear();
     generator().Reaction()->GenerateProducts();
-    generator().Integrate_dsigma();
     generator().Write();
   }
   //////////////////////////////////////////////////////////////
   inline ParticleManager& particles(){return generator().Particles();}
-
+  
   //////////////////////////////////////////////////////////////
   inline Particle* particle(int pdg){
     return particles().Take(new Particle{pdg});

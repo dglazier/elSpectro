@@ -30,19 +30,31 @@ namespace elSpectro{
        _writer.reset(wr);
      }
      Writer* GetWriter()const {return _writer.get();}
+     
      void Write(){
        if(_writer.get()==nullptr)return;
        _writer->FillAnEvent();
        _writer->Write();
      }
-
-     void Integrate_dsigma(){
-       // _sum_dsigma+=_process->dsigma();
-       //_sum_1bydsigma+=1./_process->dsigma();
-       ++_nevents;
+     void CountEvent(){_nEventsDone++;}
+  
+     bool Finished(){
+       if(_nEventsDone==_nEventsToGen)
+	 return true;
+       return false;
      }
-     double IntegratedXSection()const {return _sum_dsigma/_sum_1bydsigma;}
-
+     
+     double IntegratedXSection()const {return _integralXSection;}
+     void SetNEvents(double n){_nEventsToGen=n;}
+     long long GetNEvents()const noexcept{return _nEventsToGen;}
+     long long GetNDone()const noexcept{return _nEventsDone;}
+    
+     void SetNEvents_via_LuminosityTime(double lum, double beamtime){
+        _integralXSection=Reaction()->IntegrateCrossSection();
+	_nEventsToGen=lum*1E-33*beamtime*_integralXSection*Reaction()->BranchingFraction();//1E-33(cm2tonb)
+	std::cout<<"Manager::SetNEvents_via_LuminosityTime , going to generate "<<_nEventsToGen<<" events"<<std::endl;
+	std::cout<<"\t based on an integrated cross section of "<<_integralXSection<<"; luminosity = "<<lum<<"; and beamtime of "<<beamtime <<" s "<<std::endl;
+     }
      
      void Reaction(ProductionProcess* prod){
        _process.reset(prod);
@@ -79,7 +91,7 @@ namespace elSpectro{
      void Summary(){
        _process->Print();
       _massPhaseSpace.Print();
-      std::cout<<"Average Total Cross Section (nb) = "<<IntegratedXSection()<<std::endl;
+      std::cout<<"Integrated Total Cross Section (nb) = "<<IntegratedXSection()<<std::endl;
       }
   private:
 
@@ -94,9 +106,10 @@ namespace elSpectro{
     MassPhaseSpace _massPhaseSpace;
 
 
-    double _sum_dsigma=0;
-    double _sum_1bydsigma=0;
-    long long _nevents=0;
+    double _integralXSection={0};
+    long long _nEventsToGen={0};
+    long long _nEventsDone={0};
+    
     ClassDef(elSpectro::Manager,1); //class Manager
   };
 

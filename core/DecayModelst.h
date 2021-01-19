@@ -43,19 +43,37 @@ namespace elSpectro{
     void SetUseSDME(bool use=true){_useSDME=use;}
     
 
-    double PgammaCMsq()const noexcept{
+    /* double PgammaCMsq()const noexcept{*/
+    double PgammaCMsq() const noexcept{
+      if(_photon->M()==0) return kine::PDK2(_W,0,_target->M());
+      auto  pgammaCM= PgammaCM();
+      return  pgammaCM* pgammaCM; //for dt phase space factor
+    }
+    
+    double PgammaCM()const noexcept{
+      //in case no photon 4-vector yet
+      if(_photon->M()==0) return kine::PDK(_W,0,_target->M());
+      //else PDK does not qork for virtual photons
+      auto cmBoost=Parent()->P4().BoostToCM();
+      auto p1cm=boost(*_photon,cmBoost);
+      
+      //     std::cout<<"PgammaCMsq M"<<_photon->M()<<" PLAB "<<_photon->P()<<" PCM "<<p1cm.P()<<" or "<<kine::PDK(_W,_photon->M(),_target->M())<<" or "<<kine::PDK(_W,_photon->M2(),_target->M())<<" or "<<kine::PDK(_W,0,_target->M())<<std::endl;
+      return p1cm.P();
+    }
+    
+    /* double PgammaCMsq() const noexcept{
       //in case no photon 4-vector yet
       if(_photon->M()==0) return kine::PDK2(_W,0,_target->M());
       //else PDK does not qork for virtual photons
       auto cmBoost=Parent()->P4().BoostToCM();
       auto p1cm=boost(*_photon,cmBoost);
-
+      
       //     std::cout<<"PgammaCMsq M"<<_photon->M()<<" PLAB "<<_photon->P()<<" PCM "<<p1cm.P()<<" or "<<kine::PDK(_W,_photon->M(),_target->M())<<" or "<<kine::PDK(_W,_photon->M2(),_target->M())<<" or "<<kine::PDK(_W,0,_target->M())<<std::endl;
-      return p1cm.P()*p1cm.P(); //for dt phase space factor
-    }
-
+      return p1cm.P()*p1cm.P();
+      }*/
+    
     const ReactionElectroProd* ProductionInfo() const { return _prodInfo; }
-
+    
     void HistIntegratedXSection(TH1D& hist);
     void HistMaxXSection(TH1D& hist);
     
@@ -74,10 +92,13 @@ namespace elSpectro{
 	*/ //Note above full calculation simplifies to
       //return PhaseSpaceNorm()/_s/kine::PDK2(_W,_photon->M(),_target->M());
       //Please note kine::PDK2(_W,_photon->M(),_target->M()) does not give
-      //correct momentum 
+      //correct momentum
       return PhaseSpaceNorm()/_s/PgammaCMsq();
        //this would not be the case if the differential was dcosth rather than t
     }
+   double PhaseSpaceFactorCosTh() const noexcept {
+     return PhaseSpaceNorm()* kine::PDK(_W,_meson->Mass(),_baryon->Mass())/_s/PgammaCM()/4;
+   }
     
        
     SDME* const  GetMesonSDMEs() const {return _sdmeMeson;}
@@ -92,21 +113,41 @@ namespace elSpectro{
     double get_s() const noexcept{ return _s; }
     double get_t() const noexcept { return _t; }
     double get_W() const noexcept { return _W; }
- 
+    double get_Q2() const noexcept { return -_photon->M2(); }
+
+  
+    double kinCM_MesonP(double W) const {
+      return kine::PDK(W,_meson->P4().M(),_baryon->P4().M());
+
+    }
+    double kinCM_MesonE(double W) const {
+       auto m2_a =_meson->P4().M2();
+       auto m2_b =_baryon->P4().M2();
+       return (W*W + m2_a - m2_b)/(2.0*W);
+    }
+    double kin_tFromWCosTh(double cosTh) const{
+      double W = Parent()->P4().M();
+      auto cmBoost=Parent()->P4().BoostToCM();
+      auto p1cm=boost(*_photon,cmBoost);
+
+      return p1cm.M2() + _meson->M2() - 2 * (p1cm.E()* kinCM_MesonE(W)-p1cm.P()* kinCM_MesonP(W)*cosTh);
+    }
+    double dsigma_costh(double cosTh){
+      //For integrating cross section
+      _W = Parent()->P4().M();
+      _t = kin_tFromWCosTh(cosTh);
+      return PhaseSpaceFactorCosTh() *(MatrixElementsSquared_T()+(_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()) * TMath::Pi()*2;//2pi=>integrated over phi
+    }
+
   private:
 
     double DifferentialXSect() const{//dont let others call this as need _s, _W and _t set
       //Note if your derived model already gives differential cross section
       //you will need to divide by PhaseSpaceFactor to get MatrixElementSquared from it
-
-      // return _dsigma=MatrixElementsSquared_T();
-
-      //std::cout<<" DifferentialXSect()  "<<PhaseSpaceFactor()<<" "<<MatrixElementsSquared_T()<<std::endl;
       return _dsigma=PhaseSpaceFactor() * ( MatrixElementsSquared_T() +
           				    (_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()); //eqn from Seyboth and Wolf
     }
-    double dsigma() const override {return _dsigma*_dt;}
-      
+       
     SDME* _sdmeMeson={nullptr};
     SDME* _sdmeBaryon={nullptr};
     PhotonPolarisationVector* _photonPol={nullptr};

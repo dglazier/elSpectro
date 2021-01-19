@@ -26,7 +26,9 @@ namespace elSpectro{
     
     double Generate(const LorentzVector& parent,
 		    const particle_ptrs& products)  final;
-
+    double Generate(const LorentzVector& parent,
+		    const particle_ptrs& products,double xx, double yy)  ;
+    
     DistVirtPhotFlux_xy &Dist(){return _random_xy;}
 
 
@@ -34,10 +36,13 @@ namespace elSpectro{
 
     double dsigma() const override{return _random_xy.CurrentValue();} // dxdy=1
 
+    double Probability() const final{return _random_xy.Probability();}
+
   protected:
 
     void RotateZaxisToCMDirection(const LorentzVector& parent);
-    
+    double CompleteGivenXandY(const LorentzVector& parent, const particle_ptrs& products,double xx, double yy);
+
   private:
 
     DecayModel* _gStarNmodel{nullptr};

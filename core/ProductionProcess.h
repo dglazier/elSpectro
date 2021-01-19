@@ -39,6 +39,10 @@ namespace elSpectro{
     virtual void InitGen() =0;
 
    
+    virtual double IntegrateCrossSection() = 0;
+    
+    void SetCombinedBranchingFraction(double branch){_branchFrac=branch;}
+    double BranchingFraction()const noexcept {return _branchFrac;}
     
     const particle_constptrs InitialParticles()const {return _initialParticles;}
     void AddInitialParticlePtr(const Particle* p){
@@ -75,6 +79,8 @@ namespace elSpectro{
     dist_uptr _zvertexDist=dist_uptr{new DistConst{0}};
     dist_uptr _tvertexDist=dist_uptr{new DistConst{0}};
     
+    double _branchFrac={1};
+
   };
 
 

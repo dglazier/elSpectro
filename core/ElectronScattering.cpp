@@ -6,7 +6,12 @@
 #include <TDatabasePDG.h>
 #include <TH1F.h>
 #include <TFile.h>
+#include <TBenchmark.h>
 
+#include <Math/Functor.h>
+#include <RooFunctorBinding.h>
+#include <RooRealVar.h>
+#include <RooArgList.h>
 
 namespace elSpectro{
 
@@ -177,36 +182,32 @@ namespace elSpectro{
     
     if(decayer!=nullptr){
       //Set any thresholds and ranges
-      std::cout<<"ELECTRON "<<_Q2min<<" "<<_Q2max<<std::endl;
       if(_Q2min!=0)  decayer->Dist().SetQ2min(_Q2min);
       if(_Q2max!=0)  decayer->Dist().SetQ2max(_Q2max);
       if(_Xmin!=0)  decayer->Dist().SetXmin(_Xmin);
       if(_Xmax!=0)  decayer->Dist().SetXmax(_Xmax);
+      if(_Ymin!=0)  decayer->Dist().SetYmin(_Ymin);
+      if(_Ymax!=0)  decayer->Dist().SetYmax(_Ymax);
       if(_eThmin!=0)  decayer->Dist().SetThmin(_eThmin);
       if(_eThmax!=0)  decayer->Dist().SetThmax(_eThmax);
 
       //Do momemntum =>y, W limits last
-      auto Wmin=  minMass;
-      /* if(_ePmax!=0) {
-	
-	auto minMass2=minMass*minMass;
-	//W^2 - M^2 + Q2 = 2M(Eg) = 2M(ebeam-escat) = 2M*ebeam*y
-	if( (_nuclRestElec.E() < escat::E_el(_ePmax)) ){
-	  std::cerr<<"ElectronScattering::InitGen() Error, requested Maximum electron momentum (in proton rest frame) higher than beam energy "<< escat::E_el(_ePmax)<<" > "<<_nuclRestElec.E()<<std::endl;
-	  exit(0);
+      _Wmin=  minMass;
+ 
+      if(_ePmax!=0||_Ymin!=0) { //convert to y limit
+	//Find lowest allowed y
+	double y =0;
+	if(_ePmax!=0) y = (_nuclRestElec.E()-escat::E_el(_ePmax))/_nuclRestElec.E();
+	if(_Ymin!=0){
+	  if(y<_Ymin){
+	    y=_Ymin;
+	    _ePmax=_nuclRestElec.E() - _nuclRestElec.E()*y;
+	  }
+	  // W^2 - M^2 + Q2 = 2M(Eg) = 2M*ebeam*y
+	  minMass=TMath::Sqrt(2*_massIon*_nuclRestElec.E()*y + _massIon*_massIon);
 	}
-	auto W2min= 2*_massIon * (_nuclRestElec.E() - escat::E_el(_ePmax) )
-	  + _massIon*_massIon + 0;//take Q2=0 for W2 threshold, any Q2 limit will be handled in DistVirtPhotFlux
-	//take largest from requested or threshold
-	if( W2min>minMass2){
-	  Wmin=TMath::Sqrt(W2min);
-	  minMass=Wmin;
-	}
-
-      }
-      */
-      if(_ePmax!=0) { //convert to y limit
-	auto y = (_nuclRestElec.E()-escat::E_el(_ePmax))/_nuclRestElec.E();
+      	
+	std::cout<<" settting Ymin "<< y <<" "<<_Ymin<<" "<<_ePmax<<std::endl;
 	decayer->Dist().SetYmin(y);
 
 	//we can limit the W threshold if we have a given Q2max value
@@ -225,8 +226,8 @@ namespace elSpectro{
 	  auto W2min= 2*_massIon * (_nuclRestElec.E() - escat::E_el(_ePmax) )
 	    + _massIon*_massIon - useQ2max;
 	  if( W2min>minMass*minMass){
-	    Wmin=TMath::Sqrt(W2min);
-	    minMass=Wmin;
+	    _Wmin=TMath::Sqrt(W2min);
+	    minMass=_Wmin;
 	  }
 	}
 	
@@ -241,14 +242,13 @@ namespace elSpectro{
       //Finally set reaction threshold and this calcualte ylimits
       std::cout<<" setting lowest W as "<<minMass<<std::endl;
       decayer->Dist().SetWThreshold(minMass);
-      Wmin=minMass;
+      _Wmin=minMass;
     }
     
   
     if(_gStarN!=nullptr){
       _gStarN->SetMinMass(minMass);
-      std::cout<<"CHECK "<<dynamic_cast<DecayModelQ2W*>(Model())<<std::endl;
-      if(auto Q2WModel=dynamic_cast<DecayModelQ2W*>(Model())){
+       if(auto Q2WModel=dynamic_cast<DecayModelQ2W*>(Model())){
 	Q2WModel->setThreshold(minMass);
       }
       generator().SetModelForMassPhaseSpace(_gStarN->Model());
@@ -259,73 +259,64 @@ namespace elSpectro{
     //now scattered electron should be set
     //_scattered= _reactionInfo._scattered;
 
-    //integration
-
-    /*
-    long _NIntegrateW=100;
-    long _NIntegratet=10000;
-    long Npass=0;
-    double integral=0;
-
+  
+  }
+  //////////////////////////////////////////////////////////////////////////
+  ///Use RooFit integrator to integrate cross section over x , y and t
+  double ElectronScattering::IntegrateCrossSection(){
+    LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
     
-    static_cast<DistVirtPhotFlux_xy*>(&decayer->Dist())->ForIntegrate(true);
-    // _gStarN->mutableDecayer()->ForIntegrate(true);
-    for(long iW=0;iW<_NIntegrateW;++iW){
-      LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
-
-      //Boost into ion rest frame
-      auto prBoost=_beamNucl.P4().BoostToCM();
-      collision=boost(collision,prBoost);
-      _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.Mass());
-      _nuclRestElec= boost(_beamElec.P4(),prBoost);
-      //set decay parent for e -> e'g*
-      SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
+    //Boost into ion rest frame
+    auto prBoost=_beamNucl.P4().BoostToCM();
+    collision=boost(collision,prBoost);
+    _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.Mass());
+    _nuclRestElec= boost(_beamElec.P4(),prBoost);
+    //set decay parent for e -> e'g*
+    SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
  
-      Decay(); //e'
-      auto pass=Model()->Intensity();
-      if(pass==0) continue;
-      
-      double intet=0;
-      Npass++;
-      //TH1D histt("t","t",100,-30,0);
-     for(long it=0;it<_NIntegratet;++it){
-	_gStarN->Decay(); //random t/cosTh
-	_gStarN->Model()->Intensity();
-	//histt.Fill(static_cast<DecayModelst*>(_gStarN->Model())->get_t());
-	
-	intet+=dsigma();
-      }
-      //integral+=intet;
-      TH1D histCross("XSection","XSection",1,_gStarN->Mass()-0.001,_gStarN->Mass()+0.001);
-      //double Wmid=gRandom->Uniform(5.5,6.5);
-      //TH1D histCross("XSection","XSection",1,Wmid-0.001,Wmid+0.001);
-      static_cast<DecayModelst*>(_gStarN->Model())->HistIntegratedXSection(histCross);
-      std::cout<<"Integral for t "<<_gStarN->Mass()<<" "<<intet/_NIntegratet<<" integration "<<histCross.GetBinContent(1)<<" at "<<_reactionInfo._photon->M2()<<"phase Q2 "<<histCross.GetBinContent(1)*static_cast<DecayModelQ2W*>(Model())->PhaseSpaceFactorToQ2eq0(_gStarN->Mass(),_beamNucl.Mass())<<std::endl <<std::endl <<std::endl ;
-      
-      integral+=intet/_NIntegratet;
-      // TFile * crossFile=new TFile("XSection.root","recreate");
-      //histt.Write();
-      //delete crossFile;
-      //exit(0); 
-    }
+    auto photonFlux= dynamic_cast<ScatteredElectron_xy* >(mutableDecayer());
 
+    auto xvar = RooRealVar("lnxIntegral","lnxIntegral",photonFlux->Dist().GetMinLnX(),photonFlux->Dist().GetMinLnX(),photonFlux->Dist().GetMaxLnX(),"");
+    auto yvar = RooRealVar("lnyIntegral","lnyIntegral",photonFlux->Dist().GetMinLnY(),photonFlux->Dist().GetMinLnY(),photonFlux->Dist().GetMaxLnY(),"");
+    auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0,-1,1,"");
 
-    //samint=myFns.Integral(0,100);sum=0;for(int i=0;i<1E6;i++){auto val=myFns.GetRandom();sum+=myFn2.Eval(val)/myFns.Eval(val)*samint;}
+    auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
+    auto Q2WModel =dynamic_cast<DecayModelQ2W*>(Model());
     
-    static_cast<DistVirtPhotFlux_xy*>(&decayer->Dist())->ForIntegrate(false);
-    double Wmax = (_nuclRestNucl + _nuclRestElec).M();
-    double Wmin=minMass;
-    std::cout<<"Integral "<< Wmin<<" - "<<Wmax<<" mean "<<integral/Npass<<"  int  "<<integral/_NIntegrateW*(Wmax-Wmin) << " "<<integral/_NIntegrateW/_NIntegratet*(Wmax-_nuclRestNucl.M()) <<std::endl <<std::endl <<std::endl;
+    auto flnXlnYt = [this,&photonFlux,&gStarModel,&Q2WModel](const double *x)
+      {
+	if(x[0]==0) return 0.; //x
+	if(x[1]==0) return 0.; //y
+	auto val = photonFlux->Dist().Eval(x);
+	if(val==0) return 0.;
+	//calculate scatered electron at x and y 
+	photonFlux->Generate(P4(),Model()->Products(),TMath::Exp(x[0]),TMath::Exp(x[1]));
+	//calculate virtual photon
+	Model()->Intensity();
+	//get value of dsigma/ds/dcosth cross section at x,y,costh 
+	val*=gStarModel->dsigma_costh(x[2]);//x[2]=costh
+	//additional (not real photo) Q2dependence of cross section
+	if(TMath::IsNaN(val)) return 0.;
+	val*=Q2WModel->Q2H1Rho();
+	return val;
+      };
+ 
+    
+    auto wrapPdf=ROOT::Math::Functor( flnXlnYt , 3);
 
-    /*TH1D histCross("XSection","XSection",10,Wmin,Wmax);
-    std::cout<< "hist integral for "<<_gStarN->Model()->GetName()<<std::endl;
-    static_cast<DecayModelst*>(_gStarN->Model())->HistIntegratedXSection(histCross);
-    TFile * crossFile=new TFile("XSection.root","recreate");
-    histCross.Write();
-    delete crossFile;
-   
-    exit(0);
-    */
+    auto pdf = RooFunctorPdfBinding("ElScatterIntegral", "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
+    auto roovars= RooArgSet(xvar,yvar,cthvar);
+    
+    yvar.Print();
+    gBenchmark->Start("RooFitIntegral");
+    
+    auto RFintegral=pdf.getNorm(roovars);
+    gBenchmark->Stop("RooFitIntegral");
+    gBenchmark->Print("RooFitIntegral");
+    
+
+    std::cout<<" ElectronScattering::IntegrateCrossSection() ROOFIT "<<RFintegral<<" giving a photon flux weighted average photoproduction cross section of "<<RFintegral/photonFlux->Dist().Integral()<<std::endl;
+    return RFintegral;
   }
 /////////////////////////////////////////////////////////////////////////
 DecayStatus  ElectronScattering::GenerateProducts(){
@@ -342,14 +333,6 @@ DecayStatus  ElectronScattering::GenerateProducts(){
     SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
 
     //proceed through decay chain
-    //first get masses for all products
-    // DetermineAllMasses(); //this will define W threshold...
-    //make sure masses are below maximum kinematically possible
-    // if(_gStarN->MinimumMassPossible() > W2Max() ){
-      // DetermineAllMasses();
-    //}
-      
-    //find a W candidate
     while(DecayingParticle::GenerateProducts()!=DecayStatus::Decayed){
       //std::cout<<"not decayed "<<_nsamples<<std::endl;
       _nsamples++;
@@ -363,3 +346,105 @@ DecayStatus  ElectronScattering::GenerateProducts(){
   }
 
 }
+
+
+// /*
+//      exit(0);
+//     // 
+//   //integration
+
+    
+//     long _NIntegrateW=50000;
+//     long _NIntegratet=1;
+//     long Npass=0;
+//     double integral=0;
+//    gBenchmark->Start("LoopIntegral");
+ 
+//     //auto eleDist=static_cast<DistVirtPhotFlux_xy*>(&decayer->Dist());
+//     // static_cast<TwoBodyFlat*>(& _gStarN->mutableDecayer()->Dist())->ForIntegrate(true);
+//     for(long iW=0;iW<_NIntegrateW;++iW){
+//       LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
+
+//       //Boost into ion rest frame
+//       auto prBoost=_beamNucl.P4().BoostToCM();
+//       collision=boost(collision,prBoost);
+//       _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.Mass());
+//       _nuclRestElec= boost(_beamElec.P4(),prBoost);
+//       //set decay parent for e -> e'g*
+//       SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
+ 
+//       Decay(); //sample e' and calculate dsigma
+
+//       auto pass=Model()->Intensity();//calculate photon
+//       if(pass==0) continue; //intensity 0 => does not contribute
+      
+//       double intet=0;
+//       Npass++;
+//       //dynamic_cast<DecayModelst*>(_gStarN->Model())->kin_tFromWCosTh()
+//       _gStarN->Decay(); //sample t
+//       _gStarN->Model()->Intensity(); //calculate dsigma
+
+      
+//       //  _gStarN->Model()->DifferentialXSect();
+
+// 	//correct for electron sampling distribution /Decayer()->Probabilty()
+//       //and differential cross section sampling /_gStarN->Decayer()->Probability();
+
+//       integral+=dsigma()
+// 	/Decayer()->Probability()
+// 	/_gStarN->Decayer()->Probability();
+      
+//       // std::cout<<_gStarN->Model()->GetName()<<" "<<integral<<" "<<dsigma()<<" "<<Decayer()->Probability()<<" "<<_gStarN->Decayer()->Probability()<<std::endl;
+//       if(TMath::IsNaN(integral)){  std::cout<<"ElectronScattering integral "<<integral<<" "<<dsigma()<<" "<<Decayer()->Probability()<<" "<<_gStarN->Decayer()->Probability()<<std::endl; exit(0);}
+//       //TH1D histt("t","t",100,-30,0);
+//       /*
+//       for(long it=0;it<_NIntegratet;++it){
+
+//        _gStarN->Decay(); //random t/cosTh
+//        _gStarN->Model()->Intensity();
+
+
+
+// 	//histt.Fill(static_cast<DecayModelst*>(_gStarN->Model())->get_t());
+	
+// 	intet+=dsigma();
+// 	}*/
+//       //integral+=intet;
+//       //TH1D histCross("XSection","XSection",1,_gStarN->Mass()-0.001,_gStarN->Mass()+0.001);
+//       //double Wmid=gRandom->Uniform(5.5,6.5);
+//       //TH1D histCross("XSection","XSection",1,Wmid-0.001,Wmid+0.001);
+//       // static_cast<DecayModelst*>(_gStarN->Model())->HistIntegratedXSection(histCross);
+//       //std::cout<<"Integral for t "<<_gStarN->Mass()<<" "<<intet/_NIntegratet<<" integration "<<histCross.GetBinContent(1)<<" at "<<_reactionInfo._photon->M2()<<"phase Q2 "<<histCross.GetBinContent(1)*static_cast<DecayModelQ2W*>(Model())->PhaseSpaceFactorToQ2eq0(_gStarN->Mass(),_beamNucl.Mass())<<std::endl <<std::endl <<std::endl ;
+      
+//       //  integral+=intet/_NIntegratet;
+
+
+
+
+      
+//       // TFile * crossFile=new TFile("XSection.root","recreate");
+//       //histt.Write();
+//       //delete crossFile;
+//       //exit(0); 
+//     }
+
+
+//     //samint=myFns.Integral(0,100);sum=0;for(int i=0;i<1E6;i++){auto val=myFns.GetRandom();sum+=myFn2.Eval(val)/myFns.Eval(val)*samint;}
+    
+//     //static_cast<DistVirtPhotFlux_xy*>(&decayer->Dist())->ForIntegrate(false);
+//     double Wmax = (_nuclRestNucl + _nuclRestElec).M();
+//     std::cout<<"Integral "<< _Wmin<<" - "<<Wmax<<" mean "<<integral/Npass<<" "<<integral/_NIntegrateW <<"  int  "<<integral/_NIntegrateW*(Wmax-_Wmin) << " "<<integral/_NIntegrateW/_NIntegratet*(Wmax-_nuclRestNucl.M()) <<std::endl <<std::endl <<" ROOFIT "<<RFintegral*(Wmax-_Wmin)<<std::endl;
+//     gBenchmark->Stop("LoopFitIntegral");
+//     gBenchmark->Print("LoopFitIntegral");
+
+//     //exit(0);
+//     /*TH1D histCross("XSection","XSection",10,Wmin,Wmax);
+//     std::cout<< "hist integral for "<<_gStarN->Model()->GetName()<<std::endl;
+//     static_cast<DecayModelst*>(_gStarN->Model())->HistIntegratedXSection(histCross);
+//     TFile * crossFile=new TFile("XSection.root","recreate");
+//     histCross.Write();
+//     delete crossFile;
+   
+//     exit(0);
+//     */
+// */

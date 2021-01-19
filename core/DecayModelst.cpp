@@ -66,30 +66,39 @@ namespace elSpectro{
     _W = Parent()->P4().M();
     _s=_W*_W;
     _t = (_meson->P4()-*_photon).M2();//_amp->kinematics->t_man(s,cmMeson.Theta());
-       //now we can define production/polarisation plane
+    _dt=0;
+    _dsigma=0;
+    //std::cout<<"DecayModelst::Intensity() "<<_W<<" "<<_meson->P4().M()<<" "<<_baryon->P4().M()<<" "<<_t<<std::endl;
+    //check above threshold for meson and baryon masses
+    if(_W<_meson->P4().M()+_baryon->P4().M()) return 0;
+    
+    //now we can define production/polarisation plane
     MomentumVector decayAngles;
     kine::electroCMDecay(&Parent()->P4(),_ebeam,_photon,_meson->P4ptr(),&decayAngles);
     _photonPol->SetPhi(decayAngles.Phi());
 
-    //   std::cout<<_W <<" and "<<_t<<" "<<_meson->P4().E()<<" "<<_photon->E()<<" cos costheta "<<TMath::Cos(decayAngles.Theta())<<std::endl;
+    //std::cout<<_W <<" and "<<_t<<" "<<_meson->P4().E()<<" "<<_photon->E()<<" cos costheta "<<TMath::Cos(decayAngles.Theta())<<" new t calc "<<kin_tFromWCosTh(TMath::Cos(decayAngles.Theta()))<<std::endl;
 
    //weight==differential cross section //See Seyboth and Wolf eqn (70)
    // double trangeRatio=4* kine::PDK(_W,0,_target->M())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() );// / (  kine::PDK(_Wmax,0,_target->M() )* kine::PDK(_Wmax,_meson->P4().M(),_baryon->P4().M() ) );
     _dt=4* TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() );
-    //double otherdt=4*kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() )   * kine::PDK(_W,0,_baryon->P4().M() );
-    // std::cout<<" dt "<<  _dt<<" "<<otherdt<<std::endl;
+    // double otherdt=4*kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() )   * kine::PDK(_W,0,_baryon->P4().M() );
+    //std::cout<<_t <<" dt "<<  _dt<<" "<<otherdt<<" "<<PgammaCMsq()<< " CM "<<kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() )<<" W "<<_W<<" m "<<_meson->P4().M()<<" b "<<_baryon->P4().M()<<std::endl;
+    // std::cout<<"PCOMP "<<PgammaCMsq()<<" "<<kine::PDK2(_W,_photon->M(),_baryon->P4().M() )<<" "<< _W*_W<<" "<<std::endl;
     
-    double weight = DifferentialXSect() * _dt ;
+    // if()
+     double weight = DifferentialXSect() * _dt ;
 
     // _dt=otherdt;
     //_dt/=(2*(TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() )));
     CalcMesonSDMEs();
     CalcBaryonSDMEs();
- 
+
+    //std::cout<<" dt "<<  _dt<<" "<<weight<<" "<<PgammaCMsq()<<" "<<kine::PDK2(_W,0,_baryon->Mass())<<std::endl;
+
     weight/=_max; //normalise range 0-1
     weight/=TMath::Sqrt(PgammaCMsq()/kine::PDK2(_W,0,_baryon->Mass())); //correct max for finite Q2 phase space
-    
-
+ 
     if(weight>1){
       //don't change weight, likely due to large Q2 value....
       
@@ -105,7 +114,7 @@ namespace elSpectro{
     if(weight>1){
       std::cout<<" s weight "<<_prodInfo->_sWeight<<" Q2 "<<-_photon->M2()<<" 2Mmu "<<2*_target->M()*_photon->E() <<" W "<<_W<<" t "<<_t<<" new weight "<<weight*_prodInfo->_sWeight<<" meson "<<_meson->Mass()<<std::endl;
       std::cout<<"DecayModelst::Intensity sWeight corrected weight too large "<<weight <<" "<<_prodInfo->_sWeight<<"  max "<<_max<<" val "<< weight*_prodInfo->_sWeight*_max<<std::endl;
-      std::cout<<"DX "<<DifferentialXSect()<<" "<< _dt<<" pgam "<<TMath::Sqrt(PgammaCMsq())<<" M^2 "<<MatrixElementsSquared_T()<<" Q2 factor "<<TMath::Sqrt(PgammaCMsq())/kine::PDK(_W,0,_baryon->Mass())<<std::endl;
+      std::cout<<"DX "<<DifferentialXSect()<<" "<< _dt<<" pgam "<<TMath::Sqrt(PgammaCMsq())<<" M^2 "<<MatrixElementsSquared_T()<<" Q2 factor "<<TMath::Sqrt(PgammaCMsq())/kine::PDK(_W,0,_baryon->Mass())<<" PHASE SPACE "<<PhaseSpaceFactor()<<" s "<<_s<<" pgam "<<PgammaCMsq()<<" at Q2 0  = "<<kine::PDK2(_W,0,_target->M())<<std::endl;
     //std::cout<<"flux "<<kine::FluxPhaseSpaceFactor(*_photon,*_target)<<" "<<4*kine::PDK(W,_meson->Mass(),_baryon->Mass())*W<<" "<< kine::PhaseSpaceFactorDt(W,P1,_meson->Mass(),_baryon->Mass())<<std::endl;				    
       //std::cout<<"Pi check "<<P1 <<" versus "<< kine::PDK(W,_photon->M(),_target->M())<<std::endl;
     }
@@ -161,7 +170,7 @@ namespace elSpectro{
 	for(int it=0;it<Npoints;it++){
 	  WtVals[1]=tming-it*trange/Npoints;
 	  auto val = Fmax(WtVals);
-	  // if(it==0)std::cout<<WtVals[0]<<" "<<WtVals[1]<<" val "<<val<<std::endl;
+	  //if(it==0)std::cout<<WtVals[0]<<" "<<WtVals[1]<<" val "<<val<<" "<<PhaseSpaceFactor()<<" s "<<_s<<" pgam "<<PgammaCMsq()<<" at Q2 0  = "<<kine::PDK2(_W,0,_target->M())<<std::endl;
 	  if(val<gridMin) {
 	    gridMin=val;
 	    gridW=WtVals[0];

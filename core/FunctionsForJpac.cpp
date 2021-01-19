@@ -37,10 +37,10 @@ namespace elSpectro {
       for(int ih=1;ih<=hist.GetNbinsX();ih++){
 	double Wval=hist.GetXaxis()->GetBinCenter(ih);
 	s=Wval*Wval;
-	if( s < amp->kinematics->sth() )
+	if( s < amp->_kinematics->sth() )
 	  hist.SetBinContent(ih, 0);
 	else
-	  hist.SetBinContent(ih,ig.Integral(amp->kinematics->t_man(s,TMath::Pi()),amp->kinematics->t_man(s,0)));
+	  hist.SetBinContent(ih,ig.Integral(amp->_kinematics->t_man(s,TMath::Pi()),amp->_kinematics->t_man(s,0)));
 	
 	//std::cout<<"JPAC "<<Wval<<" "<<hist.GetBinContent(ih)<<std::endl;
 	if(ih%10==0)std::cout<<(hist.GetNbinsX() - ih)/10<<" "<<std::endl;
@@ -54,9 +54,9 @@ namespace elSpectro {
       auto Fmax = [amp](const double *x)
 	{
 	  double s = x[0]*x[0];
-	  if(s < amp->kinematics->sth()) return 0.;
-	  if(x[1]> amp->kinematics->t_man(s,0)) return 0.;
-	  if(x[1]< amp->kinematics->t_man(s,TMath::Pi())) return 0.;
+	  if(s < amp->_kinematics->sth()) return 0.;
+	  if(x[1]> amp->_kinematics->t_man(s,0)) return 0.;
+	  if(x[1]< amp->_kinematics->t_man(s,TMath::Pi())) return 0.;
 	  
 	  double val=amp->differential_xsection(s , x[1]);
 	  
@@ -65,9 +65,9 @@ namespace elSpectro {
 	};
       
       //First perform grid search for intital values
-      double Wmin=TMath::Sqrt(amp->kinematics->sth());
+      double Wmin=TMath::Sqrt(amp->_kinematics->sth());
       double Wrange=Wmax-Wmin;
-      double tmax=amp->kinematics->t_man(Wmax*Wmax,TMath::Pi());
+      double tmax=amp->_kinematics->t_man(Wmax*Wmax,TMath::Pi());
       
       double gridMin=0;
       double gridW=0;
@@ -76,8 +76,8 @@ namespace elSpectro {
       int Npoints=50;
       for(int iW=1;iW<Npoints;iW++){
 	WtVals[0]=Wmin+iW*Wrange/Npoints;
-	double tmin=amp->kinematics->t_man(WtVals[0]*WtVals[0],0);
-	double tmaxg=amp->kinematics->t_man(WtVals[0]*WtVals[0],TMath::Pi());
+	double tmin=amp->_kinematics->t_man(WtVals[0]*WtVals[0],0);
+	double tmaxg=amp->_kinematics->t_man(WtVals[0]*WtVals[0],TMath::Pi());
 	double trange= tmin-tmaxg;
 
 	for(int it=0;it<Npoints;it++){
@@ -128,7 +128,7 @@ namespace elSpectro {
       auto mint= xs[1];
       /*
       for(int i=0;i<4;i++){
-	auto valW=gRandom->Uniform(TMath::Sqrt(amp->kinematics->sth),Wmax);
+	auto valW=gRandom->Uniform(TMath::Sqrt(amp->_kinematics->sth),Wmax);
 	auto valt=gRandom->Uniform(tmax,0);
 	std::cout<<"Starting values "<<valW<<" "<<valt<<std::endl;
 	minimum->SetVariableValue(0,valW);
@@ -168,10 +168,10 @@ namespace elSpectro {
       for(int ih=1;ih<=hist.GetNbinsX();ih++){
 	double Wval=hist.GetXaxis()->GetBinCenter(ih);
 	s=Wval*Wval;
-	if( s < amp->kinematics->sth )
+	if( s < amp->_kinematics->sth )
 	  hist.SetBinContent(ih, 0);
 	else
-	  hist.SetBinContent(ih,ig.Integral(amp->kinematics->t_man(s,TMath::Pi()),amp->kinematics->t_man(s,0)));
+	  hist.SetBinContent(ih,ig.Integral(amp->_kinematics->t_man(s,TMath::Pi()),amp->_kinematics->t_man(s,0)));
 	
 	std::cout<<"JPAC "<<Wval<<" "<<hist.GetBinContent(ih)<<std::endl;
 	if(ih%10==0)std::cout<<(hist.GetNbinsX() - ih)/10<<" "<<std::endl;
@@ -185,9 +185,9 @@ namespace elSpectro {
       auto Fmax = [amp](const double *x)
 	{
 	  double s = x[0]*x[0];
-	  if(s < amp->kinematics->sth) return 0.;
-	  if(x[1]> amp->kinematics->t_man(s,0)) return 0.;
-	  if(x[1]< amp->kinematics->t_man(s,TMath::Pi())) return 0.;
+	  if(s < amp->_kinematics->sth) return 0.;
+	  if(x[1]> amp->_kinematics->t_man(s,0)) return 0.;
+	  if(x[1]< amp->_kinematics->t_man(s,TMath::Pi())) return 0.;
 	  
 	  double val=amp->differential_xsection(s , x[1]);
 	  
@@ -196,9 +196,9 @@ namespace elSpectro {
 	};
       
       //First perform grid search for intital values
-      double Wmin=TMath::Sqrt(amp->kinematics->sth);
+      double Wmin=TMath::Sqrt(amp->_kinematics->sth);
       double Wrange=Wmax-Wmin;
-      double tmax=amp->kinematics->t_man(Wmax*Wmax,TMath::Pi());
+      double tmax=amp->_kinematics->t_man(Wmax*Wmax,TMath::Pi());
       
       double gridMin=0;
       double gridW=0;
@@ -207,8 +207,8 @@ namespace elSpectro {
       int Npoints=50;
       for(int iW=1;iW<Npoints;iW++){
 	WtVals[0]=Wmin+iW*Wrange/Npoints;
-	double tmin=amp->kinematics->t_man(WtVals[0]*WtVals[0],0);
-	double tmaxg=amp->kinematics->t_man(WtVals[0]*WtVals[0],TMath::Pi());
+	double tmin=amp->_kinematics->t_man(WtVals[0]*WtVals[0],0);
+	double tmaxg=amp->_kinematics->t_man(WtVals[0]*WtVals[0],TMath::Pi());
 	double trange= tmin-tmaxg;
 
 	for(int it=0;it<Npoints;it++){

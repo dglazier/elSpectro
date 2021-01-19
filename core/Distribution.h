@@ -36,6 +36,11 @@ namespace elSpectro{
     virtual double GetMaxY() const noexcept {return 0;}
 
     double GetCurrentWeight() const noexcept { return CurrentValue()/MaxValue();}
+
+    
+  protected :
+
+ 
   private:
     
     //   ClassDef(elSpectro::Distribution,1); //class Distribution

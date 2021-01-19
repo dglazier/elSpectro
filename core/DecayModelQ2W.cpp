@@ -87,7 +87,7 @@ namespace elSpectro{
   
   ////////////////////////////////////////////////////////
   double  DecayModelQ2W::Intensity() const{
-    // std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<ParentVector().M()<<" "<<getW()<<std::endl;
+    //std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<ParentVector().M()<<" "<<getW()<<" "<<GetGammaN()->P4().E() <<std::endl;
     /*if(CheckThreshold()==false){
       return 0.;
       }*/
@@ -149,7 +149,8 @@ namespace elSpectro{
 
   void DecayModelQ2W::FindExcitationSpectra(){
 
-    //Make excitation spectra envelope which should be greater than the cross section
+    //Make excitation spectra envelope which should be greater than the
+    //max cross section for that W value
     //for all values of meson mass, to do this take maximum from values at
     //meson threshold and pdg mass values
     //note the point is phase space and therefore xsection changes with mass
@@ -201,7 +202,7 @@ namespace elSpectro{
       for(int ibin=1;ibin<=hist.GetNbinsX();ibin++){
 	auto val = h1.GetBinContent(ibin)>h2.GetBinContent(ibin) ? h1.GetBinContent(ibin):h2.GetBinContent(ibin);
 	hist.SetBinContent(ibin,val + 0.05*maxVal);
-	std::cout<<"HistFromLargestBins "<<hist.GetBinCenter(ibin)<<" "<<hist.GetBinContent(ibin)<<" "<< maxVal<<std::endl;
+	//	std::cout<<"HistFromLargestBins "<<hist.GetBinCenter(ibin)<<" "<<hist.GetBinContent(ibin)<<" "<< maxVal<<std::endl;
 	
       }
       return hist;

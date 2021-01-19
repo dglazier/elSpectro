@@ -54,6 +54,8 @@ namespace elSpectro{
     void SetLimit_Q2max(double val){_Q2max=val;}
     void SetLimit_Xmin(double val){_Xmin=val;}
     void SetLimit_Xmax(double val){_Xmax=val;}
+    void SetLimit_Ymin(double val){_Ymin=val;}
+    void SetLimit_Ymax(double val){_Ymax=val;}
 
     //Note these limits apply to target rest frame!!
     void SetLimitTarRest_ePmin(double val){_ePmin=val;}
@@ -62,10 +64,14 @@ namespace elSpectro{
     void SetLimitTarRest_eThmax(double val){_eThmax=val;}
 
 
-    double dsigma() const override {return _gStarN->Model()->dsigma()* Decayer()->dsigma();}
+    double dsigma() const override {
+      // std::cout<<"ElSc dsigma "<< _gStarN->Model()->dsigma()<<" "<<Decayer()->dsigma()<<std::endl;
+      return _gStarN->Model()->dsigma()* Decayer()->dsigma();}
     //double dsigma() const override {return _gStarN->Model()->dsigma();}
-    // double dsigma() const override {return Decayer()->dsigma();}
-    
+    //double dsigma() const override {return Decayer()->dsigma();}
+
+    double IntegrateCrossSection() override;
+
   private:
     
     ElectronScattering()=default;
@@ -73,13 +79,19 @@ namespace elSpectro{
     
     void SetBeamCondtion();
     
+    Particle _beamElec;
+    Particle _beamNucl;
+    LorentzVector _nuclRestElec;
+    LorentzVector _nuclRestNucl;
+    ReactionElectroProd _reactionInfo;
+
     double _pElectron={0}; //nominal e- beam energy
     double _pIon={0}; //nominal ion beam energy
     double _angleElectron={0}; //nominal electron crossing angle
     double _angleIon={0};  //nominal proton crossing angle
     double _massIon={0};  //nominal proton crossing angle
-    int _pdgIon={2212}; //species of ion
-
+    double _Wmin={0};  //minumum CM mass
+    
     //user specified limits
     double _Q2min={0};
     double _Q2max={0};
@@ -89,20 +101,16 @@ namespace elSpectro{
     double _ePmax={0};
     double _Xmin={0};
     double _Xmax={0};
+    double _Ymin={0};
+    double _Ymax={0};
 
     
     long _nsamples=0;
+    int _pdgIon={2212}; //species of ion
 
-    Particle _beamElec;
-    Particle _beamNucl;
-    LorentzVector _nuclRestElec;
-    LorentzVector _nuclRestNucl;
-
+  
     DecayingParticle* _gStarN={nullptr}; 
-    //PhotoProdInfo _info;
-    ReactionElectroProd _reactionInfo;
-    
-    
+     
     ClassDefOverride(elSpectro::ElectronScattering,1); //class ElectronScattering
  
   };

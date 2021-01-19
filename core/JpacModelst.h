@@ -32,18 +32,12 @@ namespace elSpectro{
     
     bool HasAngularDistribution() override{return true; } //I have an angular distribution
 
-    //double Intensity() const override;
-
-    //void PostInit(ReactionInfo* info) override;
 
     double MatrixElementsSquared_T() const override {
-     _amp->kinematics->set_mX( GetMeson()->Mass() );
+     _amp->_kinematics->set_mX( GetMeson()->Mass() );
+     _amp->_kinematics->set_Q2( get_Q2() );
 
-
-     // std::cout<<" MatrixElementsSquared_T s "<<get_s()<<" t "<<get_t()<<" mm "<<GetMeson()->Mass()<<" "<<_amp->probability_distribution(get_s(),get_t())<<std::endl;
-      //return -get_t()/10;// + get_s()/10;
-     // return get_s()/10;
-      return _amp->probability_distribution(get_s(),get_t())/4;// Average over initial state helicites;
+     return _amp->probability_distribution(get_s(),get_t())/4;// Average over initial state helicites;
     }
     
     void CalcMesonSDMEs() const  override ;

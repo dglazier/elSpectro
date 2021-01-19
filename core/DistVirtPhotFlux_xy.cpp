@@ -2,13 +2,21 @@
 
 #include <TRandom.h>
 
+//For pdf integration
+#include <Math/Functor.h>
+#include <RooFunctorBinding.h>
+#include <RooRealVar.h>
+#include <RooArgList.h>
+#include <utility>
+#include <functional>
+
 namespace elSpectro{
 
   DistVirtPhotFlux_xy::DistVirtPhotFlux_xy(double eb, double mion, double Wmin):
     _ebeam(eb),
     _mTar(mion)
    {
-     SetWThreshold(Wmin);
+     // SetWThreshold(Wmin);
    }
   
   void DistVirtPhotFlux_xy::SetWThreshold(double Wmin){
@@ -59,6 +67,7 @@ namespace elSpectro{
     
     //random search for the maximum value
     _max_val=0;
+  
     for(int i=0;i<1E5;i++){
       //note r=Q2/A2 when W=Mtar so xmin==1, so just scan from low x instead
       double val  = escat::flux_dlnxdlny(_ebeam,gRandom->Uniform(TMath::Log(1E-40),TMath::Log(1)),gRandom->Uniform(_lnymin,_lnymax));
@@ -66,9 +75,12 @@ namespace elSpectro{
     }
     _max_val*=1.01; //to be sure got max
 
+    //Seacrh for lowest possible x...
     _maxPossiblexRange=1;
+    ymin = TMath::Exp(_lnymin);
+    double ymax = TMath::Exp(_lnymax);
     for(int i=0;i<1E5;i++){
-      double avail_xmin = XMin(static_cast<double>(i)/1E5);
+      double avail_xmin = XMin(static_cast<double>(i*(ymax-ymin) + ymin)/1E5);
       if(avail_xmin<_maxPossiblexRange)
 	_maxPossiblexRange=avail_xmin;
     }
@@ -87,27 +99,35 @@ namespace elSpectro{
     if(_requestThmax!=0)std::cout<<"\tThmax "<<_requestThmax*TMath::RadToDeg()<<std::endl;
     if(_requestXmin!=0)std::cout<<"\tXmin "<<_requestXmin<<std::endl;
     if(_requestXmax!=1)std::cout<<"\tXmax "<<_requestXmax<<std::endl;
+    if(_requestYmin!=0)std::cout<<"\tYmin "<<_requestYmin<<std::endl;
+    if(_requestYmax!=1)std::cout<<"\tYmax "<<_requestYmax<<std::endl;
 
 
-    _flambda = [this](const double *x)
+   
+    _lnxmin=TMath::Log(_maxPossiblexRange);
+    _lnxmax=0;
+
+    //Finally, Integrate over photon flux
+    auto xvar = RooRealVar("x","x",(_lnxmax-_lnxmin)/2,_lnxmin,_lnxmax,"");
+    auto yvar = RooRealVar("y","y",(_lnymax-_lnymin)/2,_lnymin,_lnymax,"");
+         
+    auto flambda = [this](const double *x)
       {
 	if(x[0]==0) return 0.;
 	if(x[1]==0) return 0.;
-	//return x[0]+x[1];
-	
-	return Eval(x);
+	auto val = Eval(x);
+	return val;
       };
-  
-    _wrapPdf.reset(new ROOT::Math::Functor( _flambda , 2));
-    _xvar.reset( new RooRealVar("x","x",-1,-50,0,"") );
-    //_yvar.reset( new RooRealVar("y","y",-1,-50,0,""));
-    //_xvar.reset( new RooRealVar("x","x",-1,-50,0,"") );
-    _yvar.reset( new RooRealVar("y","y",-1,_lnymin,_lnymax,""));
-    _pdf.reset(new RooFunctorPdfBinding("PdfDistVirtPhotFlux_xy", "PdfDistVirtPhotFlux_xy", *_wrapPdf.get(), RooArgList(*_xvar.get(),*_yvar.get())));
 
-    auto roovars= RooArgSet(*_xvar.get(),*_yvar.get());
-    std::cout<<"INTEGRAL "<<_pdf->getNorm(roovars)<<" at "<<_ebeam<<std::endl;;
-								    // exit(0);
+    
+    auto wrapPdf=ROOT::Math::Functor( flambda , 2);
+    auto pdf = RooFunctorPdfBinding("PdfDistVirtPhotFlux_xy", "PdfDistVirtPhotFlux_xy", wrapPdf, RooArgList(xvar,yvar));
+    auto roovars= RooArgSet(xvar,yvar);
+    yvar.Print();
+
+    _integral=pdf.getNorm(roovars);
+
+    std::cout<<"DistVirtPhotFlux_xy INTEGRAL "<<pdf.getNorm(roovars)<<" at proton rest frame e- energy "<<_ebeam<<" and W threshold "<<TMath::Sqrt(_Wthresh2)<< std::endl;
   }
   
 
@@ -161,7 +181,11 @@ namespace elSpectro{
     auto y=TMath::Exp(lny);
     
     _val=escat::flux_dxdy(_ebeam,x,y);
-     
+ 
+    //for integral
+    //*_xvar.get()=x;
+    // *_yvar.get()=y;
+    
     //return x and y values
     _xy=std::make_pair(x,y);
   
@@ -170,18 +194,17 @@ namespace elSpectro{
 
      _val=0;
      _xy=std::make_pair(-1,-1); //unphysical should never be used
-    
      double y = gRandom->Uniform( TMath::Exp(_lnymin),TMath::Exp(_lnymax) );
-     
+     //double y = gRandom->Uniform( 1E-8,1 );
+     //if(y<0.1) return; 
      //calculate the fraction of x-space available
      //now calculate x limits
      //y = r/2ME and x = Q2/r 
      double avail_xmax = XMax(y);
      double avail_xmin = XMin(y);
   
-     if(avail_xmin>=1){ return; }
-
-     
+     //if(avail_xmin>=1){ return; }
+     //_maxPossiblexRange=0;
      double x=-1;
      if(_maxPossiblexRange)
        //for efficiency we need not sample below lowest possible x value

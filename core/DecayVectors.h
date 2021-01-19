@@ -39,6 +39,7 @@ namespace elSpectro{
     virtual double dsigma() const {return 1;}
 
     void ForIntegrate(bool integ){_forIntegral=integ;}
+    virtual double Probability() const {return 1;}
 
   protected:
     

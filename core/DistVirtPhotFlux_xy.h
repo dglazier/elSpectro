@@ -10,12 +10,7 @@
 #include "Distribution.h"
 #include "FunctionsForElectronScattering.h"
 #include <TMath.h>
-#include <Math/Functor.h>
-#include <RooFunctorBinding.h>
 #include <RooRealVar.h>
-#include <RooArgList.h>
-#include <utility>
-#include <functional>
 
 namespace elSpectro{
 
@@ -40,6 +35,10 @@ namespace elSpectro{
     double MaxValue() const noexcept final {return _max_val;}
     double MinValue() const noexcept final {return 0;}
 
+    double GetMinLnY() const noexcept {return _lnymin;}
+    double GetMaxLnY() const noexcept {return _lnymax;}
+    double GetMinLnX() const noexcept {return _lnxmin;}
+    double GetMaxLnX() const noexcept {return _lnxmax;}
     double GetMinY() const noexcept final{return TMath::Exp( _lnymin);}
     double GetMaxY() const noexcept final{return TMath::Exp( _lnymax);}
     double GetMinX() const noexcept final{return 0;}
@@ -65,6 +64,11 @@ namespace elSpectro{
 
     void ForIntegrate(bool integ){_forIntegral=integ;}
     double Eval(const double *x) const;
+
+    double Probability() const{return _val/_integral;}
+
+    double Integral() const noexcept{return _integral;}
+
     
   protected:
     double XMin(double y) const;
@@ -73,13 +77,7 @@ namespace elSpectro{
   private:
     //no one should use default constructor
     DistVirtPhotFlux_xy()=default;
-
-    std::unique_ptr<RooFunctorPdfBinding> _pdf;
-    std::unique_ptr<RooRealVar> _xvar;
-    std::unique_ptr<RooRealVar> _yvar;
-    std::function<double(const double*)> _flambda;
-    std::unique_ptr<ROOT::Math::Functor> _wrapPdf;
-      
+    
     dist_pair _xy{0,0};
     double _val{0};
 
@@ -88,6 +86,8 @@ namespace elSpectro{
     double _mTar={0};
     double _lnymin={0};
     double _lnymax={0};
+    double _lnxmin={0};
+    double _lnxmax={0};
     double _Wthresh2={0};
     double _max_val={0};
     double _requestQ2min={0};
@@ -99,10 +99,12 @@ namespace elSpectro{
     double _maxPossiblexRange={1};
     
     //no Ymin as set by threshold
-    double _requestYmax={0};
+    double _requestYmax={1};
     double _requestYmin={0};
     double _requestXmin={0};
     double _requestXmax={1};
+
+    double _integral=1;
 
     bool _forIntegral=false;
     
@@ -110,6 +112,8 @@ namespace elSpectro{
  
 
   };
+
+  //evaluate photon flux as function of lnx and lny
   inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
 
     double lnx=x[0];
@@ -126,6 +130,7 @@ namespace elSpectro{
     double avail_xmax = XMax(y);
     double avail_xmin = XMin(y);
     auto currx=TMath::Exp(lnx);
+
     if(currx>avail_xmax){ return 0; }
     if(currx<avail_xmin){ return 0; }
     

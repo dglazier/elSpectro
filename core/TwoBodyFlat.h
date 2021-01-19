@@ -37,7 +37,8 @@ namespace elSpectro{
 	return gRandom->Uniform(-1,1);
       return MyRandomCosTh();
     }
- 
+    double Probability() const{return 1./4/TMath::Pi();}
+
 
   protected :
 
