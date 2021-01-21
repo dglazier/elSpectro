@@ -27,12 +27,12 @@ namespace elSpectro{
     
     //or if decayer already give required distribution
    
-    ElectronScattering(double ep,double ionp,
+    /*  ElectronScattering(double ep,double ionp,
 		       double anglee,double anglep,
 		       DecayVectors* decayer, DecayModel* model=new PhaseSpaceDecay{{},{11,-2211}},int ionpdg=2212);
     ElectronScattering(double ep,double ionp,
 		       DecayVectors* decayer, DecayModel* model=new PhaseSpaceDecay{{},{11,-2211}},int ionpdg=2212);
-
+    */
     //Constructors using default ScatteredElectron_xy decayer
    ElectronScattering(double ep,double ionp,
 		       double anglee,double anglep,DecayModel* model=new PhaseSpaceDecay{{},{11,-2211}},int ionpdg=2212);
@@ -71,7 +71,8 @@ namespace elSpectro{
     //double dsigma() const override {return Decayer()->dsigma();}
 
     double IntegrateCrossSection() override;
-
+    double IntegrateCrossSectionFast() override;
+    LorentzVector MakeCollision();
   private:
     
     ElectronScattering()=default;

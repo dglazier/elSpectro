@@ -70,11 +70,13 @@ Note the double cmake ../; make install; is required for ROOT pcm files
 
 1) e + p -> e' X (Jpsi (e+e-)rho(pi+,pi-)) p
 
-       root Load.C EIC_JPAC_X3872.C
+       root Load.C 'EIC_JPAC_X3872.C("high",5,41,1E33,10)'
 
-       Or with diagnostic histgra,s
+       Which will run with 5GeV e- energy, 41 GeV proton, Luminosity=10^33 for 10 days
 
-       root Load.C EIC_JPAC_X3872_Hists.C
+       Or with diagnostic histgrams
+
+       root Load.C 'EIC_JPAC_X3872_Hists.C("high",5,41,1E33,10)'
        
 
 ### Examples of MesonEx Quasi-real PhotoProduction

@@ -26,7 +26,7 @@ namespace elSpectro{
     
     double Generate(const LorentzVector& parent,
 		    const particle_ptrs& products)  final;
-    double Generate(const LorentzVector& parent,
+    double GenerateGivenXandY(const LorentzVector& parent,
 		    const particle_ptrs& products,double xx, double yy)  ;
     
     DistVirtPhotFlux_xy &Dist(){return _random_xy;}
@@ -61,7 +61,7 @@ namespace elSpectro{
     TH2D histyQ2={"yQ2dist","yQ2dist",200,0,20,100,0,1};
     TH2D histyx={"yxdist","yxdist",100,0,1,100,0,1};
     TH2D histyCosTh={"yCosThdist","yCosThdist",100,-1,1,100,0,1};
-    TH1D histW={"genWdist","genWdist",1000,0,10};
+    TH1D histW={"genWdist","genWdist",100,5,30};
     
     ClassDefOverride(elSpectro::ScatteredElectron_xy,1); //class DecayVectors
  

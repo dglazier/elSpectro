@@ -74,6 +74,7 @@ namespace elSpectro{
     
     const ReactionElectroProd* ProductionInfo() const { return _prodInfo; }
     
+    void HistIntegratedXSection_ds(TH1D& hist);
     void HistIntegratedXSection(TH1D& hist);
     void HistMaxXSection(TH1D& hist);
     
@@ -94,16 +95,19 @@ namespace elSpectro{
       //Please note kine::PDK2(_W,_photon->M(),_target->M()) does not give
       //correct momentum
       return PhaseSpaceNorm()/_s/PgammaCMsq();
-       //this would not be the case if the differential was dcosth rather than t
+      //this would not be the case if the differential was dcosth rather than t
     }
-   double PhaseSpaceFactorCosTh() const noexcept {
-     return PhaseSpaceNorm()* kine::PDK(_W,_meson->Mass(),_baryon->Mass())/_s/PgammaCM()/4;
-   }
+
+    constexpr double  PhaseSpaceNormCosTh() const {return 1./(2.56819E-6)/32/TMath::Pi();}// Convert from GeV^-2 -> nb
     
-       
+    double PhaseSpaceFactorCosTh() const noexcept {
+      return PhaseSpaceNormCosTh()* kine::PDK(_W,_meson->Mass(),_baryon->Mass())/_s/PgammaCM();
+    }
+    
+    
     SDME* const  GetMesonSDMEs() const {return _sdmeMeson;}
     SDME* const  GetBaryonSDMEs() const {return _sdmeBaryon;}
-
+    
     virtual void CalcMesonSDMEs() const {};
     virtual void CalcBaryonSDMEs() const {};
 
@@ -117,26 +121,40 @@ namespace elSpectro{
 
   
     double kinCM_MesonP(double W) const {
-      return kine::PDK(W,_meson->P4().M(),_baryon->P4().M());
+      //  std::cout<<"kinCM_MesonP "<< kine::PDK(W,_meson->P4().M(),_baryon->P4().M()) <<W<<" "<<_meson->P4().M()<<" "<<_baryon->P4().M()<<std::endl;
+       return kine::PDK(W,_meson->P4().M(),_baryon->P4().M());
 
     }
     double kinCM_MesonE(double W) const {
        auto m2_a =_meson->P4().M2();
        auto m2_b =_baryon->P4().M2();
+       // std::cout<<"kinCM_MesonE "<< (W*W + m2_a - m2_b)/(2.0*W)<<std::endl;
        return (W*W + m2_a - m2_b)/(2.0*W);
     }
     double kin_tFromWCosTh(double cosTh) const{
       double W = Parent()->P4().M();
       auto cmBoost=Parent()->P4().BoostToCM();
       auto p1cm=boost(*_photon,cmBoost);
+      // std::cout<<"kin_tFromWCosTh "<<p1cm.M2() + _meson->M2() - 2 * (p1cm.E()* kinCM_MesonE(W)-p1cm.P()* kinCM_MesonP(W)*cosTh)<<std::endl;
 
       return p1cm.M2() + _meson->M2() - 2 * (p1cm.E()* kinCM_MesonE(W)-p1cm.P()* kinCM_MesonP(W)*cosTh);
     }
+
     double dsigma_costh(double cosTh){
       //For integrating cross section
       _W = Parent()->P4().M();
+      _s=_W*_W;
       _t = kin_tFromWCosTh(cosTh);
-      return PhaseSpaceFactorCosTh() *(MatrixElementsSquared_T()+(_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()) * TMath::Pi()*2;//2pi=>integrated over phi
+      // std::cout<<"dsigma_costh t "<<_t<<" "<<PhaseSpaceFactorCosTh()<<" "<<MatrixElementsSquared_T()<<std::endl;
+  
+      return PhaseSpaceFactorCosTh()*(MatrixElementsSquared_T()+(_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()) ;//2pi=>integrated over phi
+    }
+    double dsigma_costhW(double cosTh,double W){
+     //For integrating cross section
+      _W = W;
+      _s=_W*_W;
+      _t = kin_tFromWCosTh(cosTh);
+      return PhaseSpaceFactorCosTh()*(MatrixElementsSquared_T()+(_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()) ;//2pi=>integrated over phi
     }
 
   private:

@@ -8,7 +8,10 @@
 #include "amplitudes/baryon_resonance.hpp"
 
 
-void EIC_JPAC_X3872(double ebeamE = 5, double pbeamE = 41, int nEvents = 5e4) {
+//Amplitude based on $JPACPHOTO/executables/XYZ_Plots/X3872_high.cpp
+double Frixione(Double_t *x,Double_t *p);
+
+void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double lumi=1E33, int nDays = 25) {
 
   LorentzVector elbeam(0,0,-1*ebeamE,escat::E_el(ebeamE));
   LorentzVector prbeam(0,0,pbeamE,escat::E_pr(pbeamE));
@@ -17,22 +20,53 @@ void EIC_JPAC_X3872(double ebeamE = 5, double pbeamE = 41, int nEvents = 5e4) {
   // AMPLITUDES
   // ---------------------------------------------------------------------------
 
+  // ---------------------------------------------------------------------------
+  // Preliminaries
+  // ---------------------------------------------------------------------------
+
+
+  // X(3872)
+  auto kX = reaction_kinematics{M_X3872};
+  kX.set_JP(1, 1);
+
+  // Nucleon couplings and cutoffs
+  double gV_omega = 16., gT_omega = 0.;
+  double LamOmega = 1.2;
+  double gV_rho = 2.4, gT_rho = 14.6;
+  double LamRho = 1.4;
+  double gV_phi = -6.2, gT_phi = 2.1;
+  double gV_psi = 1.6E-3, gT_psi = 0.;
+
+  // Top couplings
+  double gX_omega = 8.2E-3;
+  double gX_rho = 3.6E-3;
+    
   // Linear trajectory for the rho
-  linear_trajectory alpha(-1, 0.5, 0.9, "EXD_linear");
-  
-  // Set up kinematics for the X(3872)
-  reaction_kinematics * ptr = new reaction_kinematics(3.872, "X(3872)");
+  auto alpha = linear_trajectory{-1, 0.5, 0.9, "#rho - #omega"};
 
-  // Initialize Reggeon amplitude with the above kinematics and regge_trajectory
-  vector_exchange X3872rho(ptr, &alpha, "#rho");
-  X3872rho.set_params({3.81E-3, 2.4, 14.6});
-  
-  vector_exchange X3872omega(ptr, &alpha, "#omega");
-  X3872omega.set_params({9.51E-3, 16, 0.});
-  
-  // Sum individual contributions together incoherently
-  amplitude_sum jpac_amp(ptr, {&X3872rho, &X3872omega}, "Sum");
+  // ---------------------------------------------------------------------------
+  // High-Energy Amplitudes
+  // ---------------------------------------------------------------------------
+  //////////////////
+  // X(3872)
+  vector_exchange *X_omega{nullptr};
+  if(ampPar=="high")X_omega= new vector_exchange(&kX, &alpha, "#omega");
+  else if(ampPar=="low") X_omega=new vector_exchange(&kX, M_OMEGA, "#omega");
+  else {cerr<<"invalid amplitude parameterisation "<<ampPar<<endl; exit(0);}
+  X_omega->set_params({gX_omega, gV_omega, gT_omega});
+  X_omega->set_formfactor(true, LamOmega);
 
+  vector_exchange *X_rho{nullptr};
+  if(ampPar=="high")X_rho= new vector_exchange(&kX, &alpha, "#rho");
+  else if(ampPar=="low") X_rho=new vector_exchange(&kX, M_RHO, "#rho");
+  else {cerr<<"invalid amplitude parameterisation "<<ampPar<<endl; exit(0);}
+  X_rho->set_params({gX_rho, gV_rho, gT_rho});
+  X_rho->set_formfactor(true, LamRho);
+
+  std::vector<amplitude*> X_exchanges = {X_omega, X_rho};
+  amplitude_sum jpac_amp(&kX, X_exchanges, "#it{X}(3872)");
+ 
+  
   // ---------------------------------------------------------------------------
   // elSpectro
   // ---------------------------------------------------------------------------
@@ -48,40 +82,56 @@ void EIC_JPAC_X3872(double ebeamE = 5, double pbeamE = 41, int nEvents = 5e4) {
   x->SetPdgMass(3.872);
 
   //create eic electroproduction of X + proton
-  auto pGammaStarDecay = new JpacModelst{&jpac_amp, {x},{2212} }; //photo-nucleon system
-  auto photoprod = new DecayModelQ2W{0,pGammaStarDecay,new TwoBody_stu{0., 1.0, 2.5,0,0}};
+  auto pGammaStarDecay = JpacModelst{&jpac_amp, {x},{2212} }; //photo-nucleon system
+  //Decay g*p state, provide s channel and t-channel "shapes"
+  //Note the amplitude will provide the actual t-distribution, this approximation speeds up sampling
+  //TwoBody_stu{0., 1.0, 2.5} => 0% s-schannel, 100% t channel with slope 2.5 
+  auto photoprod = DecayModelQ2W{0,&pGammaStarDecay,new TwoBody_stu{0., 1.0, 2.5}};
 
   //combine beam, target and reaction products
-  auto production=eic( ebeamE, pbeamE, photoprod );
+  auto production=eic( ebeamE, pbeamE, &photoprod );
 
   // ---------------------------------------------------------------------------
   // Initialize HepMC3
   // ---------------------------------------------------------------------------
-  writer(new HepMC3Writer{Form("out/x3872_pac_%d_%d.txt",(int)ebeamE,(int)pbeamE)});
+  writer(new HepMC3Writer{Form("out/jpac_x3872_%s_%d_%d.txt",ampPar.data(),(int)ebeamE,(int)pbeamE)});
   
   
+  // ---------------------------------------------------------------------------
   //initilase the generator, may take some time for making distribution tables 
+  // ---------------------------------------------------------------------------
   initGenerator();
   
+  // ---------------------------------------------------------------------------
+  //Set number of events via experimental luminosity and beamtime
+  // ---------------------------------------------------------------------------
+  production->SetCombinedBranchingFraction(0.06); //Just Jpsi->e+e-
+  generator().SetNEvents_via_LuminosityTime(lumi,24*60*60*nDays);
+  //or can just do generator().SetNEvents(1E6);
+  auto fastIntegral=production->IntegrateCrossSectionFast();
+  std::cout<<" check fast cross section "<<fastIntegral<<std::endl;
   // ---------------------------------------------------------------------------
   // Generate events
   // ---------------------------------------------------------------------------
   
-  gBenchmark->Start("e");//timer
-  
-  for(int i=0;i<nEvents;i++){
-     nextEvent();
-     if(i%1000==0) std::cout<<"event number "<<i<<std::endl;
+  gBenchmark->Start("generator");//timer
+
+  while(finishedGenerator()==false){
+    nextEvent();
+    countGenEvent();
+    if(generator().GetNDone()%1000==0) std::cout<<"event number "<<generator().GetNDone()<<std::endl;
   }
-
-  gBenchmark->Stop("e");
-  gBenchmark->Print("e");
-
+  
+  gBenchmark->Stop("generator");
+  gBenchmark->Print("generator");
+  
   // ---------------------------------------------------------------------------
   // Report generator statistics, can be used for optimising
   // ---------------------------------------------------------------------------
   
   generator().Summary();
 
-}
+  delete X_rho;
+  delete X_omega;
 
+}

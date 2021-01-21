@@ -18,7 +18,8 @@
 
 double Frixione(Double_t *x,Double_t *p);
 
-void ElectronDistribution(double ebeamE=10.4,int nEvents = 1E7) {
+void ElectronDistribution(double ebeamE=10.4,int nEvents = 1E6) {
+ gRandom->SetSeed(0);
 
   using namespace elSpectro;
   elSpectro::Manager::Instance();
@@ -32,13 +33,16 @@ void ElectronDistribution(double ebeamE=10.4,int nEvents = 1E7) {
   
   auto electron =production->Model()->Products()[1];
 
-  //  production->SetLimitTarRest_eThmin(10*TMath::DegToRad());
-  // production->SetLimitTarRest_eThmax(25*TMath::DegToRad());
+  // production->SetLimitTarRest_eThmin(0.5*TMath::DegToRad());
+  //production->SetLimitTarRest_eThmax(4.5*TMath::DegToRad());
   //production->SetLimitTarRest_ePmin(1);
-  production->SetLimitTarRest_ePmax(9);
-  // production->SetLimit_Q2min(1);
-  // production->SetLimit_Q2max(4);
+  //production->SetLimitTarRest_ePmax(10);
+  //production->SetLimit_Q2min(0.1);
+  //production->SetLimit_Q2max(0.1);
   // production->SetLimit_Xmin(0.2);
+  // production->SetLimit_Xmax(0.5);
+   production->SetLimit_Ymin(0.01);
+   //  production->SetLimit_Ymin(0.00033546263);
   // production->SetLimit_Xmax(0.5);
   
   //initilase the generator, may take some time for making distribution tables 
@@ -65,11 +69,12 @@ void ElectronDistribution(double ebeamE=10.4,int nEvents = 1E7) {
   frixione->SetNpx(yGen->GetNbinsX());
   frixione->SetLineColor(1);
 
-  yGen->Scale(frixione->Eval(0.5)/yGen->Interpolate(0.5));
+  yGen->Scale(frixione->Eval(0.4)/yGen->Interpolate(0.4));
 
   yGen->Draw();
   frixione->Draw("same");
 
+  cout<<"Integral "<< frixione->Integral(5E-1,1)<<" "<< yGen->Integral("width")<<endl;;
 }
 double Frixione(Double_t *x,Double_t *p){
   auto e0=p[0];//only parameter is electron beam energy
@@ -82,11 +87,11 @@ double Frixione(Double_t *x,Double_t *p){
   double me = 0.00051;
   double Mp = 0.9383;
   double q2_max = -1 * me*me*y*y/(1 - y) ;
-  //double q2_max = -1 ;
+  //if(q2_max>-0.1)q2_max=-0.1 ;
   double eg=e0*y;
   double q2_min = - 2*eg*Mp;//add this
   //double q2_min = - 4;//add this
-  // if(q2_min<-4)q2_min = - 4;
+  // if(q2_min<-0.1)q2_min = - 0.1;
    /////////////////////double q2_min = - 4*e0*e0*y;
 
   auto flux = alpha/(2*PI) * (2*me*me*y*(1/q2_max - 1/q2_min) + (1 + (1 - y)*(1-y))/y * log(q2_min/q2_max));

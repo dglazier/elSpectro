@@ -83,6 +83,17 @@ namespace elSpectro{
     return  generator().Reaction();
   }
  
+  inline ProductionProcess* eic(double ep,double eth,double ionp,double ionth,DecayModelQ2W *totalXsec=nullptr,int ionpdg=2212){
+
+    if(totalXsec!=nullptr)
+      generator().Reaction(new ElectronScattering(ep,ionp,eth,ionth,totalXsec) );
+    else
+      generator().Reaction(new ElectronScattering(ep,ionp,eth,ionth,0) );
+
+     
+    return  generator().Reaction();
+  }
+ 
   inline ProductionProcess*  mesonex(double ep,DecayModelQ2W *totalXsec=nullptr,int ionpdg=2212){
   
     if(totalXsec!=nullptr){

@@ -35,8 +35,8 @@ namespace elSpectro{
 
     double MatrixElementsSquared_T() const override {
      _amp->_kinematics->set_mX( GetMeson()->Mass() );
-     _amp->_kinematics->set_Q2( get_Q2() );
-
+     // _amp->_kinematics->set_Q2( get_Q2() );
+     // std::cout<<"me "<<GetMeson()->Mass()<<" Q2 "<< get_Q2()<<" t "<<get_t()<<" s "<<get_s()<<std::endl;
      return _amp->probability_distribution(get_s(),get_t())/4;// Average over initial state helicites;
     }
     

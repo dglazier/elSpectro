@@ -90,7 +90,7 @@ namespace elSpectro{
     */
   }
 
-  double ScatteredElectron_xy::Generate(const LorentzVector& parent, const particle_ptrs& products,double xx, double yy)  {
+  double ScatteredElectron_xy::GenerateGivenXandY(const LorentzVector& parent, const particle_ptrs& products,double xx, double yy)  {
 
 
  
@@ -133,7 +133,6 @@ namespace elSpectro{
     //Must make sure scattered e- is in the same frame as the parent
     //still in rest system of nucl, just need rotation
     RotateToParent(parent,_scattered);
-
     if(products[0]->Pdg()==11){
       products[0]->SetP4(_scattered);
       products[1]->SetP4(parent -_scattered);

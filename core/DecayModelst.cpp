@@ -68,7 +68,7 @@ namespace elSpectro{
     _t = (_meson->P4()-*_photon).M2();//_amp->kinematics->t_man(s,cmMeson.Theta());
     _dt=0;
     _dsigma=0;
-    //std::cout<<"DecayModelst::Intensity() "<<_W<<" "<<_meson->P4().M()<<" "<<_baryon->P4().M()<<" "<<_t<<std::endl;
+  
     //check above threshold for meson and baryon masses
     if(_W<_meson->P4().M()+_baryon->P4().M()) return 0;
     
@@ -77,36 +77,20 @@ namespace elSpectro{
     kine::electroCMDecay(&Parent()->P4(),_ebeam,_photon,_meson->P4ptr(),&decayAngles);
     _photonPol->SetPhi(decayAngles.Phi());
 
-    //std::cout<<_W <<" and "<<_t<<" "<<_meson->P4().E()<<" "<<_photon->E()<<" cos costheta "<<TMath::Cos(decayAngles.Theta())<<" new t calc "<<kin_tFromWCosTh(TMath::Cos(decayAngles.Theta()))<<std::endl;
-
-   //weight==differential cross section //See Seyboth and Wolf eqn (70)
-   // double trangeRatio=4* kine::PDK(_W,0,_target->M())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() );// / (  kine::PDK(_Wmax,0,_target->M() )* kine::PDK(_Wmax,_meson->P4().M(),_baryon->P4().M() ) );
     _dt=4* TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() );
-    // double otherdt=4*kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() )   * kine::PDK(_W,0,_baryon->P4().M() );
-    //std::cout<<_t <<" dt "<<  _dt<<" "<<otherdt<<" "<<PgammaCMsq()<< " CM "<<kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() )<<" W "<<_W<<" m "<<_meson->P4().M()<<" b "<<_baryon->P4().M()<<std::endl;
-    // std::cout<<"PCOMP "<<PgammaCMsq()<<" "<<kine::PDK2(_W,_photon->M(),_baryon->P4().M() )<<" "<< _W*_W<<" "<<std::endl;
-    
-    // if()
-     double weight = DifferentialXSect() * _dt ;
 
-    // _dt=otherdt;
-    //_dt/=(2*(TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() )));
+    double weight = DifferentialXSect() * _dt ;//must multiply by t-range for correct sampling
+
     CalcMesonSDMEs();
     CalcBaryonSDMEs();
 
-    //std::cout<<" dt "<<  _dt<<" "<<weight<<" "<<PgammaCMsq()<<" "<<kine::PDK2(_W,0,_baryon->Mass())<<std::endl;
-
     weight/=_max; //normalise range 0-1
-    weight/=TMath::Sqrt(PgammaCMsq()/kine::PDK2(_W,0,_baryon->Mass())); //correct max for finite Q2 phase space
+    weight/= TMath::Sqrt(PgammaCMsq()/kine::PDK2(_W,0,_target->M())); //correct max for finite Q2 phase space
  
     if(weight>1){
       //don't change weight, likely due to large Q2 value....
-      
-      //auto oldmax=_max;
-      //_max=weight*oldmax;
       std::cout<<"DecayModelst::Intensity weight too high but won't change maxprobable low meson mass and W from  "<<_max<<" to "<<weight*_max<<" meson "<<_meson->Mass()<<" W "<<_W<<std::endl;
-      //std::cout<<"DX "<<DifferentialXSect()<<" "<< _dt<<" pgam "<<PgammaCMsq()<<" M^2 "<<MatrixElementsSquared_T()<<" Q2 factor "<<PgammaCMsq()/kine::PDK(_W,_meson->Mass(),_baryon->Mass())<<std::endl;
-    }
+      }
     
     //Correct for W weighting which has already been applied
     weight/=_prodInfo->_sWeight;
@@ -115,9 +99,7 @@ namespace elSpectro{
       std::cout<<" s weight "<<_prodInfo->_sWeight<<" Q2 "<<-_photon->M2()<<" 2Mmu "<<2*_target->M()*_photon->E() <<" W "<<_W<<" t "<<_t<<" new weight "<<weight*_prodInfo->_sWeight<<" meson "<<_meson->Mass()<<std::endl;
       std::cout<<"DecayModelst::Intensity sWeight corrected weight too large "<<weight <<" "<<_prodInfo->_sWeight<<"  max "<<_max<<" val "<< weight*_prodInfo->_sWeight*_max<<std::endl;
       std::cout<<"DX "<<DifferentialXSect()<<" "<< _dt<<" pgam "<<TMath::Sqrt(PgammaCMsq())<<" M^2 "<<MatrixElementsSquared_T()<<" Q2 factor "<<TMath::Sqrt(PgammaCMsq())/kine::PDK(_W,0,_baryon->Mass())<<" PHASE SPACE "<<PhaseSpaceFactor()<<" s "<<_s<<" pgam "<<PgammaCMsq()<<" at Q2 0  = "<<kine::PDK2(_W,0,_target->M())<<std::endl;
-    //std::cout<<"flux "<<kine::FluxPhaseSpaceFactor(*_photon,*_target)<<" "<<4*kine::PDK(W,_meson->Mass(),_baryon->Mass())*W<<" "<< kine::PhaseSpaceFactorDt(W,P1,_meson->Mass(),_baryon->Mass())<<std::endl;				    
-      //std::cout<<"Pi check "<<P1 <<" versus "<< kine::PDK(W,_photon->M(),_target->M())<<std::endl;
-    }
+      }
      
  
     return weight;
@@ -245,7 +227,7 @@ namespace elSpectro{
       
       return -minVal ;
   }
-
+  /*
   void DecayModelst::HistIntegratedXSection(TH1D& hist){
 
  
@@ -281,11 +263,87 @@ namespace elSpectro{
 	else
 	  hist.SetBinContent(ih, ig.Integral(kine::tmax(_W,M1,M2,M3,M4),kine::t0(_W,M1,M2,M3,M4)) );
 	
-	std::cout<<ih<<" "<<"Going to integrate from t "<<kine::tmax(_W,M1,M2,M3,M4)<<" "<<kine::t0(_W,M1,M2,M3,M4)<<" at W "<<" and "<<_W<<" "<<Wmin<<" with result "<<hist.GetBinContent(ih)<<"t rage "<< kine::tmax(_W,M1,M2,M3,M4) - kine::t0(_W,M1,M2,M3,M4)<<std::endl;
+	std::cout<<ih<<" "<<"Going to integrate from t "<<kine::tmax(_W,M1,M2,M3,M4)<<" "<<kine::t0(_W,M1,M2,M3,M4)<<" at W "<<" and "<<_W<<" "<<Wmin<<" with result "<<hist.GetBinContent(ih)<<"    t range "<< kine::tmax(_W,M1,M2,M3,M4) - kine::t0(_W,M1,M2,M3,M4)<<std::endl;
 	//or try histogram method
-	TH1F histi("histi","integral",100, kine::tmax(_W,M1,M2,M3,M4),kine::t0(_W,M1,M2,M3,M4));
-	for(int it=1;it<=histi.GetNbinsX();it++){histi.SetBinContent(it,F(histi.GetBinCenter(it)));}
-	std::cout<<"alternative "<<histi.Integral("width")<<std::endl;
+	//TH1F histi("histi","integral",100, kine::tmax(_W,M1,M2,M3,M4),kine::t0(_W,M1,M2,M3,M4));
+	//for(int it=1;it<=histi.GetNbinsX();it++){histi.SetBinContent(it,F(histi.GetBinCenter(it)));}
+	//std::cout<<"alternative "<<histi.Integral("width")<<std::endl;
+	if(ih%10==0)std::cout<<(hist.GetNbinsX() - ih)/10<<" "<<std::endl;
+      }
+      std::cout<<std::endl;
+      //done
+  }
+  */
+  void DecayModelst::HistIntegratedXSection(TH1D& hist){
+
+ 
+    auto M1 = 0;//assume real photon for calculation
+    auto M2 = _target->M();
+    auto M3 = _meson->Mass(); //should be pdg value here
+    auto M4 = _baryon->Mass();
+    auto Wmin = M3+M4;
+ 
+    //integrate over costh
+    auto F = [this,M1,M2,M3,M4](double costh)
+      {
+	_s=_W*_W;
+	_t = kine::tFromcosthW(costh, _W, M1, M2, M3, M4);
+	return PhaseSpaceFactorCosTh()* (MatrixElementsSquared_T());
+     };
+    
+      ROOT::Math::GSLIntegrator ig(ROOT::Math::IntegrationOneDim::kADAPTIVE,
+				   ROOT::Math::Integration::kGAUSS61);
+      ROOT::Math::Functor1D wF(F);
+      ig.SetFunction(wF);
+
+      
+  
+      for(int ih=1;ih<=hist.GetNbinsX();ih++){
+	_W=hist.GetXaxis()->GetBinCenter(ih);
+	if( _W < Wmin )
+	  hist.SetBinContent(ih, 0);
+	else
+	  hist.SetBinContent(ih, ig.Integral(-1,1) );
+	
+    }
+      std::cout<<std::endl;
+      //done
+  }
+  
+ void DecayModelst::HistIntegratedXSection_ds(TH1D& hist){
+
+ 
+    auto M1 = 0;//assum real photon for calculation
+    auto M2 = _target->M();
+    auto M3 = _meson->Mass(); //should be pdg value here
+    auto M4 = _baryon->Mass();
+    auto Wmin = M3+M4;
+
+    auto F = [this,M1,M2,M3,M4](double t)
+      {
+	//_W=W;
+	_s=_W*_W;
+	//_t=t;
+	//_W = Parent()->P4().M();
+	_t = kine::tFromcosthW(t, _W, M1, M2, M3, M4);
+	return PhaseSpaceFactorCosTh()* (MatrixElementsSquared_T());
+     };
+    
+      ROOT::Math::GSLIntegrator ig(ROOT::Math::IntegrationOneDim::kADAPTIVE,
+				   ROOT::Math::Integration::kGAUSS61);
+      ROOT::Math::Functor1D wF(F);
+      ig.SetFunction(wF);
+
+      
+  
+      for(int ih=1;ih<=hist.GetNbinsX();ih++){
+	_W=sqrt(hist.GetXaxis()->GetBinCenter(ih));
+	//	_W=_W+hist.GetXaxis()->GetBinWidth(ih); //take right limit so do not miss threshold
+	if( _W < Wmin )
+	  hist.SetBinContent(ih, 0);
+	else
+	  hist.SetBinContent(ih, ig.Integral(-1,1) );
+	
 	if(ih%10==0)std::cout<<(hist.GetNbinsX() - ih)/10<<" "<<std::endl;
       }
       std::cout<<std::endl;

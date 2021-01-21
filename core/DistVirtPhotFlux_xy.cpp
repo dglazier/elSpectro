@@ -49,7 +49,7 @@ namespace elSpectro{
     double ymin = rmin/(2*_mTar*_ebeam);
     if(ymin==0) ymin=1E-50;
        //now find the y limits with this threshold
-    std::cout<<"ymin "<<ymin<<" "<<rmin<<" "<<_Wthresh2<<" "<<_mTar<<" "<<_ebeam<<" "<<_Wthresh2-_mTar*_mTar<<" "<<_requestQ2min<<std::endl;
+    //  std::cout<<"ymin "<<ymin<<" "<<rmin<<" "<<_Wthresh2<<" "<<_mTar<<" "<<_ebeam<<" "<<_Wthresh2-_mTar*_mTar<<" "<<_requestQ2min<<std::endl;
  
     //if(_requestYmin!=0){
     if(_requestYmin>ymin)
@@ -108,9 +108,13 @@ namespace elSpectro{
     _lnxmax=0;
 
     //Finally, Integrate over photon flux
-    auto xvar = RooRealVar("x","x",(_lnxmax-_lnxmin)/2,_lnxmin,_lnxmax,"");
-    auto yvar = RooRealVar("y","y",(_lnymax-_lnymin)/2,_lnymin,_lnymax,"");
-         
+    //auto xvar = RooRealVar("x","x",(_lnxmax-_lnxmin)/2,_lnxmin,_lnxmax,"");
+    //auto yvar = RooRealVar("y","y",(_lnymax-_lnymin)/2,_lnymin,_lnymax,"");
+    auto xvar = RooRealVar("x","x",TMath::Exp((_lnxmax-_lnxmin)/2),TMath::Exp(_lnxmin),TMath::Exp(_lnxmax),"");
+    auto yvar = RooRealVar("y","y",TMath::Exp((_lnymax-_lnymin)/2),TMath::Exp(_lnymin),TMath::Exp(_lnymax),"");
+    xvar.Print();
+    yvar.Print();
+    
     auto flambda = [this](const double *x)
       {
 	if(x[0]==0) return 0.;
@@ -123,8 +127,7 @@ namespace elSpectro{
     auto wrapPdf=ROOT::Math::Functor( flambda , 2);
     auto pdf = RooFunctorPdfBinding("PdfDistVirtPhotFlux_xy", "PdfDistVirtPhotFlux_xy", wrapPdf, RooArgList(xvar,yvar));
     auto roovars= RooArgSet(xvar,yvar);
-    yvar.Print();
-
+ 
     _integral=pdf.getNorm(roovars);
 
     std::cout<<"DistVirtPhotFlux_xy INTEGRAL "<<pdf.getNorm(roovars)<<" at proton rest frame e- energy "<<_ebeam<<" and W threshold "<<TMath::Sqrt(_Wthresh2)<< std::endl;
@@ -182,10 +185,7 @@ namespace elSpectro{
     
     _val=escat::flux_dxdy(_ebeam,x,y);
  
-    //for integral
-    //*_xvar.get()=x;
-    // *_yvar.get()=y;
-    
+   
     //return x and y values
     _xy=std::make_pair(x,y);
   

@@ -40,7 +40,7 @@ namespace elSpectro{
   //   SetBeamCondtion();
   // }
   /////////////////////////////////////////////////////////////////////
-  ElectronScattering::ElectronScattering(double ep,double ionp, DecayVectors* decayer,  DecayModel* model, int ionpdg):
+  /*  ElectronScattering::ElectronScattering(double ep,double ionp, DecayVectors* decayer,  DecayModel* model, int ionpdg):
     _pElectron{ep},
     _pIon{ionp},
     _angleElectron{TMath::Pi()},
@@ -68,7 +68,7 @@ namespace elSpectro{
   {
   
       SetBeamCondtion();
-  }
+      }*/
   /////////////////////////////////////////////////////////////////////
   ElectronScattering::ElectronScattering(double ep,double ionp, DecayModel* model, int ionpdg):
     _pElectron{ep},
@@ -262,10 +262,41 @@ namespace elSpectro{
   
   }
   //////////////////////////////////////////////////////////////////////////
-  ///Use RooFit integrator to integrate cross section over x , y and t
-  double ElectronScattering::IntegrateCrossSection(){
-    LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
+  ///Use Frixione + sigma(W) to integrate cross section over x , y and t
+  double ElectronScattering::IntegrateCrossSectionFast(){
+    gBenchmark->Start("IntegrateCrossSectionFast");
+    auto collision=MakeCollision();
+
+    auto Q2WModel =dynamic_cast<DecayModelQ2W*>(Model());
+    Q2WModel->ZeroPhoton();//need Q2=0 for P1CM
     
+    auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
+    auto threshold=gStarModel->GetMeson()->PdgMass()+gStarModel->GetBaryon()->PdgMass();
+    TH1D* hWdist=new  TH1D("sdisthigh","sdisthigh",100,threshold,collision.M());
+    gStarModel->HistIntegratedXSection( *hWdist);
+    
+    double integrated_xsection = 0; // get sigma_ep from integral over W: f(W)*sigma_gp(W)
+
+    
+    for(int i=0; i<hWdist->GetNbinsX(); i++) {
+      double W = hWdist->GetXaxis()->GetBinCenter(i+1);
+      double WbinWidthScale = hWdist->GetBinWidth(i+1);
+      double W_xsection = hWdist->GetBinContent(i+1);
+      
+      double y = (W*W-escat::M2_pr())/_nuclRestElec.E()/2/escat::M_pr();
+      double W_fluxWeight = escat::Frixione(_nuclRestElec.E(),y) * W /_nuclRestElec.E() /escat::M_pr();
+      integrated_xsection += W_xsection * W_fluxWeight* WbinWidthScale;
+    }
+    gBenchmark->Stop("IntegrateCrossSectionFast");
+    gBenchmark->Print("IntegrateCrossSectionFast");
+ 
+    return integrated_xsection;
+  }
+    
+  LorentzVector ElectronScattering::MakeCollision(){
+    
+    //First, Eventually want to sample from beam divergence distributions
+    LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
     //Boost into ion rest frame
     auto prBoost=_beamNucl.P4().BoostToCM();
     collision=boost(collision,prBoost);
@@ -273,54 +304,112 @@ namespace elSpectro{
     _nuclRestElec= boost(_beamElec.P4(),prBoost);
     //set decay parent for e -> e'g*
     SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
+    return collision;
+  }
+  //////////////////////////////////////////////////////////////////////////
+  ///Use RooFit integrator to integrate cross section over x , y and t
+  double ElectronScattering::IntegrateCrossSection(){
+    auto collision=MakeCollision();
  
+
     auto photonFlux= dynamic_cast<ScatteredElectron_xy* >(mutableDecayer());
 
-    auto xvar = RooRealVar("lnxIntegral","lnxIntegral",photonFlux->Dist().GetMinLnX(),photonFlux->Dist().GetMinLnX(),photonFlux->Dist().GetMaxLnX(),"");
-    auto yvar = RooRealVar("lnyIntegral","lnyIntegral",photonFlux->Dist().GetMinLnY(),photonFlux->Dist().GetMinLnY(),photonFlux->Dist().GetMaxLnY(),"");
-    auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0,-1,1,"");
-
+    auto xvar = RooRealVar("lnxIntegral","lnxIntegral",TMath::Exp(photonFlux->Dist().GetMaxLnX()),TMath::Exp(photonFlux->Dist().GetMinLnX()),TMath::Exp(photonFlux->Dist().GetMaxLnX()),"");
+    auto yvar = RooRealVar("lnyIntegral","lnyIntegral",TMath::Exp(photonFlux->Dist().GetMaxLnY()),TMath::Exp(photonFlux->Dist().GetMinLnY()),TMath::Exp(photonFlux->Dist().GetMaxLnY()),"");
+    auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",-0.,-0.99999,0.99999,"");
+    
     auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
     auto Q2WModel =dynamic_cast<DecayModelQ2W*>(Model());
     
-    auto flnXlnYt = [this,&photonFlux,&gStarModel,&Q2WModel](const double *x)
+    photonFlux->Dist().SetWThresholdVal(gStarModel->GetMeson()->PdgMass()+gStarModel->GetBaryon()->PdgMass());
+
+    auto Eel=_nuclRestElec.E();
+    auto flnXlnYt = [this,&photonFlux,&gStarModel,&Q2WModel,&Eel](const double *x)
       {
 	if(x[0]==0) return 0.; //x
 	if(x[1]==0) return 0.; //y
 	auto val = photonFlux->Dist().Eval(x);
+	if(TMath::IsNaN(val)) return 0.;
 	if(val==0) return 0.;
+
 	//calculate scatered electron at x and y 
-	photonFlux->Generate(P4(),Model()->Products(),TMath::Exp(x[0]),TMath::Exp(x[1]));
+	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),x[0],x[1]);
+	//calculate virtual photon
+	Model()->Intensity();
+	//auto W = gStarModel->Parent()->P4().M();//TMath::Sqrt(escat::M2_pr()+2*Eel*escat::M_pr()*x[1]-escat::Q2_xy( Eel,x[0],x[1]));
+	//get value of dsigma/ds/dcosth cross section at x,y,costh 
+	val*=gStarModel->dsigma_costh(x[2]);
+	//additional (not real photo) Q2dependence of cross section
+	if(TMath::IsNaN(val)) return 0.;
+	//	val*=Q2WModel->Q2H1Rho();
+	return val;
+      };
+
+    /*
+    auto fWcosTh = [this,&photonFlux,&gStarModel,&Q2WModel,Eel](const double *x)
+      {
+   	auto currx=x[2];
+	auto W=x[0];
+	auto y = (W*W - escat::M2_pr())/2/Eel/escat::M_pr();
+	if(TMath::IsNaN(y)) return 0.;
+	Double_t xx[2]={currx,(y)};
+	auto val = photonFlux->Dist().Eval(xx)*W/(Eel*escat::M_pr());
+	//auto val =y;
+	if(val==0) return 0.;
+	//auto val = 1.0;
+	//calculate scatered electron at x and y 
+	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),(currx),y);
+	//photonFlux->GenerateGivenXandY(P4(),Model()->Products(),currx,y);
 	//calculate virtual photon
 	Model()->Intensity();
 	//get value of dsigma/ds/dcosth cross section at x,y,costh 
-	val*=gStarModel->dsigma_costh(x[2]);//x[2]=costh
+	val*=gStarModel->dsigma_costhW(x[1],W);
 	//additional (not real photo) Q2dependence of cross section
 	if(TMath::IsNaN(val)) return 0.;
-	val*=Q2WModel->Q2H1Rho();
+	if(val<0) return 0.;
+	//	val*=Q2WModel->Q2H1Rho();
 	return val;
       };
+    
+    auto Wvar = RooRealVar("WIntegral","WIntegral",_Wmin,_Wmin, collision.M(),"");
  
+ 
+    auto wrapPdfW=ROOT::Math::Functor( fWcosTh , 3);
+
+    auto pdfW = RooFunctorPdfBinding("ElScatterIntegral", "ElScatterIntegral", wrapPdfW, RooArgList(Wvar,cthvar,xvar));
+    auto roovarsW= RooArgSet(Wvar,cthvar,xvar);
+    
+    gBenchmark->Start("RooFitIntegralW");
+    
+    auto RFintegralW=pdfW.getNorm(roovarsW);
+    gBenchmark->Stop("RooFitIntegralW");
+    gBenchmark->Print("RooFitIntegralW");
+    */
     
     auto wrapPdf=ROOT::Math::Functor( flnXlnYt , 3);
 
     auto pdf = RooFunctorPdfBinding("ElScatterIntegral", "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
     auto roovars= RooArgSet(xvar,yvar,cthvar);
     
-    yvar.Print();
     gBenchmark->Start("RooFitIntegral");
     
     auto RFintegral=pdf.getNorm(roovars);
     gBenchmark->Stop("RooFitIntegral");
     gBenchmark->Print("RooFitIntegral");
     
-
-    std::cout<<" ElectronScattering::IntegrateCrossSection() ROOFIT "<<RFintegral<<" giving a photon flux weighted average photoproduction cross section of "<<RFintegral/photonFlux->Dist().Integral()<<std::endl;
+    std::cout<<" ElectronScattering::IntegrateCrossSection() ROOFIT "<<RFintegral<<" "<<" giving a photon flux weighted average photoproduction cross section of "<<RFintegral/photonFlux->Dist().Integral()<<std::endl;
+    std::cout<<" W range "<<_Wmin<<" "<< collision.M() <<" "<< ( collision.M()- _Wmin)<<std::endl;
+    xvar.Print();
+    yvar.Print();
+    cthvar.Print();
+    
+    photonFlux->Dist().SetWThresholdVal(Q2WModel->getThreshold());
+   
     return RFintegral;
   }
 /////////////////////////////////////////////////////////////////////////
-DecayStatus  ElectronScattering::GenerateProducts(){
-    //First, Eventually want to sample from beam divergence distributions
+  DecayStatus  ElectronScattering::GenerateProducts(){
+  /*//First, Eventually want to sample from beam divergence distributions
     LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
 
     //Boost into ion rest frame
@@ -328,10 +417,11 @@ DecayStatus  ElectronScattering::GenerateProducts(){
     collision=boost(collision,prBoost);
     _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.Mass());
     _nuclRestElec= boost(_beamElec.P4(),prBoost);
-    
     //set decay parent for e -> e'g*
     SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
-
+ */
+    MakeCollision();
+    
     //proceed through decay chain
     while(DecayingParticle::GenerateProducts()!=DecayStatus::Decayed){
       //std::cout<<"not decayed "<<_nsamples<<std::endl;
@@ -340,6 +430,7 @@ DecayStatus  ElectronScattering::GenerateProducts(){
     
     
     //Boost all stable particles back to lab
+    auto prBoost=_beamNucl.P4().BoostToCM();
     Manager::Instance().Particles().BoostStable(-prBoost);
 
     return DecayStatus::Decayed;

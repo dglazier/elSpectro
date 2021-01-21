@@ -87,13 +87,12 @@ namespace elSpectro{
   
   ////////////////////////////////////////////////////////
   double  DecayModelQ2W::Intensity() const{
-    //std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<ParentVector().M()<<" "<<getW()<<" "<<GetGammaN()->P4().E() <<std::endl;
+    // std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<ParentVector().M()<<" "<<getW()<<" "<<GetGammaN()->P4().E() <<std::endl;
     /*if(CheckThreshold()==false){
       return 0.;
       }*/
 
     double W = getW();
-    //if(W <GetGammaN()->MinimumMassPossible()) return 0;
     if(TMath::IsNaN(W)) return 0.0;
     if(W  < _threshold ) return 0.;
  
@@ -121,7 +120,7 @@ namespace elSpectro{
     }
     
  
-    //  std::cout<<" Q2 DEPENDENECE "<<PhaseSpaceFactorToQ2eq0(W,p4tar.M() )<<"      "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<"             PDKs     "<< kine::PDK(W, -getQ2(),p4tar.M())<<" "<< kine::PDK(W, getQ2(),p4tar.M())<<" "<< kine::PDK(W, 0 ,p4tar.M())<<" "<< p1cm.P()<<std::endl;
+    //  std::cout<<" Q2 DEPENDENECE "<<PhaseSpaceFactorToQ2eq0(W,p4tar.M() )<<"      "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<"             PDKs     "<< kine::PDK(W, -getQ2(),p4tar.M())<<" "<< kine::PDK(W, getQ2(),p4tar.M())<<" "<< kine::PDK(W, 0 ,p4tar.M())<<" "<<std::endl;
 
 
     _prodInfo->_sWeight=weight; //might be used in s and t
@@ -171,8 +170,7 @@ namespace elSpectro{
       if(dynamic_cast<DecayingParticle*>(meson)){ //meson
 	dynamic_cast<DecayingParticle*>(meson)->TakeMinimumMass();//to get threshold behaviour
 	minMesonMass=meson->Mass();
-	//mesonBaryon->HistIntegratedXSection(histlow);
-	mesonBaryon->HistMaxXSection(histlow);
+ 	mesonBaryon->HistMaxXSection(histlow);
 	//back to PDg mass if exists
 	if(meson->PdgMass()>minMesonMass)
 	  dynamic_cast<DecayingParticle*>(meson)->TakePdgMass();
@@ -181,11 +179,10 @@ namespace elSpectro{
       //now for PDG mass
       //only needs to be done if meson does not decay
       //or pdg mass is different from minMesonMass (possible if !=0)
-      if(meson->PdgMass()!=minMesonMass)
- 	mesonBaryon->HistMaxXSection(histpeak);
-      //mesonBaryon->HistIntegratedXSection(histpeak);
-   
-     auto hist = HistFromLargestBinContents(histlow,histpeak);
+      if(meson->PdgMass()!=minMesonMass){
+	mesonBaryon->HistMaxXSection(histpeak);
+      }
+      auto hist = HistFromLargestBinContents(histlow,histpeak);
      
      _Wrealphoto_Dist.reset( new DistTH1(hist) );
     }
@@ -202,8 +199,7 @@ namespace elSpectro{
       for(int ibin=1;ibin<=hist.GetNbinsX();ibin++){
 	auto val = h1.GetBinContent(ibin)>h2.GetBinContent(ibin) ? h1.GetBinContent(ibin):h2.GetBinContent(ibin);
 	hist.SetBinContent(ibin,val + 0.05*maxVal);
-	//	std::cout<<"HistFromLargestBins "<<hist.GetBinCenter(ibin)<<" "<<hist.GetBinContent(ibin)<<" "<< maxVal<<std::endl;
-	
+
       }
       return hist;
    }

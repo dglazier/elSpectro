@@ -50,6 +50,7 @@ namespace elSpectro{
     void SetElecE(double ee){_ebeam=ee;}
     void SetM(double m){_mTar=m;}
     void SetWThreshold(double Wmin);
+    void SetWThresholdVal(double Wmin){_Wthresh2=Wmin*Wmin;};
 
     void SetQ2min(double val){_requestQ2min=val;}
     void SetQ2max(double val){_requestQ2max=val;}
@@ -113,7 +114,7 @@ namespace elSpectro{
 
   };
 
-  //evaluate photon flux as function of lnx and lny
+  /* //evaluate photon flux as function of lnx and lny
   inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
 
     double lnx=x[0];
@@ -135,6 +136,28 @@ namespace elSpectro{
     if(currx<avail_xmin){ return 0; }
     
     return escat::flux_dlnxdlny(_ebeam,lnx,lny);
+    }*/
+  inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
+
+    double lnx=TMath::Log(x[0]);
+    double lny=TMath::Log(x[1]);
+    if(lny<_lnymin || lny>_lnymax)
+      return 0;
+    
+    double y =x[1] ;
+   
+    //calculate the fraction of x-space available
+    //now calculate x limits
+    //y = r/2ME and x = Q2/r
+    
+    double avail_xmax = XMax(y);
+    double avail_xmin = XMin(y);
+    auto currx=x[0];
+    //std::cout<<"xlimits "<<avail_xmax<<" "<<avail_xmin<<std::endl;
+    if(currx>avail_xmax){ return 0; }
+    if(currx<avail_xmin){ return 0; }
+    
+    return escat::flux_dxdy(_ebeam,currx,y);
   }
 
   inline  double DistVirtPhotFlux_xy::XMin(double y) const{
@@ -157,7 +180,7 @@ namespace elSpectro{
       double r = 2*_mTar*_ebeam*y;
       double Q2max = r + _mTar*_mTar - _Wthresh2;
       double avail_xmax = 1 + (_mTar*_mTar - _Wthresh2 )/r;
-
+      //     std::cout<<"DistVirtPhotFlux_xy::XMax( "<<_mTar<<" "<<TMath::Sqrt(_Wthresh2)<<" "<<_ebeam<<" "<<y<<std::endl;
       if( _requestQ2max>0)
 	if( Q2max>_requestQ2max)//take the smallest "max"
 	  avail_xmax = _requestQ2max/r;

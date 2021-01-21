@@ -87,7 +87,10 @@ namespace elSpectro{
       auto p1cm=boost(_gamma,cmBoost);
       return p1cm.P()/kine::PDK(W,0,targetM);
     }
- 
+    void ZeroPhoton(){
+      _gamma.SetXYZT(0,0,0,0);
+    }
+    
   private:
     
     void Init();

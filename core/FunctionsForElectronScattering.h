@@ -190,5 +190,24 @@ namespace elSpectro{
       Alpha_by2Pi() * KLbyE_Q2y(e_in, Q2, yy); 
       }
     */
+  
+    inline double Frixione(double e0, double y){
+
+    
+      double q2_max = -1 * M2_el()*y*y/(1 - y) ;
+      //if(q2_max>-0.1)q2_max=-0.1 ;
+      double eg=e0*y;
+      double q2_min = - 2*eg*M_pr();//add this
+    
+      auto flux = Alpha_by2Pi() * (2*M2_el()*y*(1/q2_max - 1/q2_min) + (1 + (1 - y)*(1-y))/y * log(q2_min/q2_max));
+    
+      if(flux==TMath::Infinity()) return 0.;
+      if(TMath::IsNaN(flux)) return 0.;
+    
+      if(flux<0) return 0.;
+    
+      return flux;
+    }
+
   }
 }

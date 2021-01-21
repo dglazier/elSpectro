@@ -40,6 +40,7 @@ namespace elSpectro{
 
    
     virtual double IntegrateCrossSection() = 0;
+    virtual double IntegrateCrossSectionFast() = 0;
     
     void SetCombinedBranchingFraction(double branch){_branchFrac=branch;}
     double BranchingFraction()const noexcept {return _branchFrac;}
