@@ -10,6 +10,10 @@ using namespace jpacPhoto;
 
 
 void Load(){
+
+  RooFunctorPdfBinding forLinkingatJLAB; //not sure why, but will not load without this on ifarm...
+
+
   gSystem->Load("libEG");
  
   TString JPAC = gSystem->Getenv("JPACPHOTO");

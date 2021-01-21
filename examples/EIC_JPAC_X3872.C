@@ -109,7 +109,7 @@ void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, 
   generator().SetNEvents_via_LuminosityTime(lumi,24*60*60*nDays);
   //or can just do generator().SetNEvents(1E6);
   auto fastIntegral=production->IntegrateCrossSectionFast();
-  std::cout<<" check fast cross section "<<fastIntegral<<std::endl;
+  std::cout<<"       check fast cross section "<<fastIntegral<<std::endl;
   // ---------------------------------------------------------------------------
   // Generate events
   // ---------------------------------------------------------------------------
