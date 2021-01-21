@@ -72,9 +72,9 @@ Note the double cmake ../; make install; is required for ROOT pcm files
 
        root Load.C 'EIC_JPAC_X3872.C("high",5,41,1E33,10)'
 
-       Which will run with 5GeV e- energy, 41 GeV proton, Luminosity=10^33 for 10 days
+Which will run with 5GeV e- energy, 41 GeV proton, Luminosity=10^33 for 10 days
 
-       Or with diagnostic histgrams
+Or with diagnostic histgrams
 
        root Load.C 'EIC_JPAC_X3872_Hists.C("high",5,41,1E33,10)'
        
