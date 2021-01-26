@@ -12,10 +12,13 @@ using namespace jpacPhoto;
 void Load(){
 
  
-  gSystem->Load("libEG");
  
   TString JPAC = gSystem->Getenv("JPACPHOTO");
+  
   TString ELSPECTRO = gSystem->Getenv("ELSPECTRO");
+
+  //if not defined jpacPhoto look for elSpectro submodule
+  if(JPAC.Length()==0) JPAC = ELSPECTRO+"jpacPhoto";
   
   gInterpreter->AddIncludePath(JPAC+"/include/");
   gSystem->Load(JPAC+"/lib/libjpacPhoto."+gSystem->GetSoExt());
@@ -24,12 +27,6 @@ void Load(){
   gInterpreter->AddIncludePath(ELSPECTRO+"/core");
 
 
-  ROOT::Math::LorentzRotation ddd;
-  RooFunctorPdfBinding forLinkingatJLAB; //not sure why, but will not load without this on ifarm...
-
-
-  // gROOT->ProcessLine("#include \"Interface.h\"");
-  //gROOT->ProcessLine("#include \"Manager.h\"");
   gROOT->ProcessLine("elSpectro::Manager::Instance();");
 
 }

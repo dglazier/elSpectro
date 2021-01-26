@@ -4,7 +4,6 @@ set(BASE $ENV{ELSPECTRO})
 
 include_directories($ENV{JPACPHOTO}/include)
 
-
 ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   Particle.h
   DecayingParticle.h
