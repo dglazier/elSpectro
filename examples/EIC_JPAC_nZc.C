@@ -18,7 +18,7 @@
 // argument 0 and nLumi=number of events
 // 'EIC_JPAC_X3872.C("high",100,100,1E4)'
 
-void EIC_JPAC_Zn(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double nLumi=100, int nDays = 0) {
+void EIC_JPAC_nZc(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double nLumi=100, int nDays = 0) {
 
   LorentzVector elbeam(0,0,-1*ebeamE,escat::E_el(ebeamE));
   LorentzVector prbeam(0,0,pbeamE,escat::E_pr(pbeamE));
@@ -35,71 +35,51 @@ void EIC_JPAC_Zn(string ampPar="high",double ebeamE = 5, double pbeamE = 41, dou
   double bPi = 1. / (LamPi * LamPi);
 
   // Zc(3900)
-  double mZc = 3.8884; // GeV
-  reaction_kinematics * kZc = new reaction_kinematics(mZc);
-  kZc->set_JP(1, 1);
+  auto kZc = reaction_kinematics{M_ZC3900};
+  kZc.set_JP(1, 1);
 
   double gc_Psi = 1.91; // psi coupling before VMD scaling
   double gc_Gamma = E * F_JPSI * gc_Psi / M_JPSI;
   std::vector<double> Zc_couplings = {gc_Gamma, g_NN};
 
-  // Zb(10610)
-  double mZb = 10.6072;
-  reaction_kinematics * kZb = new reaction_kinematics(mZb);
-  kZb->set_JP(1, 1);
+  // Pion trajectory 
+  int signature = +1;
+  double alpha_prime = 0.7; // GeV^-2
+  double alpha_0 =  - alpha_prime * M2_PION;
+  auto alpha = linear_trajectory{signature, alpha_0, alpha_prime};
 
-  double gb_Ups1 = 0.49, gb_Ups2 = 3.30, gb_Ups3 = 9.22;
-  double gb_Gamma = E * (F_UPSILON1S * gb_Ups1 / M_UPSILON1S 
-                       + F_UPSILON2S * gb_Ups2 / M_UPSILON2S
-                       + F_UPSILON3S * gb_Ups3 / M_UPSILON3S);  
-  std::vector<double> Zb_couplings = {gb_Gamma, g_NN};
-
-  
-  // Zb(10650)
-  double mZbp = 10.6522;
-  reaction_kinematics * kZbp = new reaction_kinematics(mZbp);
-  kZbp->set_JP(1, 1);
-
-  double gbp_Ups1 = 0.21, gbp_Ups2 = 1.47, gbp_Ups3 = 4.8;
-  double gbp_Gamma = E * (F_UPSILON1S * gbp_Ups1 / M_UPSILON1S 
-                       +  F_UPSILON2S * gbp_Ups2 / M_UPSILON2S
-                       +  F_UPSILON3S * gbp_Ups3 / M_UPSILON3S);  
-  std::vector<double> Zbp_couplings = {gbp_Gamma, g_NN};
-  
+  pseudoscalar_exchange* ampZc{nullptr};
   // ---------------------------------------------------------------------------
-  // Fixed-spin amplitudes
+  // low => Fixed-spin amplitudes
   // ---------------------------------------------------------------------------
+  if(ampPar=="low") ampZc = new pseudoscalar_exchange{&kZc, M_PION, "#it{Z_{c}} (3900)^{+}"};
+ // ---------------------------------------------------------------------------
+  // high => Reggeized amplitudes
+  // ---------------------------------------------------------------------------
+  else if(ampPar=="high") ampZc = new pseudoscalar_exchange(&kZc, &alpha, "#it{Z_{c}}(3900)^{+}");
+  else {cerr<<"invalid amplitude parameterisation "<<ampPar<<endl; exit(0);}
 
-  pseudoscalar_exchange Zc_fixedspin(kZc, M_PION, "#it{Z_{c}} (3900)^{+}");
-  Zc_fixedspin.set_params(Zc_couplings);
-  Zc_fixedspin.set_formfactor(true, bPi);
-
-  pseudoscalar_exchange Zb_fixedspin(kZb, M_PION,  "#it{Z_{b}} (10610)^{+}");
-  Zb_fixedspin.set_params(Zb_couplings);
-  Zb_fixedspin.set_formfactor(true, bPi);
-
-  pseudoscalar_exchange Zbp_fixedspin(kZbp, M_PION, "#it{Z'_{b}} (10650)^{+}");
-  Zbp_fixedspin.set_params(Zbp_couplings);
-  Zbp_fixedspin.set_formfactor(true, bPi);
+  ampZc->set_params(Zc_couplings);
+  ampZc->set_formfactor(true, bPi);
 
 
-  
   // ---------------------------------------------------------------------------
   // elSpectro
   // ---------------------------------------------------------------------------
-  
-  //create a X decaying to J/psi pi+pi-
+  //create a Z decaying to J/psi pi+
+
   auto jpsi=particle(443,model(new PhaseSpaceDecay({},{11,-11})));
-  //rho
-  mass_distribution(113,new DistTF1{TF1("hhRho","TMath::BreitWigner(x,0.775,0.151)",0.2,0.7)});
-  auto rho=particle(113,model(new PhaseSpaceDecay({},{211,-211})));
-  //x
-  mass_distribution(9995,new DistTF1{TF1("hh","TMath::BreitWigner(x,3.872,0.001)",3.85,3.89)});
-  auto x=particle(9995,model(new PhaseSpaceDecay{{jpsi,rho},{}}));
-  x->SetPdgMass(3.872);
+
+  //Zc
+  double minMass = 3.5;
+  double maxMass = 4.4;
+  mass_distribution(9995,new DistTF1{TF1("hh",Form("TMath::BreitWigner(x,%lf,0.05)",M_ZC3900),minMass,maxMass)});
+  auto Z=particle(9995,model(new PhaseSpaceDecay{{jpsi},{211}}));
+  Z->SetPdgMass(M_ZC3900);
 
   //create eic electroproduction of X + proton
-  auto pGammaStarDecay = JpacModelst{&jpac_amp, {x},{2212} }; //photo-nucleon system
+  auto pGammaStarDecay = JpacModelst{ampZc, {Z},{2112} }; //photo-nucleon system
+  //auto pGammaStarDecay = DecayModelst{ {Z},{2212} }; //photo-nucleon system
   //Decay g*p state, provide s channel and t-channel "shapes"
   //Note the amplitude will provide the actual t-distribution, this approximation speeds up sampling
   //TwoBody_stu{0., 1.0, 2.5} => 0% s-schannel, 100% t channel with slope 2.5 
@@ -111,7 +91,7 @@ void EIC_JPAC_Zn(string ampPar="high",double ebeamE = 5, double pbeamE = 41, dou
   // ---------------------------------------------------------------------------
   // Initialize HepMC3
   // ---------------------------------------------------------------------------
-  writer(new HepMC3Writer{Form("out/jpac_x3872_%s_%d_%d.txt",ampPar.data(),(int)ebeamE,(int)pbeamE)});
+  writer(new HepMC3Writer{Form("out/jpac_Zc3900_%s_%d_%d.txt",ampPar.data(),(int)ebeamE,(int)pbeamE)});
   
   
   // ---------------------------------------------------------------------------
@@ -149,7 +129,6 @@ void EIC_JPAC_Zn(string ampPar="high",double ebeamE = 5, double pbeamE = 41, dou
   
   generator().Summary();
 
-  delete X_rho;
-  delete X_omega;
+  delete ampZc;
 
 }
