@@ -3,11 +3,8 @@ set(DIRNAME core)
 set(BASE $ENV{ELSPECTRO})
 
 include_directories($ENV{JPACPHOTO}/include)
-link_libraries($ENV{JPACPHOTO}/lib/libjpacPhoto.so)
-#include_directories($ENV{HEPMC3}/include)
-#link_libraries($ENV{HEPMC3}/lib/libHepMC3.so)
 
-#
+
 ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   Particle.h
   DecayingParticle.h
