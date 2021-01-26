@@ -77,7 +77,13 @@ To just run a fixed number of events leave last argument 0 and nLumi=number of e
 
 2) e + p -> e' Z(3900) (Jpsi (e+e-) pi+) n
 
-      root Load.C 'EIC_JPAC_nZc_Hists.C("low",5,41,1E33,25)'
+To run with luminosity 10^33 for 25 days
+
+      elspectro 'EIC_JPAC_nZc_Hists.C("low",5,41,1E33,25)'
+
+or to just run 1000 events
+
+      elspectro 'EIC_JPAC_nZc_Hists.C("low",5,41,1000)'
 
 ### Examples of MesonEx Quasi-real PhotoProduction
 
