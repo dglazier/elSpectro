@@ -49,11 +49,15 @@ namespace elSpectro{
      long long GetNEvents()const noexcept{return _nEventsToGen;}
      long long GetNDone()const noexcept{return _nEventsDone;}
     
-     void SetNEvents_via_LuminosityTime(double lum, double beamtime){
-        _integralXSection=Reaction()->IntegrateCrossSection();
-	_nEventsToGen=lum*1E-33*beamtime*_integralXSection*Reaction()->BranchingFraction();//1E-33(cm2tonb)
-	std::cout<<"Manager::SetNEvents_via_LuminosityTime , going to generate "<<_nEventsToGen<<" events"<<std::endl;
-	std::cout<<"\t based on an integrated cross section of "<<_integralXSection<<"; luminosity = "<<lum<<"; and beamtime of "<<beamtime <<" s "<<std::endl;
+     void SetNEvents_via_LuminosityTime(double n_or_lum, double beamtime){
+       if(beamtime==0){
+	 SetNEvents(n_or_lum);
+	 return;
+       }
+       _integralXSection=Reaction()->IntegrateCrossSection();
+       _nEventsToGen=n_or_lum*1E-33*beamtime*_integralXSection*Reaction()->BranchingFraction();//1E-33(cm2tonb)
+       std::cout<<"Manager::SetNEvents_via_LuminosityTime , going to generate "<<_nEventsToGen<<" events"<<std::endl;
+       std::cout<<"\t based on an integrated cross section of "<<_integralXSection<<"; luminosity = "<<n_or_lum<<"; and beamtime of "<<beamtime <<" s "<<std::endl;
      }
      
      void Reaction(ProductionProcess* prod){
