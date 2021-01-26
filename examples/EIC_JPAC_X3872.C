@@ -9,9 +9,16 @@
 
 
 //Amplitude based on $JPACPHOTO/executables/XYZ_Plots/X3872_high.cpp
-double Frixione(Double_t *x,Double_t *p);
 
-void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double lumi=1E33, int nDays = 25) {
+//To set luminosity and days change last 2 arguments
+//e.g. for luminosoty 10^33 and 25 days, e- energy 100 and p energy 100
+//with high energy paramterisation :
+// 'EIC_JPAC_X3872.C("high",100,100,1E33,25)'
+// To just run a fixed number of events leave last
+// argument 0 and nLumi=number of events
+// 'EIC_JPAC_X3872.C("high",100,100,1E4)'
+
+void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double nLumi=100, int nDays = 0) {
 
   LorentzVector elbeam(0,0,-1*ebeamE,escat::E_el(ebeamE));
   LorentzVector prbeam(0,0,pbeamE,escat::E_pr(pbeamE));
@@ -45,7 +52,7 @@ void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, 
   auto alpha = linear_trajectory{-1, 0.5, 0.9, "#rho - #omega"};
 
   // ---------------------------------------------------------------------------
-  // High-Energy Amplitudes
+  // High or Low  - Energy Amplitudes
   // ---------------------------------------------------------------------------
   //////////////////
   // X(3872)
@@ -79,7 +86,7 @@ void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, 
   //x
   mass_distribution(9995,new DistTF1{TF1("hh","TMath::BreitWigner(x,3.872,0.001)",3.85,3.89)});
   auto x=particle(9995,model(new PhaseSpaceDecay{{jpsi,rho},{}}));
-  x->SetPdgMass(3.872);
+  x->SetPdgMass(M_X3872);
 
   //create eic electroproduction of X + proton
   auto pGammaStarDecay = JpacModelst{&jpac_amp, {x},{2212} }; //photo-nucleon system
@@ -106,7 +113,8 @@ void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, 
   //Set number of events via experimental luminosity and beamtime
   // ---------------------------------------------------------------------------
   production->SetCombinedBranchingFraction(0.06); //Just Jpsi->e+e-
-  generator().SetNEvents_via_LuminosityTime(lumi,24*60*60*nDays);
+  generator().SetNEvents_via_LuminosityTime(nLumi,24*60*60*nDays);
+
   //or can just do generator().SetNEvents(1E6);
   auto fastIntegral=production->IntegrateCrossSectionFast();
   std::cout<<"       check fast cross section "<<fastIntegral<<std::endl;

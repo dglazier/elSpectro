@@ -32,7 +32,15 @@ TH1F hRecoilPt("RecoilPt","; p_{T} (GeV)",200,0,5.0);
 
 //Amplitude based on $JPACPHOTO/executables/XYZ_Plots/X3872_high.cpp
 
-void EIC_JPAC_X3872_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double lumi=1E33, int nDays = 25) {
+//To set luminosity and days change last 2 arguments
+//e.g. for luminosoty 10^33 and 25 days, e- energy 100 and p energy 100
+//with high energy paramterisation :
+// 'EIC_JPAC_X3872.C("high",100,100,1E33,25)'
+// To just run a fixed number of events leave last
+// argument 0 and nLumi=number of events
+// 'EIC_JPAC_X3872.C("high",100,100,1E4)'
+
+void EIC_JPAC_X3872_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double nLumi=100, int nDays = 0) {
 
   LorentzVector elbeam(0,0,-1*ebeamE,escat::E_el(ebeamE));
   LorentzVector prbeam(0,0,pbeamE,escat::E_pr(pbeamE));
@@ -127,7 +135,7 @@ void EIC_JPAC_X3872_Hists(string ampPar="high",double ebeamE = 5, double pbeamE 
   //Set number of events via experimental luminosity and beamtime
   // ---------------------------------------------------------------------------
   production->SetCombinedBranchingFraction(0.06); //Just Jpsi->e+e-
-  generator().SetNEvents_via_LuminosityTime(lumi,24*60*60*nDays);
+  generator().SetNEvents_via_LuminosityTime(nLumi,24*60*60*nDays);
   
   // ---------------------------------------------------------------------------
   // Get event particles for filling histograms
@@ -151,7 +159,7 @@ void EIC_JPAC_X3872_Hists(string ampPar="high",double ebeamE = 5, double pbeamE 
     countGenEvent();
     if(generator().GetNDone()%1000==0) std::cout<<"event number "<<generator().GetNDone()<<std::endl;
 
-      auto photon = elbeam - electron->P4();
+    auto photon = elbeam - electron->P4();
     double Q2 = -photon.M2();
     double W = (photon+prbeam).M();
     double t = -1*(proton->P4()-prbeam).M2();
