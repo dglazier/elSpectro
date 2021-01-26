@@ -15,15 +15,14 @@ Then follow buil instructions.
 
 # Installation
 
-     git clone https://github.com/dglazier/elSpectro
+     git clone --recurse-submodules https://github.com/dglazier/elSpectro
 
      cd elSpectro
 
  # Set Environment
 
      setenv ELSPECTRO /path/to/elSpectro (or $PWD)
-     setenv JPACPHOTO /path/to/jpacPhoto
-     (optional) setenv HEPMC3 /path/to/HepMC3/
+     setenv JPACPHOTO /path/to/jpacPhoto (most likely $ELSPECTRO/jpacPhoto)
 
      mkdir build
 
@@ -31,11 +30,7 @@ Then follow buil instructions.
 
      cmake ../
 
-     make install
-
-     cmake ../
-
-     make install
+     cmake --build . --target install
 
 Note the double cmake ../; make install; is required for ROOT pcm files 
 
