@@ -2,6 +2,7 @@
 #include "DecayingParticle.h"
 #include "FunctionsForElectronScattering.h"
 #include <TDatabasePDG.h>
+#include "TFile.h"
 
 
 namespace elSpectro{
@@ -145,7 +146,6 @@ namespace elSpectro{
     return weight;
   
   }
-
   void DecayModelQ2W::FindExcitationSpectra(){
 
     //Make excitation spectra envelope which should be greater than the
@@ -155,15 +155,15 @@ namespace elSpectro{
     //note the point is phase space and therefore xsection changes with mass
     double maxW = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
 
-    std::cout<<"DecayModelQ2W::PostInit generating total cross section, may take some time... "<<std::endl;
+    std::cout<<"DecayModelQ2W::PostInit generating max cross section @W, may take some time... "<<std::endl;
     auto gNprods=dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->Products();
       
     //auto baryon = gNprods[1];
     auto meson=gNprods[0];
  
     DecayModelst* mesonBaryon = nullptr;
-    TH1D histlow("Wdistlow","Wdistlow",100,_threshold,maxW);
-    TH1D histpeak("Wdisthigh","Wdisthigh",100,_threshold,maxW);
+    TH1D histlow("Wdistlow","Wdistlow",200,_threshold,maxW);
+    TH1D histpeak("Wdisthigh","Wdisthigh",200,_threshold,maxW);
     double minMesonMass=-1;
     if( ( mesonBaryon=dynamic_cast<DecayModelst*>(GetGammaN()->Model())) != nullptr){
       //check for low mass meson limits
@@ -182,8 +182,18 @@ namespace elSpectro{
       if(meson->PdgMass()!=minMesonMass){
 	mesonBaryon->HistMaxXSection(histpeak);
       }
-      auto hist = HistFromLargestBinContents(histlow,histpeak);
-     
+      auto hist = HistFromLargestBinContents(histpeak,histlow);
+      std::cout<<"DecayModelQ2W::FindExcitationSpectra()  result   "<<hist.GetMaximum()<<" "<<hist.GetBinCenter(hist.GetMaximumBin())<<" "<<hist.GetNbinsX()<<std::endl;
+      hist.SetName("Wdist");
+
+      /*
+      TFile ff("debug.root","recreate");
+      hist.Write();
+      histpeak.Write();
+      histlow.Write();
+      ff.Close();
+      */
+      
      _Wrealphoto_Dist.reset( new DistTH1(hist) );
     }
     else{
@@ -196,10 +206,22 @@ namespace elSpectro{
    TH1D HistFromLargestBinContents(const TH1D& h1,const TH1D& h2){
       auto hist= TH1D{h1};
       auto maxVal= h1.GetMaximum();
+      double max_so_far=0.;
       for(int ibin=1;ibin<=hist.GetNbinsX();ibin++){
 	auto val = h1.GetBinContent(ibin)>h2.GetBinContent(ibin) ? h1.GetBinContent(ibin):h2.GetBinContent(ibin);
-	hist.SetBinContent(ibin,val + 0.05*maxVal);
+	//hist.SetBinContent(ibin,val + 0.05*maxVal);
 
+	//depending on differential cross section and particle mass
+	//phase space factors can increase cross section at high
+	//particle mass and W
+	//We want envelope to contain this so once we get to the max
+	//just stay there. Flux is low at high W so no big effect
+	//on efficiency from this
+	if(val<max_so_far) hist.SetBinContent(ibin,max_so_far );
+	else{
+	  max_so_far = val + 0.05*maxVal;
+	  hist.SetBinContent(ibin,val + 0.05*maxVal);
+	}
       }
       return hist;
    }

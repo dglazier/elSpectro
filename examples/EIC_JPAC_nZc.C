@@ -8,7 +8,7 @@
 #include "amplitudes/baryon_resonance.hpp"
 
 
-//Amplitude based on $JPACPHOTO/executables/XYZ_Plots/X3872_high.cpp
+//Amplitude based on $JPACPHOTO/executables/XYZ_Plots/Z_low.cpp and Z_high.cpp
 
 //To set luminosity and days change last 2 arguments
 //e.g. for luminosoty 10^33 and 25 days, e- energy 100 and p energy 100
@@ -18,7 +18,7 @@
 // argument 0 and nLumi=number of events
 // 'EIC_JPAC_X3872.C("high",100,100,1E4)'
 
-void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double nLumi=100, int nDays = 0) {
+void EIC_JPAC_nZc(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double nLumi=100, int nDays = 0) {
 
   LorentzVector elbeam(0,0,-1*ebeamE,escat::E_el(ebeamE));
   LorentzVector prbeam(0,0,pbeamE,escat::E_pr(pbeamE));
@@ -26,70 +26,60 @@ void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, 
   // ---------------------------------------------------------------------------
   // AMPLITUDES
   // ---------------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------
   // Preliminaries
   // ---------------------------------------------------------------------------
 
+  double g_NN = sqrt(4. * M_PI * 13.81); // Nucleon coupling same for all
+  double LamPi = .9;  // 900 MeV cutoff for formfactor
+  double bPi = 1. / (LamPi * LamPi);
 
-  // X(3872)
-  auto kX = reaction_kinematics{M_X3872};
-  kX.set_JP(1, 1);
+  // Zc(3900)
+  auto kZc = reaction_kinematics{M_ZC3900};
+  kZc.set_JP(1, 1);
 
-  // Nucleon couplings and cutoffs
-  double gV_omega = 16., gT_omega = 0.;
-  double LamOmega = 1.2;
-  double gV_rho = 2.4, gT_rho = 14.6;
-  double LamRho = 1.4;
-  double gV_phi = -6.2, gT_phi = 2.1;
-  double gV_psi = 1.6E-3, gT_psi = 0.;
+  double gc_Psi = 1.91; // psi coupling before VMD scaling
+  double gc_Gamma = E * F_JPSI * gc_Psi / M_JPSI;
+  std::vector<double> Zc_couplings = {gc_Gamma, g_NN};
 
-  // Top couplings
-  double gX_omega = 8.2E-3;
-  double gX_rho = 3.6E-3;
-    
-  // Linear trajectory for the rho
-  auto alpha = linear_trajectory{-1, 0.5, 0.9, "#rho - #omega"};
+  // Pion trajectory 
+  int signature = +1;
+  double alpha_prime = 0.7; // GeV^-2
+  double alpha_0 =  - alpha_prime * M2_PION;
+  auto alpha = linear_trajectory{signature, alpha_0, alpha_prime};
 
+  pseudoscalar_exchange* ampZc{nullptr};
   // ---------------------------------------------------------------------------
-  // High or Low  - Energy Amplitudes
+  // low => Fixed-spin amplitudes
   // ---------------------------------------------------------------------------
-  //////////////////
-  // X(3872)
-  vector_exchange *X_omega{nullptr};
-  if(ampPar=="high")X_omega= new vector_exchange(&kX, &alpha, "#omega");
-  else if(ampPar=="low") X_omega=new vector_exchange(&kX, M_OMEGA, "#omega");
+  if(ampPar=="low") ampZc = new pseudoscalar_exchange{&kZc, M_PION, "#it{Z_{c}} (3900)^{+}"};
+ // ---------------------------------------------------------------------------
+  // high => Reggeized amplitudes
+  // ---------------------------------------------------------------------------
+  else if(ampPar=="high") ampZc = new pseudoscalar_exchange(&kZc, &alpha, "#it{Z_{c}}(3900)^{+}");
   else {cerr<<"invalid amplitude parameterisation "<<ampPar<<endl; exit(0);}
-  X_omega->set_params({gX_omega, gV_omega, gT_omega});
-  X_omega->set_formfactor(true, LamOmega);
 
-  vector_exchange *X_rho{nullptr};
-  if(ampPar=="high")X_rho= new vector_exchange(&kX, &alpha, "#rho");
-  else if(ampPar=="low") X_rho=new vector_exchange(&kX, M_RHO, "#rho");
-  else {cerr<<"invalid amplitude parameterisation "<<ampPar<<endl; exit(0);}
-  X_rho->set_params({gX_rho, gV_rho, gT_rho});
-  X_rho->set_formfactor(true, LamRho);
+  ampZc->set_params(Zc_couplings);
+  ampZc->set_formfactor(true, bPi);
 
-  std::vector<amplitude*> X_exchanges = {X_omega, X_rho};
-  amplitude_sum jpac_amp(&kX, X_exchanges, "#it{X}(3872)");
- 
-  
+
   // ---------------------------------------------------------------------------
   // elSpectro
   // ---------------------------------------------------------------------------
-  
-  //create a X decaying to J/psi pi+pi-
+  //create a Z decaying to J/psi pi+
+
   auto jpsi=particle(443,model(new PhaseSpaceDecay({},{11,-11})));
-  //rho
-  mass_distribution(113,new DistTF1{TF1("hhRho","TMath::BreitWigner(x,0.775,0.151)",0.2,0.7)});
-  auto rho=particle(113,model(new PhaseSpaceDecay({},{211,-211})));
-  //x
-  mass_distribution(9995,new DistTF1{TF1("hh","TMath::BreitWigner(x,3.872,0.001)",3.85,3.89)});
-  auto x=particle(9995,model(new PhaseSpaceDecay{{jpsi,rho},{}}));
-  x->SetPdgMass(M_X3872);
+
+  //Zc
+  double minMass = 3.5;
+  double maxMass = 4.4;
+  mass_distribution(9995,new DistTF1{TF1("hh",Form("TMath::BreitWigner(x,%lf,0.05)",M_ZC3900),minMass,maxMass)});
+  auto Z=particle(9995,model(new PhaseSpaceDecay{{jpsi},{211}}));
+  Z->SetPdgMass(M_ZC3900);
 
   //create eic electroproduction of X + proton
-  auto pGammaStarDecay = JpacModelst{&jpac_amp, {x},{2212} }; //photo-nucleon system
+  auto pGammaStarDecay = JpacModelst{ampZc, {Z},{2112} }; //photo-nucleon system
+  //auto pGammaStarDecay = DecayModelst{ {Z},{2212} }; //photo-nucleon system
   //Decay g*p state, provide s channel and t-channel "shapes"
   //Note the amplitude will provide the actual t-distribution, this approximation speeds up sampling
   //TwoBody_stu{0., 1.0, 2.5} => 0% s-schannel, 100% t channel with slope 2.5 
@@ -101,7 +91,7 @@ void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, 
   // ---------------------------------------------------------------------------
   // Initialize HepMC3
   // ---------------------------------------------------------------------------
-  writer(new HepMC3Writer{Form("out/jpac_x3872_%s_%d_%d.txt",ampPar.data(),(int)ebeamE,(int)pbeamE)});
+  writer(new HepMC3Writer{Form("out/jpac_Zc3900_%s_%d_%d.txt",ampPar.data(),(int)ebeamE,(int)pbeamE)});
   
   
   // ---------------------------------------------------------------------------
@@ -139,7 +129,6 @@ void EIC_JPAC_X3872(string ampPar="high",double ebeamE = 5, double pbeamE = 41, 
   
   generator().Summary();
 
-  delete X_rho;
-  delete X_omega;
+  delete ampZc;
 
 }

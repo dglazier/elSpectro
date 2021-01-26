@@ -84,8 +84,8 @@ namespace elSpectro{
     double weight = 1;
     if(Model()!=nullptr)  weight = Model()->Intensity();
     if(weight==0)  return DecayStatus::ReGenerate;
-    if(samplingWeight<weight){
-      std::cout<<"DecayingParticle::GenerateProducts model weight is greater than envelope " <<Mass()<<" "<<Model()->GetName()<<" "<<Class_Name()<<" weights "<<samplingWeight <<" "<<weight<<" masses "<<Model()->Products()[0]->Mass()<<" "<<Model()->Products()[1]->Mass()<<std::endl;
+    if(samplingWeight - weight < -1E7 ){
+      std::cout<<"DecayingParticle::GenerateProducts model weight is greater than envelope " <<Mass()<<" "<<Model()->GetName()<<" "<<Class_Name()<<" weights "<<samplingWeight <<" "<<weight<<" masses "<<Model()->Products()[0]->Mass()<<" "<<Model()->Products()[1]->Mass()<<" difference in weights "<<samplingWeight-weight <<std::endl;
     //exit(0);
     }
     //if event info use its weight, if not assume phse space model = 1.
