@@ -152,7 +152,7 @@ namespace elSpectro{
 	for(int it=0;it<Npoints;it++){
 	  WtVals[1]=tming-it*trange/Npoints;
 	  auto val = Fmax(WtVals);
-	  if(it==0)std::cout<<WtVals[0]<<" "<<WtVals[1]<<" val "<<val<<" "<<PhaseSpaceFactor()<<" s "<<_s<<" pgam "<<PgammaCMsq()<<" at Q2 0  = "<<kine::PDK2(_W,0,_target->M())<<std::endl;
+	  //if(it==0)std::cout<<WtVals[0]<<" "<<WtVals[1]<<" val "<<val<<" "<<PhaseSpaceFactor()<<" s "<<_s<<" pgam "<<PgammaCMsq()<<" at Q2 0  = "<<kine::PDK2(_W,0,_target->M())<<std::endl;
 	  if(val<gridMin) {
 	    gridMin=val;
 	    gridW=WtVals[0];
