@@ -45,7 +45,7 @@ namespace elSpectro{
      
      void StreamEventInfo(){
        //E = event number, # vertices, # particles = initial+final
-       _stream<< "E "<<" "<<_nEvent<<" "<<_vertices->size()<<
+       _stream<< "E"<<" "<<_nEvent<<" "<<_vertices->size()<<
 	 " "<<_initialParticles.size()+_finalParticles.size()+_vertexParticles.size()<<"\n";
      }
      /////////////////////////////////////////////////////////
