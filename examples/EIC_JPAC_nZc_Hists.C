@@ -125,7 +125,6 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
   production->SetCombinedBranchingFraction(0.06); //Just Jpsi->e+e-
   generator().SetNEvents_via_LuminosityTime(nLumi,24*60*60*nDays);
 
-  //or can just do generator().SetNEvents(1E6);
   auto fastIntegral=production->IntegrateCrossSectionFast();
   std::cout<<"       check fast cross section "<<fastIntegral<<std::endl;
 

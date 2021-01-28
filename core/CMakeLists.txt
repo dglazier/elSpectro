@@ -84,9 +84,7 @@ target_link_libraries(${ELSPECTRO} ${ROOT_LIBRARIES} )
 install(TARGETS ${ELSPECTRO} 
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
-FILE(GLOB ROOT_ELSPECTRO_PCM  ${CMAKE_BINARY_DIR}/${DIRNAME}/libelSpectro_rdict.pcm)
-
-install (FILES  ${ROOT_ELSPECTRO_PCM}    
+install (FILES  ${CMAKE_CURRENT_BINARY_DIR}/libelSpectro_rdict.pcm    
   DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
 #include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)

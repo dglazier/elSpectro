@@ -397,8 +397,8 @@ namespace elSpectro{
     gBenchmark->Stop("RooFitIntegral");
     gBenchmark->Print("RooFitIntegral");
     
-    std::cout<<" ElectronScattering::IntegrateCrossSection() ROOFIT "<<RFintegral<<" "<<" giving a photon flux weighted average photoproduction cross section of "<<RFintegral/photonFlux->Dist().Integral()<<std::endl;
-    std::cout<<" W range "<<_Wmin<<" "<< collision.M() <<" "<< ( collision.M()- _Wmin)<<std::endl;
+    std::cout<<" ElectronScattering::IntegrateCrossSection()  "<<RFintegral<<" nb "<<std::endl<<" giving a photon flux weighted average photoproduction cross section of "<<RFintegral/photonFlux->Dist().Integral()<<" nb"<<std::endl;
+    std::cout<<" W range "<<_Wmin<<" - "<< collision.M() <<" =  "<< ( collision.M()- _Wmin)<<std::endl;
     xvar.Print();
     yvar.Print();
     cthvar.Print();

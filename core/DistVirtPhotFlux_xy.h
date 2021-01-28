@@ -138,6 +138,7 @@ namespace elSpectro{
     return escat::flux_dlnxdlny(_ebeam,lnx,lny);
     }*/
   inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
+    //given x and y evaluate photon flux
 
     double lnx=TMath::Log(x[0]);
     double lny=TMath::Log(x[1]);
