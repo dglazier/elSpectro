@@ -105,5 +105,5 @@ namespace elSpectro{
 	
     return  generator().Reaction();
   }
-  
+ 
 }//namespace elSpectro

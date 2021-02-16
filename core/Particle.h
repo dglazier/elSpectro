@@ -129,17 +129,21 @@ namespace elSpectro{
       
       if(_massDist==nullptr ) return; //stick at pdgMass
       if(_massLocked==true) return; //someone else in charge...
-      
       _dynamicMass=-1;
       auto minposs = MinimumMassPossible();
       while(_dynamicMass<minposs){
 	auto minRange = xmin==-1?minposs:xmin;
 	auto maxRange = xmax==-1?_massDist->GetMaxX():xmax;
+	if(minRange>maxRange){//unphysical
+	  std::cout<<"Warning  Particle::DetermineDynamicMass min "<<minRange<<" greater than max "<<maxRange<<" for "<<_pdg<<std::endl;
+	  _dynamicMass=minRange;
+	  break;
+	}
 	_dynamicMass= _massDist->SampleSingle(minRange,maxRange);
 	
 	//need a weight for "envelope"
 	_massWeight =_massDist->GetCurrentWeight();
-	//	std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<" "<<_massWeight<<std::endl;
+	//	std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<" "<<_massWeight<<" "<<minRange<<" "<<maxRange<<std::endl;
 	
       }
       SetP4M(_dynamicMass);

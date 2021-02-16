@@ -117,7 +117,8 @@ namespace elSpectro{
     particle_ptrs _products;
     particle_ptrs _stables; //products which are stable
     decaying_ptrs _unstables; //products which decay
-
+    std::vector<double> _unstableReservedMass; //mass reseved for other unstable products
+    
     mutable LorentzVector _parent;
     mutable double _sumOfMasses=0;
 
