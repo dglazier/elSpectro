@@ -150,7 +150,7 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
     countGenEvent();
     if(generator().GetNDone()%1000==0) std::cout<<"event number "<<generator().GetNDone()<<std::endl;
 
-      auto photon = elbeam - electron->P4();
+    auto photon = elbeam - electron->P4();
    double Q2 = -photon.M2();
    double W = (photon+prbeam).M();
    double t = -1*(neutron->P4()-prbeam).M2();
@@ -205,6 +205,7 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
   ht.Write();
   hgE.Write();
   heTh.Write();
+  hePhi.Write();
   heE.Write();
   hJpsiM.Write();
   hMesonM.Write();
