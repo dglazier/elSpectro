@@ -15,6 +15,7 @@
 TH1F hQ2("Q2","Q2",1000,0,100);
 TH1D heE("eE","eE",1000,0,20);
 TH1D heTh("eTh","eTh",1000,0,180);
+TH1D hePhi("ePh","ePh",90,-180,180);
 TH1F hW("W","W",1000,0,100);
 TH1F ht("t","t",1000,0,10);
 TH1F hgE("gE","gE",1000,0,20);
@@ -164,6 +165,7 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
 
    auto elec = electron->P4();
    heTh.Fill(elec.Theta() *TMath::RadToDeg());
+   hePhi.Fill(elec.Phi() *TMath::RadToDeg());
    heE.Fill(elec.E());
    
    auto jpsiP4 = eleJ->P4() + posJ->P4();
