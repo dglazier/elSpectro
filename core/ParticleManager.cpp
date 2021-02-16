@@ -29,6 +29,8 @@ namespace elSpectro{
     pdgDB->AddParticle("resonance9","resonance1",
 		       0, kFALSE,
 		       0, 0, "virtual", 9999);
+
+    pdgDB->AddParticle("deuteron","deuteron", 1.875612, kTRUE,0, 1, "Baryon", 45);
     
   }
   Particle*  ParticleManager::Take(Particle* p){
