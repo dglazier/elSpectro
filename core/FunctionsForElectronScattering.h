@@ -25,6 +25,8 @@ namespace elSpectro{
     constexpr double M2_el(){return M_el()*M_el();}
     constexpr double M_pr(){return 0.93827208816;}
     constexpr double M2_pr(){return M_pr()*M_pr();}
+    constexpr double M_d(){return 1.875612;}
+    constexpr double M2_d(){return M_pr()*M_pr();}
     
     constexpr double Alpha_by2Pi(){return 1./(137*2*TMath::Pi());}
     
