@@ -45,6 +45,7 @@ namespace elSpectro{
     double GetMaxY() const noexcept final{return _th2.GetYaxis()->GetXmax();}
 
     double GetWeightForXY(double valX,double valY) const {return ((TH2D*)(&_th2))->Interpolate(valX,valY)/_max_val;}
+    double GetValueForXY(double valX,double valY) const {return ((TH2D*)(&_th2))->Interpolate(valX,valY);}
     
     const TH2& GetTH2() const noexcept {return _th2;}
     

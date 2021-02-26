@@ -69,7 +69,12 @@ namespace elSpectro{
     double Probability() const{return _val/_integral;}
 
     double Integral() const noexcept{return _integral;}
-
+    
+    double GetValueFor(double valX,double valY) final{
+      Double_t arr[]={valX,valY};
+      return Eval(arr);
+    }
+ 
     
   protected:
     double XMin(double y) const;

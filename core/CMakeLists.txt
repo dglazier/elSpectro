@@ -14,6 +14,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   DecayModelst.h
   DecayGammaN_Test.h
   JpacModelst.h
+  GenericModelst.h
   DecayVectors.h
   TwoBodyFlat.h
   TwoBody_stu.h
@@ -52,6 +53,7 @@ add_library(${ELSPECTRO} SHARED
   DecayModelQ2W.cpp
   DecayModelst.cpp
   JpacModelst.cpp
+  GenericModelst.cpp
   DecayGammaN_Test.cpp
   DecayVectors.cpp
   TwoBodyFlat.cpp

@@ -98,10 +98,10 @@ namespace elSpectro{
   
     if(totalXsec!=nullptr){
       model(totalXsec); //register ownership of model with manager
-      generator().Reaction(new ElectronScattering(ep,0,0,0, totalXsec ));
+      generator().Reaction(new ElectronScattering(ep,0,0,0, totalXsec,ionpdg ));
     }
     else	
-      generator().Reaction(new ElectronScattering(ep,0,0,0));
+      generator().Reaction(new ElectronScattering(ep,0, totalXsec,ionpdg));
 	
     return  generator().Reaction();
   }

@@ -43,6 +43,7 @@ namespace elSpectro{
     double GetMaxX() const noexcept final{return _tf1.GetXmax();}
 
     double GetWeightFor(double valX) const {return _tf1.Eval(valX)/_max_val;}
+    double GetValueFor(double valX,double valY=0) final {return _tf1.Eval(valX);}
     
     const TF1& GetTF1() const noexcept {return _tf1;}
     
