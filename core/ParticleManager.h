@@ -11,6 +11,8 @@
 
 #include "DecayingParticle.h"
 #include "Distribution.h"
+#include <Math/RotationZYX.h>
+#include <Math/RotationZ.h>
 #include <map>
 
 namespace elSpectro{
@@ -21,6 +23,8 @@ namespace elSpectro{
   using particle_constptrs= std::vector<const Particle*> ;
   using decaying_ptrs= std::vector<DecayingParticle*> ;
   using decaying_constptrs= std::vector<const DecayingParticle*> ;
+
+  using ROOT::Math::VectorUtil::boost;
 
   class ParticleManager{
 
@@ -68,6 +72,27 @@ namespace elSpectro{
     const decaying_ptrs UnstableParticles()const {return _unstables;}
     const particle_ptrs StableParticles()const {return _stables;}
     
+    void BoostToFrame(const BetaVector& vboost,const LorentzVector& parent){
+
+      //vboost defines  z-axis
+      /*if(_cachedBoost!=vboost){ //SetAngle is expensive (sin,cos calls) only call if necessary
+	_cachedBoost = vboost;
+	_rotateToZaxis.SetComponents(-_cachedBoost.Phi(),-_cachedBoost.Theta(),0);
+	}*/
+      // _rotateToZaxis.SetComponents(0,-(TMath::Pi()-parent.Theta()),0);  
+      //Apply random phi angle when z-axis is in correct direction
+      //_rotateAroundZaxis.SetAngle(0);
+
+  
+      for(auto& child : _stables){
+	auto p4=child->P4();
+	p4=_rotateToZaxis*p4;
+	//p4=_rotateAroundZaxis*p4; 
+	p4=boost(p4,vboost);//ROOT::Math::VectorUtil::boost;
+	child->SetP4(p4);
+      }
+      
+    }
   private:
     
     friend Manager; //only Manager can construct a ParticleManager
@@ -84,6 +109,13 @@ namespace elSpectro{
     // std::map<int,dist_uptr> _mass2Dist; 
 
     int _nextPdg={10000};
+
+    //For boost to lab
+    BetaVector _cachedBoost;
+    ROOT::Math::RotationZYX _rotateToZaxis; //save memory allocation
+    ROOT::Math::RotationZ _rotateAroundZaxis;//save memory allocation
+ 
+    
     ClassDef(elSpectro::ParticleManager,1); //class ParticleManager
   };
 

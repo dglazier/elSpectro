@@ -420,7 +420,7 @@ namespace elSpectro{
     //set decay parent for e -> e'g*
     SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
  */
-    MakeCollision();
+    auto collision=MakeCollision();
     
     //proceed through decay chain
     while(DecayingParticle::GenerateProducts()!=DecayStatus::Decayed){
@@ -431,8 +431,8 @@ namespace elSpectro{
     
     //Boost all stable particles back to lab
     auto prBoost=_beamNucl.P4().BoostToCM();
-    Manager::Instance().Particles().BoostStable(-prBoost);
-
+    //    Manager::Instance().Particles().BoostStable(-prBoost);
+    Manager::Instance().Particles().BoostToFrame(-prBoost,collision);
     return DecayStatus::Decayed;
   }
 
