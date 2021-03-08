@@ -388,12 +388,12 @@ namespace elSpectro{
     
     auto wrapPdf=ROOT::Math::Functor( flnXlnYt , 3);
 
-    auto pdf = RooFunctorPdfBinding("ElScatterIntegral", "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
+    auto pdf = RooFunctorPdfBinding(Form("ElScatterIntegral%lf",Eel), "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
     auto roovars= RooArgSet(xvar,yvar,cthvar);
     
     gBenchmark->Start("RooFitIntegral");
-    
-    auto RFintegral=pdf.getNorm(roovars);
+
+				    auto RFintegral=pdf.getNorm(roovars);
     gBenchmark->Stop("RooFitIntegral");
     gBenchmark->Print("RooFitIntegral");
     
