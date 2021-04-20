@@ -88,7 +88,8 @@ namespace elSpectro{
   
   ////////////////////////////////////////////////////////
   double  DecayModelQ2W::Intensity() const{
-    // std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<ParentVector().M()<<" "<<getW()<<" "<<GetGammaN()->P4().E() <<std::endl;
+    //std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<ParentVector().M()<<" "<<getW()<<" "<<GetGammaN()->P4().E() <<std::endl;
+
     /*if(CheckThreshold()==false){
       return 0.;
       }*/

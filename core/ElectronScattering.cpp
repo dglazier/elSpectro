@@ -152,7 +152,7 @@ namespace elSpectro{
     //if(unproducts.empty()==true) return;
     
     if(unproducts.size()!=1) {
-      std::cerr<<"ElectronScattering::PostInit need a Q2W model with just a gamma*N decay product"<<std::endl;
+      std::cerr<<"ElectronScattering::InitGen need a Q2W model with just a gamma*N decay product"<<std::endl;
     }
 
     double minMass=_massIon;
@@ -309,14 +309,18 @@ namespace elSpectro{
   //////////////////////////////////////////////////////////////////////////
   ///Use RooFit integrator to integrate cross section over x , y and t
   double ElectronScattering::IntegrateCrossSection(){
+    
     auto collision=MakeCollision();
  
 
     auto photonFlux= dynamic_cast<ScatteredElectron_xy* >(mutableDecayer());
 
-    auto xvar = RooRealVar("lnxIntegral","lnxIntegral",TMath::Exp(photonFlux->Dist().GetMaxLnX()),TMath::Exp(photonFlux->Dist().GetMinLnX()),TMath::Exp(photonFlux->Dist().GetMaxLnX()),"");
-    auto yvar = RooRealVar("lnyIntegral","lnyIntegral",TMath::Exp(photonFlux->Dist().GetMaxLnY()),TMath::Exp(photonFlux->Dist().GetMinLnY()),TMath::Exp(photonFlux->Dist().GetMaxLnY()),"");
+    auto xvar = RooRealVar(Form("xIntegral%lf_%lf",photonFlux->Dist().GetMaxLnX(),photonFlux->Dist().GetMaxLnX()),"xIntegral",TMath::Exp(photonFlux->Dist().GetMaxLnX()),TMath::Exp(photonFlux->Dist().GetMinLnX()),TMath::Exp(photonFlux->Dist().GetMaxLnX()),"");
+    auto yvar = RooRealVar(Form("yIntegral%lf_%lf",photonFlux->Dist().GetMaxLnY(),photonFlux->Dist().GetMaxLnY()),"yIntegral",TMath::Exp(photonFlux->Dist().GetMaxLnY()),TMath::Exp(photonFlux->Dist().GetMinLnY()),TMath::Exp(photonFlux->Dist().GetMaxLnY()),"");
     auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",-0.,-0.99999,0.99999,"");
+    xvar.Print();
+    yvar.Print();
+    cthvar.Print();
     
     auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
     auto Q2WModel =dynamic_cast<DecayModelQ2W*>(Model());
@@ -324,13 +328,17 @@ namespace elSpectro{
     photonFlux->Dist().SetWThresholdVal(gStarModel->GetMeson()->PdgMass()+gStarModel->GetBaryon()->PdgMass());
 
     auto Eel=_nuclRestElec.E();
-    auto flnXlnYt = [this,&photonFlux,&gStarModel,&Q2WModel,&Eel](const double *x)
+
+    double_t threshW= gStarModel->GetMeson()->PdgMass()+gStarModel->GetBaryon()->PdgMass();
+    std::cout<<"Eel "<<Eel<<" "<<threshW<<std::endl;
+    auto fXYcosth = [this,&photonFlux,&gStarModel,&Q2WModel,&Eel,&threshW](const double *x)
       {
 	if(x[0]==0) return 0.; //x
 	if(x[1]==0) return 0.; //y
 	auto val = photonFlux->Dist().Eval(x);
 	if(TMath::IsNaN(val)) return 0.;
 	if(val==0) return 0.;
+	//std::cout<<"a fXYcosth "<<val<<" "<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl; 
 
 	//calculate scatered electron at x and y 
 	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),x[0],x[1]);
@@ -339,8 +347,10 @@ namespace elSpectro{
 	//auto W = gStarModel->Parent()->P4().M();//TMath::Sqrt(escat::M2_pr()+2*Eel*escat::M_pr()*x[1]-escat::Q2_xy( Eel,x[0],x[1]));
 	//get value of dsigma/ds/dcosth cross section at x,y,costh 
 	val*=gStarModel->dsigma_costh(x[2]);
+	//	std::cout<<"b fXYcosth "<<val<<" "<<x[0]<<" "<<x[1]<<" "<<x[2]<<" W "<<gStarModel->Parent()->P4().M()<<" thesh"<<threshW<<std::endl; 
 	//additional (not real photo) Q2dependence of cross section
 	if(TMath::IsNaN(val)) return 0.;
+	if(val<0) return 0.;
 	//	val*=Q2WModel->Q2H1Rho();
 	return val;
       };
@@ -386,17 +396,18 @@ namespace elSpectro{
     gBenchmark->Print("RooFitIntegralW");
     */
     
-    auto wrapPdf=ROOT::Math::Functor( flnXlnYt , 3);
-
+    auto wrapPdf=ROOT::Math::Functor( fXYcosth , 3);
+    //add Eel so it recaluclate normalisation, otherwise RooFit returns cache
+    //auto pdf = RooFunctorPdfBinding("ElScatterIntegral", "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
     auto pdf = RooFunctorPdfBinding(Form("ElScatterIntegral%lf",Eel), "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
     auto roovars= RooArgSet(xvar,yvar,cthvar);
     
     gBenchmark->Start("RooFitIntegral");
 
-				    auto RFintegral=pdf.getNorm(roovars);
+    auto RFintegral=pdf.getNorm(roovars);
     gBenchmark->Stop("RooFitIntegral");
     gBenchmark->Print("RooFitIntegral");
-    
+     
     std::cout<<" ElectronScattering::IntegrateCrossSection()  "<<RFintegral<<" nb "<<std::endl<<" giving a photon flux weighted average photoproduction cross section of "<<RFintegral/photonFlux->Dist().Integral()<<" nb"<<std::endl;
     std::cout<<" W range "<<_Wmin<<" - "<< collision.M() <<" =  "<< ( collision.M()- _Wmin)<<std::endl;
     xvar.Print();

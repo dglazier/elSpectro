@@ -47,9 +47,8 @@ namespace elSpectro{
     }
     
     int RegisterNewPdgParticle(double nominalMass,Distribution* dist=nullptr){
-      std::cout<<"RegisterNewPdgParticle "<<dist <<" "<<_nextPdg<<std::endl;
+      std::cout<<"RegisterNewPdgParticle "<<" "<<_nextPdg<<std::endl;
       AddToPdgTable(_nextPdg,nominalMass);
-      std::cout<<"RegisterNewPdgParticle "<<std::endl;
       if(dist != nullptr){
 	RegisterMassDistribution(_nextPdg,dist);
       }

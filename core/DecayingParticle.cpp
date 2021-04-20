@@ -53,8 +53,8 @@ namespace elSpectro{
     if(_decay)_decay->PostInit(info);
     if(_decayer)_decayer->PostInit(info);
  
-    std::cout<<"DecayingParticle::PostInit pdg "<<Pdg()<<" vertexID "<<_decayVertexID<<std::endl;
-    std::cout<<"DecayingParticle::PostInit  min mass "<<MinimumMassPossible()<<std::endl;
+    //std::cout<<"DecayingParticle::PostInit pdg "<<Pdg()<<" vertexID "<<_decayVertexID<<std::endl;
+    // std::cout<<"DecayingParticle::PostInit  min mass "<<MinimumMassPossible()<<std::endl;
   };
   //////////////////////////////////////////////////////////////////////
   DecayStatus   DecayingParticle::GenerateProducts(){

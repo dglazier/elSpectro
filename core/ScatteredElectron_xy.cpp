@@ -132,7 +132,9 @@ namespace elSpectro{
     _scattered.SetXYZT(x_sc,y_sc,z_sc,Esc);//scattered electron
     //Must make sure scattered e- is in the same frame as the parent
     //still in rest system of nucl, just need rotation
+    // std::cout<<parent<<" "<<_scattered<<" "<<parent -_scattered<<std::endl;
     RotateToParent(parent,_scattered);
+    // std::cout<<parent<<" "<<_scattered<<" "<<parent -_scattered<<std::endl;
     if(products[0]->Pdg()==11){
       products[0]->SetP4(_scattered);
       products[1]->SetP4(parent -_scattered);

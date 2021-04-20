@@ -22,8 +22,9 @@ namespace elSpectro{
   public:
     
      static Manager& Instance() { static Manager instance; return instance; }
+    static void Reset(){Instance() = Manager();}
 
-     ParticleManager& Particles() noexcept{return _particles;}
+    ParticleManager& Particles() noexcept{return _particles;}
      DecayManager& Decays() noexcept{return _decays;}
      
      void SetWriter(Writer* wr){
@@ -54,6 +55,7 @@ namespace elSpectro{
 	 SetNEvents(n_or_lum);
 	 return;
        }
+       std::cout<<"SetNEvents_via_LuminosityTime "<<IntegratedXSection()<<std::endl;
        _integralXSection=Reaction()->IntegrateCrossSection();
        _nEventsToGen=n_or_lum*1E-33*beamtime*_integralXSection*Reaction()->BranchingFraction();//1E-33(cm2tonb)
        std::cout<<"Manager::SetNEvents_via_LuminosityTime , going to generate "<<_nEventsToGen<<" events"<<std::endl;

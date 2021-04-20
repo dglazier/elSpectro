@@ -389,7 +389,7 @@ namespace elSpectro{
 	  double tval=tmin;
 	  for(int itt=0;itt<Ntpoints;itt++){
 	    _W=hist.GetXaxis()->GetBinCenter(ih);
-
+	    
 	    double val_at_t = F(tval)*(tmin-tmax);
 	    if(val_at_t>max_at_W)
 	      max_at_W=val_at_t;
