@@ -315,9 +315,16 @@ namespace elSpectro{
 
     auto photonFlux= dynamic_cast<ScatteredElectron_xy* >(mutableDecayer());
 
-    auto xvar = RooRealVar(Form("xIntegral%lf_%lf",photonFlux->Dist().GetMaxLnX(),photonFlux->Dist().GetMaxLnX()),"xIntegral",TMath::Exp(photonFlux->Dist().GetMaxLnX()),TMath::Exp(photonFlux->Dist().GetMinLnX()),TMath::Exp(photonFlux->Dist().GetMaxLnX()),"");
-    auto yvar = RooRealVar(Form("yIntegral%lf_%lf",photonFlux->Dist().GetMaxLnY(),photonFlux->Dist().GetMaxLnY()),"yIntegral",TMath::Exp(photonFlux->Dist().GetMaxLnY()),TMath::Exp(photonFlux->Dist().GetMinLnY()),TMath::Exp(photonFlux->Dist().GetMaxLnY()),"");
-    auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",-0.,-0.99999,0.99999,"");
+    // auto xvar = RooRealVar(Form("xIntegral%lf_%lf",photonFlux->Dist().GetMaxLnX(),photonFlux->Dist().GetMaxLnX()),"xIntegral",TMath::Exp(photonFlux->Dist().GetMinLnX()),TMath::Exp(photonFlux->Dist().GetMinLnX()),TMath::Exp(photonFlux->Dist().GetMaxLnX()),"");
+    //auto yvar = RooRealVar(Form("yIntegral%lf_%lf",photonFlux->Dist().GetMaxLnY(),photonFlux->Dist().GetMaxLnY()),"yIntegral",TMath::Exp(photonFlux->Dist().GetMinLnY()),TMath::Exp(photonFlux->Dist().GetMinLnY()),TMath::Exp(photonFlux->Dist().GetMaxLnY()),"");
+
+    auto xvar = RooRealVar(Form("xIntegral%lf_%lf",photonFlux->Dist().GetMaxLnX(),photonFlux->Dist().GetMaxLnX()),"xIntegral",(photonFlux->Dist().GetMinLnX()),(photonFlux->Dist().GetMinLnX()),(photonFlux->Dist().GetMaxLnX()),"");
+    auto yvar = RooRealVar(Form("yIntegral%lf_%lf",photonFlux->Dist().GetMaxLnY(),photonFlux->Dist().GetMaxLnY()),"yIntegral",(photonFlux->Dist().GetMinLnY()),(photonFlux->Dist().GetMinLnY()),(photonFlux->Dist().GetMaxLnY()),"");
+
+
+    
+    // auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",-0.,-0.99999,0.99999,"");
+    auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.99,-0.99999,0.99999,"");
     xvar.Print();
     yvar.Print();
     cthvar.Print();
@@ -330,100 +337,71 @@ namespace elSpectro{
     auto Eel=_nuclRestElec.E();
 
     double_t threshW= gStarModel->GetMeson()->PdgMass()+gStarModel->GetBaryon()->PdgMass();
-    std::cout<<"Eel "<<Eel<<" "<<threshW<<std::endl;
-    auto fXYcosth = [this,&photonFlux,&gStarModel,&Q2WModel,&Eel,&threshW](const double *x)
+    Double_t maxVal=0;
+    auto fXYcosth = [this,&photonFlux,&gStarModel,&Q2WModel,&Eel,&threshW,&maxVal](const double *x)
       {
 	if(x[0]==0) return 0.; //x
 	if(x[1]==0) return 0.; //y
 	auto val = photonFlux->Dist().Eval(x);
 	if(TMath::IsNaN(val)) return 0.;
 	if(val==0) return 0.;
-	//std::cout<<"a fXYcosth "<<val<<" "<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl; 
+	//	std::cout<<"a fXYcosth "<<val<<" "<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl; 
 
 	//calculate scatered electron at x and y 
-	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),x[0],x[1]);
+	//	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),x[0],x[1]);
+	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),TMath::Exp(x[0]),TMath::Exp(x[1]));
 	//calculate virtual photon
 	Q2WModel->Intensity();
-	//std::cout<<"ElectronScattering integrate g*p "<<gStarModel->Parent()->P4()<<gStarModel->Parent()->P4().M()<<std::endl;
-	//auto W = gStarModel->Parent()->P4().M();//TMath::Sqrt(escat::M2_pr()+2*Eel*escat::M_pr()*x[1]-escat::Q2_xy( Eel,x[0],x[1]));
-	//get value of dsigma(s)/dcosth cross section at x,y,costh 
-	val*=gStarModel->dsigma_costh(x[2]);
-       	//std::cout<<"b fXYcosth "<<val<<" "<<x[0]<<" "<<x[1]<<" "<<x[2]<<" W "<<gStarModel->Parent()->P4().M()<<" thesh"<<threshW<<" "<<Q2WModel->getQ2()<<std::endl; 
+	//std::cout<<"Q2WModel "<<Q2WModel->getQ2()<<" "<<Q2WModel->getW()<<std::endl;
+	//std::cout<<"gStarModel "<<gStarModel->get_Q2()<<" "<<gStarModel->get_W()<<std::endl;
+	//get value of dsigma(s)/dcosth cross section at x,y,costh
+	Double_t dsigma_costh=gStarModel->dsigma_costh(x[2]);
+	val*=dsigma_costh;
+	//std::cout<<"val "<< val<<" "<<gStarModel->dsigma_costh(0.99)<<std::endl;
 	//additional (not real photo) Q2dependence of cross section
 	if(TMath::IsNaN(val)) return 0.;
 	if(val<0) return 0.;
 	val*=Q2WModel->Q2H1Rho();
 	return val;
       };
-
     /*
-    auto fWcosTh = [this,&photonFlux,&gStarModel,&Q2WModel,Eel](const double *x)
-      {
-   	auto currx=x[2];
-	auto W=x[0];
-	auto y = (W*W - escat::M2_pr())/2/Eel/escat::M_pr();
-	if(TMath::IsNaN(y)) return 0.;
-	Double_t xx[2]={currx,(y)};
-	auto val = photonFlux->Dist().Eval(xx)*W/(Eel*escat::M_pr());
-	//auto val =y;
-	if(val==0) return 0.;
-	//auto val = 1.0;
-	//calculate scatered electron at x and y 
-	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),(currx),y);
-	//photonFlux->GenerateGivenXandY(P4(),Model()->Products(),currx,y);
-	//calculate virtual photon
-	Model()->Intensity();
-	//get value of dsigma/ds/dcosth cross section at x,y,costh 
-	val*=gStarModel->dsigma_costhW(x[1],W);
-	//additional (not real photo) Q2dependence of cross section
-	if(TMath::IsNaN(val)) return 0.;
-	if(val<0) return 0.;
-	//	val*=Q2WModel->Q2H1Rho();
-	return val;
-      };
-    
-    auto Wvar = RooRealVar("WIntegral","WIntegral",_Wmin,_Wmin, collision.M(),"");
- 
- 
-    auto wrapPdfW=ROOT::Math::Functor( fWcosTh , 3);
-
-    auto pdfW = RooFunctorPdfBinding("ElScatterIntegral", "ElScatterIntegral", wrapPdfW, RooArgList(Wvar,cthvar,xvar));
-    auto roovarsW= RooArgSet(Wvar,cthvar,xvar);
-    
-    gBenchmark->Start("RooFitIntegralW");
-    
-    auto RFintegralW=pdfW.getNorm(roovarsW);
-    gBenchmark->Stop("RooFitIntegralW");
-    gBenchmark->Print("RooFitIntegralW");
+    double funcvars[3];
+    funcvars[0]=0;funcvars[1]=0.1;TMath::Exp(photonFlux->Dist().GetMinLnY());
+    for(Int_t i=0;i<100;i++){
+      funcvars[0]=funcvars[0]+0.01;
+      funcvars[2]=-1;
+      std::cout<<" cosTh -1 "<<funcvars[0]<<" "<<funcvars[1]<< fXYcosth(funcvars)<<std::endl;
+      funcvars[2]=0;
+      std::cout<<" cosTh 0 "<<funcvars[0]<<" "<<funcvars[1]<< fXYcosth(funcvars)<<std::endl;
+      funcvars[2]=1;
+      std::cout<<" cosTh 1 "<<funcvars[0]<<" "<<funcvars[1]<< fXYcosth(funcvars)<<std::endl;
+    }
+    exit(0);
     */
-    
     auto wrapPdf=ROOT::Math::Functor( fXYcosth , 3);
-    //add Eel so it recaluclate normalisation, otherwise RooFit returns cache
-    //auto pdf = RooFunctorPdfBinding("ElScatterIntegral", "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
+
+    //Append integral number to name to prevent RooFit cahce if not wanted
+    //Note call SetCacheIntegrals() to use cahced values
     TString pdfname(Form("ElScatterIntegral%d",NintegralsElectronScattering));
-    auto pdf = new RooFunctorPdfBinding(pdfname, "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
+    auto pdf = RooFunctorPdfBinding(pdfname, "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
     if(_cacheIntegrals==0) NintegralsElectronScattering++;//work around RooFit agressive caching!
-    pdf->Print();
-    std::cout<<_cacheIntegrals<<" "<<NintegralsElectronScattering<<" "<<pdfname<<std::endl;
+    // pdf->Print();
     
     auto roovars= RooArgSet(xvar,yvar,cthvar);
-    //auto integralRoo=pdf.getNormIntegral(roovars);
-    //integralRoo->setDirtyInhibit(true);
-
+     
  
     gBenchmark->Start("RooFitIntegral");
 
-    auto RFintegral=pdf->getNorm(roovars);
-    delete pdf;
-    //auto RFintegral=integralRoo->getValV();//(roovars);
+    auto RFintegral=pdf.getNorm(roovars);
+  
     gBenchmark->Stop("RooFitIntegral");
     gBenchmark->Print("RooFitIntegral");
      
     std::cout<<" ElectronScattering::IntegrateCrossSection()  "<<RFintegral<<" nb "<<std::endl<<" giving a photon flux weighted average photoproduction cross section of "<<RFintegral/photonFlux->Dist().Integral()<<" nb"<<std::endl;
-    std::cout<<" W range "<<_Wmin<<" - "<< collision.M() <<" =  "<< ( collision.M()- _Wmin)<<" note, number of times this is called = "<<NintegralsElectronScattering<<std::endl;
-    xvar.Print();
-    yvar.Print();
-    cthvar.Print();
+    std::cout<<" W range "<<_Wmin<<" - "<< collision.M() <<" =  "<< ( collision.M()- _Wmin)<<std::endl;
+    //xvar.Print();
+    //yvar.Print();
+    //cthvar.Print();
     
     photonFlux->Dist().SetWThresholdVal(Q2WModel->getThreshold());
    

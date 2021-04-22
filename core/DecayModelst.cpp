@@ -49,7 +49,7 @@ namespace elSpectro{
     
      double maxW = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
 
-     _max = FindMaxOfIntensity()*1.05; //add 20% for Q2,meson mass effects etc.
+     _max = FindMaxOfIntensity()*1.05; //add 5% for Q2,meson mass effects etc.
 
      std::cout<<"DecayModelst::PostInit max value "<<_max<<" "<<_meson<<" "<<_meson->Pdg()<<" "<<_sdmeMeson<<std::endl;
   }
@@ -123,15 +123,46 @@ namespace elSpectro{
       {
 	_s = x[0]*x[0];
 	_W=x[0];
+	//if( _W < Wmin ) return 1E2;
+	//if( _W < M3+M4 ) return 1E2;
 	if( _W < Wmin ) return 0.;
 	if( _W < M3+M4 ) return 0.;
-	if( x[1] > kine::t0(_W,M1,M2,M3,M4) ) return 0.;
-	if( x[1]< kine::tmax(_W,M1,M2,M3,M4) ) return 0.;
-	_t=x[1];
-	double val = DifferentialXSect()* (kine::t0(_W,M1,M2,M3,M4)-kine::tmax(_W,M1,M2,M3,M4));
+	//	if( x[1] > kine::t0(_W,M1,M2,M3,M4) ) return 0.;
+	//	if( x[1]< kine::tmax(_W,M1,M2,M3,M4) ) return 0.;
+
+	auto myt0=kine::t0(_W,M1,M2,M3,M4);
+	auto mytmax=kine::tmax(_W,M1,M2,M3,M4);
+
+	auto currt=x[1];
 	
+	/*if( TMath::IsNaN(val) ) {
+	  if(TMath::Abs(x[1]-myt0)<TMath::Abs(x[1]-myt0) )
+	    curr_t = 0;
+	  else x[1] = mytmax- myt0;
+	  }*/
+	
+	//	if( TMath::IsNaN(x[1]) ) return 1E2;
+	if( TMath::IsNaN(x[1]) ) return 0.;
+
+	//make smooth function at boundary, but must be lower than max
+	//this helps with the minimisation
+	Double_t factor=1;
+	if( x[1] >  myt0){
+	  _t=myt0;
+	  factor*=(1-1*(x[1]-myt0)); //lower result
+	}
+	else if( x[1]< mytmax ){
+	  _t=mytmax;
+	  factor*=(1-1*(mytmax-x[1])); //lower result
+	}
+	else _t=x[1];
+	
+	double val = DifferentialXSect()* (myt0-mytmax)*factor;
+	//	std::cout<<factor<<" "<<val<<" "<<(myt0-mytmax)<<"t "<<_t<<" "<<myt0<<" "<<mytmax<<" W "<<_W<<" x1 "<<x[1]<<std::endl;
+      	//if(val==0)return 1E2;
 	if( TMath::IsNaN(val) ) return 0.;
-	return -val; //using a minimiser!
+	//if( TMath::IsNaN(val) ) return 1E2;
+	return -(val); //using a minimiser!
       };
     
       //First perform grid search for intital values
@@ -144,7 +175,7 @@ namespace elSpectro{
       double WtVals[2];
       int Npoints=50;
       for(int iW=1;iW<Npoints;iW++){
-	WtVals[0]=Wmin+iW*Wrange/Npoints;
+	WtVals[0]=Wmin+iW*Wrange/Npoints - Wrange/Npoints/2;//mid point
 	double tming=kine::t0(WtVals[0],M1,M2,M3,M4);
 	double tmaxg=kine::tmax(WtVals[0],M1,M2,M3,M4);
 	double trange= tming-tmaxg;
@@ -152,7 +183,7 @@ namespace elSpectro{
 	for(int it=0;it<Npoints;it++){
 	  WtVals[1]=tming-it*trange/Npoints;
 	  auto val = Fmax(WtVals);
-	  //if(it==0)std::cout<<WtVals[0]<<" "<<WtVals[1]<<" val "<<val<<" "<<PhaseSpaceFactor()<<" s "<<_s<<" pgam "<<PgammaCMsq()<<" at Q2 0  = "<<kine::PDK2(_W,0,_target->M())<<std::endl;
+	  // if(it%10==0)std::cout<<WtVals[0]<<" "<<WtVals[1]<<" val "<<TMath::Exp(-val)<<" "<<PhaseSpaceFactor()<<" s "<<_s<<" pgam "<<PgammaCMsq()<<" at Q2 0  = "<<kine::PDK2(_W,0,_target->M())<<std::endl;
 	  if(val<gridMin) {
 	    gridMin=val;
 	    gridW=WtVals[0];
@@ -162,15 +193,19 @@ namespace elSpectro{
       }
 
       std::cout<<"FindMaxOfProbabilityDistribution grid search max= "<<-gridMin<<" at W = "<<gridW<<" and t = "<<gridt<<std::endl;
+      //gridW+=Wrange/100;
+      //gridt+=tmax/1000;
+      
       ROOT::Math::Minimizer* minimum =
-	ROOT::Math::Factory::CreateMinimizer("Minuit2", "");
+	ROOT::Math::Factory::CreateMinimizer("Genetic", "");
+      //	ROOT::Math::Factory::CreateMinimizer("Minuit2", "Combined");
 
       if(minimum==nullptr) //Minuit2 not always installed!
 	minimum = ROOT::Math::Factory::CreateMinimizer("Minuit", "");
       
       // set tolerance , etc...
       minimum->SetMaxFunctionCalls(1000000); // for Minuit/Minuit2
-      minimum->SetMaxIterations(10000);  // for GSL
+      minimum->SetMaxIterations(1000);  // for GSL
       minimum->SetTolerance(0.0001);
       minimum->SetPrintLevel(1);
       
@@ -179,10 +214,11 @@ namespace elSpectro{
       ROOT::Math::Functor wrapf(Fmax,2);
 
       //variable = W, variable 1 = t
-      double step[2] = {0.1,0.001};
+      double step[2] = {Wrange/500,0.1};
       // starting point
       
       double variable[2] = { gridW,gridt};
+      //double variable[2] = { 10,-0.1};
       
       minimum->SetFunction(wrapf);
       
@@ -191,7 +227,7 @@ namespace elSpectro{
       minimum->SetVariable(1,"t",variable[1], step[1]);
       minimum->SetVariableLimits(0,Wmin,_Wmax);
       minimum->SetVariableLimits(1,tmax,0);
-      
+
       // do the minimization
       minimum->Minimize();
       const double *xs = minimum->X();
@@ -217,13 +253,20 @@ namespace elSpectro{
 	
 	//std::cout << "Minimum Mass Maximum : Probabiltiy Dist at ( W=" << minW << " , t = "  << mint << "): "<< -minimum->MinValue()  << std::endl;
 
-	if(minminVal<minVal)minVal=minminVal;
+	if(minminVal<minVal){
+	  std::cout<<"minmin "<<minminVal<<" < "<<minVal<<std::endl;
+	  minVal=minminVal;
+	}
 	//back to PDg mass if exists
 	if(_meson->PdgMass()>M3)
 	  dynamic_cast<DecayingParticle*>(_meson)->TakePdgMass();
 
       }
 
+      if(gridMin<minVal){
+	Warning("DecayModelst::FindMaxOfIntensity()","grid search value already bigger than minimised, so will revert to that max value +5 percent");
+	minVal=gridMin*1.05;
+      }
       
       return -minVal ;
   }

@@ -119,7 +119,7 @@ namespace elSpectro{
 
   };
 
-  /* //evaluate photon flux as function of lnx and lny
+   //evaluate photon flux as function of lnx and lny
   inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
 
     double lnx=x[0];
@@ -141,7 +141,8 @@ namespace elSpectro{
     if(currx<avail_xmin){ return 0; }
     
     return escat::flux_dlnxdlny(_ebeam,lnx,lny);
-    }*/
+    }
+  /*
   inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
     //given x and y evaluate photon flux
 
@@ -164,7 +165,7 @@ namespace elSpectro{
     if(currx<avail_xmin){ return 0; }
     
     return escat::flux_dxdy(_ebeam,currx,y);
-  }
+    }*/
 
   inline  double DistVirtPhotFlux_xy::XMin(double y) const{
       double r = 2*_mTar*_ebeam*y;
