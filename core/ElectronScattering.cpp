@@ -14,7 +14,7 @@
 #include <RooArgList.h>
 
 namespace elSpectro{
-
+  int ElectronScattering::NintegralsElectronScattering=0;
   // ElectronScattering::ElectronScattering(double ep,double ionp,
   // 					 double eangle,double ionangle,
   // 					 DecayModel* model, int ionpdg):
@@ -343,15 +343,16 @@ namespace elSpectro{
 	//calculate scatered electron at x and y 
 	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),x[0],x[1]);
 	//calculate virtual photon
-	Model()->Intensity();
+	Q2WModel->Intensity();
+	//std::cout<<"ElectronScattering integrate g*p "<<gStarModel->Parent()->P4()<<gStarModel->Parent()->P4().M()<<std::endl;
 	//auto W = gStarModel->Parent()->P4().M();//TMath::Sqrt(escat::M2_pr()+2*Eel*escat::M_pr()*x[1]-escat::Q2_xy( Eel,x[0],x[1]));
-	//get value of dsigma/ds/dcosth cross section at x,y,costh 
+	//get value of dsigma(s)/dcosth cross section at x,y,costh 
 	val*=gStarModel->dsigma_costh(x[2]);
-	//	std::cout<<"b fXYcosth "<<val<<" "<<x[0]<<" "<<x[1]<<" "<<x[2]<<" W "<<gStarModel->Parent()->P4().M()<<" thesh"<<threshW<<std::endl; 
+       	//std::cout<<"b fXYcosth "<<val<<" "<<x[0]<<" "<<x[1]<<" "<<x[2]<<" W "<<gStarModel->Parent()->P4().M()<<" thesh"<<threshW<<" "<<Q2WModel->getQ2()<<std::endl; 
 	//additional (not real photo) Q2dependence of cross section
 	if(TMath::IsNaN(val)) return 0.;
 	if(val<0) return 0.;
-	//	val*=Q2WModel->Q2H1Rho();
+	val*=Q2WModel->Q2H1Rho();
 	return val;
       };
 
@@ -399,17 +400,27 @@ namespace elSpectro{
     auto wrapPdf=ROOT::Math::Functor( fXYcosth , 3);
     //add Eel so it recaluclate normalisation, otherwise RooFit returns cache
     //auto pdf = RooFunctorPdfBinding("ElScatterIntegral", "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
-    auto pdf = RooFunctorPdfBinding(Form("ElScatterIntegral%lf",Eel), "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
-    auto roovars= RooArgSet(xvar,yvar,cthvar);
+    TString pdfname(Form("ElScatterIntegral%d",NintegralsElectronScattering));
+    auto pdf = new RooFunctorPdfBinding(pdfname, "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));
+    if(_cacheIntegrals==0) NintegralsElectronScattering++;//work around RooFit agressive caching!
+    pdf->Print();
+    std::cout<<_cacheIntegrals<<" "<<NintegralsElectronScattering<<" "<<pdfname<<std::endl;
     
+    auto roovars= RooArgSet(xvar,yvar,cthvar);
+    //auto integralRoo=pdf.getNormIntegral(roovars);
+    //integralRoo->setDirtyInhibit(true);
+
+ 
     gBenchmark->Start("RooFitIntegral");
 
-    auto RFintegral=pdf.getNorm(roovars);
+    auto RFintegral=pdf->getNorm(roovars);
+    delete pdf;
+    //auto RFintegral=integralRoo->getValV();//(roovars);
     gBenchmark->Stop("RooFitIntegral");
     gBenchmark->Print("RooFitIntegral");
      
     std::cout<<" ElectronScattering::IntegrateCrossSection()  "<<RFintegral<<" nb "<<std::endl<<" giving a photon flux weighted average photoproduction cross section of "<<RFintegral/photonFlux->Dist().Integral()<<" nb"<<std::endl;
-    std::cout<<" W range "<<_Wmin<<" - "<< collision.M() <<" =  "<< ( collision.M()- _Wmin)<<std::endl;
+    std::cout<<" W range "<<_Wmin<<" - "<< collision.M() <<" =  "<< ( collision.M()- _Wmin)<<" note, number of times this is called = "<<NintegralsElectronScattering<<std::endl;
     xvar.Print();
     yvar.Print();
     cthvar.Print();

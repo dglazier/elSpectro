@@ -103,9 +103,13 @@ namespace elSpectro{
 
 
   double ScatteredElectron_xy::CompleteGivenXandY(const LorentzVector& parent, const particle_ptrs& products,double xx, double yy){
+    //Need parent(e+nucleon) 4-vector in e- beam frame
+    //i.e. along z-axis
+    _parent_in_elFrame.SetXYZT(0,0,parent.P(),parent.E());
 
-    double Ee = escat::E_el(parent.Z()); //parent in rest frame of ion, momentum=e momentum
-    double Mion= parent.T()-Ee; // energy of parent = Mion + E(e-)
+    
+    double Ee = escat::E_el(_parent_in_elFrame.P()); //parent in rest frame of ion, momentum=e momentum
+    double Mion= _parent_in_elFrame.T()-Ee; // energy of parent = Mion + E(e-)
 
     double Egamma = Ee * yy;
  
@@ -125,16 +129,22 @@ namespace elSpectro{
     //random phi done in RotatetoParent
     double Psc=escat::P_el(Esc);
     
-    auto x_sc = Psc * sinth ;
-    auto y_sc = 0;
+    // auto x_sc = Psc * sinth ;
+    //auto y_sc = 0;
+    // auto z_sc = Psc * costh;
+    auto phi=RandomPhi();
+    auto x_sc = Psc * sinth* TMath::Cos(phi);
+    auto y_sc = Psc * sinth* TMath::Sin(phi);
     auto z_sc = Psc * costh;
 
     _scattered.SetXYZT(x_sc,y_sc,z_sc,Esc);//scattered electron
     //Must make sure scattered e- is in the same frame as the parent
     //still in rest system of nucl, just need rotation
-    // std::cout<<parent<<" "<<_scattered<<" "<<parent -_scattered<<std::endl;
-    RotateToParent(parent,_scattered);
-    // std::cout<<parent<<" "<<_scattered<<" "<<parent -_scattered<<std::endl;
+    //std::cout<<"1 ScatteredElectron_xy::CompleteGivenXandY"<<_parent_in_elFrame<<" "<<_scattered<<" "<<_parent_in_elFrame -_scattered<<" W "<<(_parent_in_elFrame -_scattered).M()<<std::endl;
+    RotateZaxisToCMDirection(parent,_scattered);
+    RotateZaxisToCMDirection(parent,_parent_in_elFrame);
+    //std::cout<<" check parents match "<<parent<< " with "<<_parent_in_elFrame<<std::endl;
+    //std::cout<<"2 ScatteredElectron_xy::CompleteGivenXandY"<<parent<<" "<<_scattered<<" "<<parent -_scattered<<" "<<(parent -_scattered).M()<<std::endl;
     if(products[0]->Pdg()==11){
       products[0]->SetP4(_scattered);
       products[1]->SetP4(parent -_scattered);

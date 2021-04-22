@@ -3,6 +3,7 @@ set(DIRNAME core)
 set(BASE $ENV{ELSPECTRO})
 
 include_directories($ENV{JPACPHOTO}/include)
+include_directories($ENV{JPACPHOTO}/include/amplitudes)
 
 ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   Particle.h
