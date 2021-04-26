@@ -108,10 +108,10 @@ namespace elSpectro{
     _lnxmax=0;
 
     //Finally, Integrate over photon flux
-    //auto xvar = RooRealVar("x","x",(_lnxmax-_lnxmin)/2,_lnxmin,_lnxmax,"");
-    //auto yvar = RooRealVar("y","y",(_lnymax-_lnymin)/2,_lnymin,_lnymax,"");
-    auto xvar = RooRealVar("x","x",TMath::Exp((_lnxmax-_lnxmin)/2),TMath::Exp(_lnxmin),TMath::Exp(_lnxmax),"");
-    auto yvar = RooRealVar("y","y",TMath::Exp((_lnymax-_lnymin)/2),TMath::Exp(_lnymin),TMath::Exp(_lnymax),"");
+    auto xvar = RooRealVar("x","x",(_lnxmax-_lnxmin)/2,_lnxmin,_lnxmax,"");
+    auto yvar = RooRealVar("y","y",(_lnymax-_lnymin)/2,_lnymin,_lnymax,"");
+    // auto xvar = RooRealVar("x","x",TMath::Exp((_lnxmax-_lnxmin)/2),TMath::Exp(_lnxmin),TMath::Exp(_lnxmax),"");
+    //auto yvar = RooRealVar("y","y",TMath::Exp((_lnymax-_lnymin)/2),TMath::Exp(_lnymin),TMath::Exp(_lnymax),"");
     xvar.Print();
     yvar.Print();
     

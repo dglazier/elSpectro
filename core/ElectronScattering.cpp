@@ -324,10 +324,8 @@ namespace elSpectro{
 
     
     // auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",-0.,-0.99999,0.99999,"");
-    auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.99,-0.99999,0.99999,"");
-    xvar.Print();
-    yvar.Print();
-    cthvar.Print();
+    //auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.99,-0.99999,0.99999,"");
+    auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.99,-1,1,"");
     
     auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
     auto Q2WModel =dynamic_cast<DecayModelQ2W*>(Model());
@@ -345,39 +343,20 @@ namespace elSpectro{
 	auto val = photonFlux->Dist().Eval(x);
 	if(TMath::IsNaN(val)) return 0.;
 	if(val==0) return 0.;
-	//	std::cout<<"a fXYcosth "<<val<<" "<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl; 
-
 	//calculate scatered electron at x and y 
-	//	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),x[0],x[1]);
 	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),TMath::Exp(x[0]),TMath::Exp(x[1]));
 	//calculate virtual photon
 	Q2WModel->Intensity();
-	//std::cout<<"Q2WModel "<<Q2WModel->getQ2()<<" "<<Q2WModel->getW()<<std::endl;
-	//std::cout<<"gStarModel "<<gStarModel->get_Q2()<<" "<<gStarModel->get_W()<<std::endl;
 	//get value of dsigma(s)/dcosth cross section at x,y,costh
 	Double_t dsigma_costh=gStarModel->dsigma_costh(x[2]);
 	val*=dsigma_costh;
-	//std::cout<<"val "<< val<<" "<<gStarModel->dsigma_costh(0.99)<<std::endl;
 	//additional (not real photo) Q2dependence of cross section
 	if(TMath::IsNaN(val)) return 0.;
 	if(val<0) return 0.;
 	val*=Q2WModel->Q2H1Rho();
 	return val;
       };
-    /*
-    double funcvars[3];
-    funcvars[0]=0;funcvars[1]=0.1;TMath::Exp(photonFlux->Dist().GetMinLnY());
-    for(Int_t i=0;i<100;i++){
-      funcvars[0]=funcvars[0]+0.01;
-      funcvars[2]=-1;
-      std::cout<<" cosTh -1 "<<funcvars[0]<<" "<<funcvars[1]<< fXYcosth(funcvars)<<std::endl;
-      funcvars[2]=0;
-      std::cout<<" cosTh 0 "<<funcvars[0]<<" "<<funcvars[1]<< fXYcosth(funcvars)<<std::endl;
-      funcvars[2]=1;
-      std::cout<<" cosTh 1 "<<funcvars[0]<<" "<<funcvars[1]<< fXYcosth(funcvars)<<std::endl;
-    }
-    exit(0);
-    */
+  
     auto wrapPdf=ROOT::Math::Functor( fXYcosth , 3);
 
     //Append integral number to name to prevent RooFit cahce if not wanted

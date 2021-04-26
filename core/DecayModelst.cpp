@@ -258,8 +258,8 @@ namespace elSpectro{
 	
 	std::cout << "Minimum Mass Maximum : Probabiltiy Dist at ( W=" << minW << " , t = "  << mint << "): "<< -minimum->MinValue()<< " note t0 "<<kine::t0(minW,M1,M2,M3,M4)  << std::endl;
 
-	if(minminVal<minVal){
-	  std::cout<<"minmin "<<minminVal<<" < "<<minVal<<std::endl;
+	if(minminVal>minVal){
+	  //std::cout<<"minmin "<<-minminVal<<" < "<<-minVal<<std::endl;
 	  minVal=minminVal;
 	}
 	//back to PDg mass if exists
@@ -272,7 +272,6 @@ namespace elSpectro{
 	Warning("DecayModelst::FindMaxOfIntensity()","grid search value already bigger than minimised, so will revert to that max value +5 percent");
 	minVal=gridMin*1.05;
       }
-      exit(0);
       return -minVal ;
   }
   /*
