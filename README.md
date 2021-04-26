@@ -6,6 +6,8 @@ Event Generator framework for incorporating Spectroscopy into electro / photopro
 
 ROOT 6
 
+with MathMore RooFit GenVector EG
+
 We require jpacPhot but this is included as a submodule. You may link to your own version of you prefer.
 
 # Installation
@@ -19,6 +21,10 @@ We require jpacPhot but this is included as a submodule. You may link to your ow
      setenv ELSPECTRO /path/to/elSpectro (or $PWD)
      setenv PATH ${PATH}:${ELSPECTRO}/bin
 
+Note, if you want to use jpacPhoto with jpacBox you need to add the C++ boost library location to your path
+
+      setenv PATH ${PATH}:/where/is/boost
+
 # Build with cmake
  
      mkdir build; cd build; cmake ../
@@ -30,28 +36,26 @@ We require jpacPhot but this is included as a submodule. You may link to your ow
 
      cd examples
 
+Note the --i option means retain interactive root session, if not included elsepctro will exit once script is complete.
+
 ### Examples comparing to simple weighting of TGenPhaseSpace
 
 1) Decay a rho meson to 2 pi
 
-      elspectro ComparePhaseSpaceto2.C
+      elspectro --i ComparePhaseSpaceto2.C
 
 2) Decay g+p -> rho(pi+,pi-) p
 
-      elspectro ComparePhaseSpaceto3Rho.C
+      elspectro --i  ComparePhaseSpaceto3Rho.C
 
 3) Decay g+p -> X(rho(pi+,pi-) , phi(K+,K-) ) p
 
-       elspectro ComparePhaseSpaceto5RhoPhi.C
+       elspectro --i ComparePhaseSpaceto5RhoPhi.C
 
-### Examples of ElectroProduction
+4)  Decay g+p -> X(rho(pi+,pi-) , 4pi ) p
 
-1) EIC e + p -> e' rho(pi+,pi-) p
+       elspectro --i ComparePhaseSpaceto4PiRho.C
 
-       elspectro RunRhoProton.C
-        hW.Draw()
-        hQ2.Draw()
-        hRhoM.Draw()
 
 ### Examples of ElectroProduction of Jpac amplitudes
 
