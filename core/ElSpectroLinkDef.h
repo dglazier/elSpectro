@@ -26,6 +26,7 @@
 #pragma link C++ class elSpectro::TwoBodyFlat+;
 #pragma link C++ class elSpectro::TwoBody_stu+;
 #pragma link C++ class elSpectro::ScatteredElectron_xy+;
+#pragma link C++ class elSpectro::QuasiFreeNucleon+;
 
 #pragma link C++ class elSpectro::ProductionProcess+;
 #pragma link C++ class elSpectro::ElectronScattering+;

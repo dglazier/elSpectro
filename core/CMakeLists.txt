@@ -20,6 +20,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   TwoBodyFlat.h
   TwoBody_stu.h
   ScatteredElectron_xy.h
+  QuasiFreeNucleon.h
   ProductionProcess.h
   ElectronScattering.h
   Distribution.h
@@ -32,7 +33,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   SDME.h
   PhotonPolarisationVector.h
   DistVirtPhotFlux_xy.h
-  CurrentEventInfo.h
+#  CurrentEventInfo.h
   ParticleManager.h
   DecayManager.h
   MassPhaseSpace.h
@@ -60,6 +61,7 @@ add_library(${ELSPECTRO} SHARED
   TwoBodyFlat.cpp
   TwoBody_stu.cpp
   ScatteredElectron_xy.cpp
+  QuasiFreeNucleon.cpp
   ProductionProcess.cpp
   ElectronScattering.cpp
   Distribution.cpp
@@ -70,7 +72,7 @@ add_library(${ELSPECTRO} SHARED
   DistVirtPhotFlux_xy.cpp
   SDME.cpp
   PhotonPolarisationVector.cpp
-  CurrentEventInfo.cpp
+#  CurrentEventInfo.cpp
   ParticleManager.cpp
   DecayManager.cpp
   MassPhaseSpace.cpp
