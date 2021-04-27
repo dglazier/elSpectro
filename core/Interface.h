@@ -9,6 +9,7 @@
 #include "DistVirtPhotFlux_xy.h"
 #include "ElectronScattering.h"
 #include "ScatteredElectron_xy.h"
+#include "CollidingParticle.h"
 #include <TDatabasePDG.h>
 
 //#include "ParticleManager.h"
@@ -39,14 +40,32 @@ namespace elSpectro{
     return particles().Take(new Particle{pdg});
   }
   //////////////////////////////////////////////////////////////
-  inline Particle* particle(int pdg,DecayModel* const model){
-    return particles().Take(new DecayingParticle{pdg,model});
+  inline DecayingParticle* particle(int pdg,DecayModel* const model){
+    return dynamic_cast<DecayingParticle*>(particles().Take(new DecayingParticle{pdg,model}));
   }
   //////////////////////////////////////////////////////////////
-  inline Particle* particle(int pdg,double mass,DecayModel* const model){
+  inline DecayingParticle* particle(int pdg,double mass,DecayModel* const model){
     auto p = particles().Take(new DecayingParticle{pdg,model});
     p->SetPdgMass(mass);
-    return p;
+    return dynamic_cast<DecayingParticle*>(p);
+  }
+  //////////////////////////////////////////////////////////////
+  inline CollidingParticle* initial(int pdg,int parentpdg,DecayModel* model,DecayVectors* decayer){
+    return dynamic_cast<CollidingParticle*>(particles().Take(new CollidingParticle{pdg,parentpdg,model,decayer}));
+  }
+  //////////////////////////////////////////////////////////////
+  inline CollidingParticle* initial(int pdg,LorentzVector lv){
+    return dynamic_cast<CollidingParticle*>(particles().Take(new CollidingParticle{pdg,lv}));
+  }
+  //////////////////////////////////////////////////////////////
+  inline CollidingParticle* initial(int pdg,Double_t momentum){
+     auto mass= particles().GetMassFor(pdg);
+     LorentzVector lv(0,0,momentum,TMath::Sqrt(momentum*momentum+mass*mass));
+     return initial(pdg,lv);
+  }
+  /////////////////////////////////////////////////////////////
+  inline void add_particle_species(int pdg,double mass){
+    particles().AddToPdgTable(pdg,mass);
   }
   //////////////////////////////////////////////////////////////
   inline void mass_distribution(int pdg,Distribution *dist){

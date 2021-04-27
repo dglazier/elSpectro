@@ -12,6 +12,7 @@
 #pragma link C++ class elSpectro::Particle+;
 
 #pragma link C++ class elSpectro::DecayingParticle+;
+#pragma link C++ class elSpectro::CollidingParticle+;
 
 #pragma link C++ class elSpectro::DecayModel+;
 #pragma link C++ class elSpectro::DecayModelQ2W+;
@@ -20,6 +21,7 @@
 #pragma link C++ class elSpectro::GenericModelst+;
 #pragma link C++ class elSpectro::DecayGammaN_Test+;
 #pragma link C++ class elSpectro::PhaseSpaceDecay+;
+#pragma link C++ class elSpectro::NuclearBreakup+;
 #pragma link C++ class elSpectro::VectorSDMEDecay+;
 
 #pragma link C++ class elSpectro::DecayVectors+;

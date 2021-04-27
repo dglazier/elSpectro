@@ -19,7 +19,7 @@ namespace elSpectro{
 
     TwoBody_stu(double s,double t,double t_slope,double u=0,double u_slope=0);
 
-    double MyRandomCosTh() const noexcept final{
+    double RandomCosTh() const noexcept final{
       _weight=1;
       auto randChannel = gRandom->Uniform();
       //  std::cout<<" TwoBody_stu RandomCosTh() "<<randChannel<<std::endl;

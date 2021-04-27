@@ -15,60 +15,7 @@
 
 namespace elSpectro{
   int ElectronScattering::NintegralsElectronScattering=0;
-  // ElectronScattering::ElectronScattering(double ep,double ionp,
-  // 					 double eangle,double ionangle,
-  // 					 DecayModel* model, int ionpdg):
-  //   _pElectron{ep},
-  //   _pIon{ionp},
-  //   _angleElectron{eangle},
-  //   _angleIon{ionangle},
-  //   _pdgIon{ionpdg},
-  //   ProductionProcess{model}
-  // {
-  //   SetBeamCondtion();
-  // }
-  // //////////////////////////////////////////////////////////////////
-  // ElectronScattering::ElectronScattering(double ep,double ionp,
-  // 					 DecayModel* model, int ionpdg):
-  //   _pElectron{ep},
-  //   _pIon{ionp},
-  //   _angleElectron{TMath::Pi()},
-  //   _angleIon{0},
-  //   _pdgIon{ionpdg},
-  //   ProductionProcess{model}
-  // {
-  //   SetBeamCondtion();
-  // }
-  /////////////////////////////////////////////////////////////////////
-  /*  ElectronScattering::ElectronScattering(double ep,double ionp, DecayVectors* decayer,  DecayModel* model, int ionpdg):
-    _pElectron{ep},
-    _pIon{ionp},
-    _angleElectron{TMath::Pi()},
-    _angleIon{0},
-    _pdgIon{ionpdg},
-    _beamElec{11},
-    _beamNucl{ionpdg},
-    ProductionProcess{0,decayer,model}
-  {
-      
-      SetBeamCondtion();
-  }
-  /////////////////////////////////////////////////////////////////////
-  ElectronScattering::ElectronScattering(double ep,double ionp,
-		     double eangle,double ionangle,
-		     DecayVectors* decayer,  DecayModel* model, int ionpdg):
-    _pElectron{ep},
-    _pIon{ionp},
-    _angleElectron{eangle},
-    _angleIon{ionangle},
-    _pdgIon{ionpdg},
-    _beamElec{11},
-    _beamNucl{ionpdg},
-    ProductionProcess{0,decayer,model}
-  {
-  
-      SetBeamCondtion();
-      }*/
+
   /////////////////////////////////////////////////////////////////////
   ElectronScattering::ElectronScattering(double ep,double ionp, DecayModel* model, int ionpdg):
     _pElectron{ep},
@@ -165,8 +112,6 @@ namespace elSpectro{
       auto thresh=Q2WModel->getThreshold();
       if(minMass<thresh)minMass=thresh;
     }
-    std::cout<<"E scatter go t a threshold "<<minMass<<std::endl;
-
     
     //default scatteredelectron_xy, now have all parameters
     if(Decayer()==nullptr){
@@ -292,7 +237,8 @@ namespace elSpectro{
  
     return integrated_xsection;
   }
-    
+
+ 
   LorentzVector ElectronScattering::MakeCollision(){
     
     //First, Eventually want to sample from beam divergence distributions

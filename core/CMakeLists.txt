@@ -8,8 +8,10 @@ include_directories($ENV{JPACPHOTO}/include/amplitudes)
 ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   Particle.h
   DecayingParticle.h
+  CollidingParticle.h
   DecayModel.h
   PhaseSpaceDecay.h
+  NuclearBreakup.h
   VectorSDMEDecay.h
   DecayModelQ2W.h
   DecayModelst.h
@@ -49,8 +51,10 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
 add_library(${ELSPECTRO} SHARED
   Particle.cpp
   DecayingParticle.cpp
+  CollidingParticle.cpp
   DecayModel.cpp
   PhaseSpaceDecay.cpp
+  NuclearBreakup.cpp
   VectorSDMEDecay.cpp
   DecayModelQ2W.cpp
   DecayModelst.cpp

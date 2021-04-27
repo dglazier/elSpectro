@@ -109,11 +109,11 @@ namespace elSpectro{
 
     
     double Ee = escat::E_el(_parent_in_elFrame.P()); //parent in rest frame of ion, momentum=e momentum
-    double Mion= _parent_in_elFrame.T()-Ee; // energy of parent = Mion + E(e-)
+    //    double Mion= _parent_in_elFrame.T()-Ee; // energy of parent = Mion + E(e-)
 
     double Egamma = Ee * yy;
  
-    double W = sqrt( Mion*(Mion + 2*Egamma ) -  escat::Q2_xy( Ee,xx,yy));
+    // double W = sqrt( Mion*(Mion + 2*Egamma ) -  escat::Q2_xy( Ee,xx,yy));
    
     double Esc = Ee - Egamma;
     // if(escat::Q2_xy( Ee,xx,yy)<0.3&&escat::Q2_xy( Ee,xx,yy)>0.01) histy.Fill(yy);
@@ -122,7 +122,7 @@ namespace elSpectro{
     double costh = escat::CosTh_xy(Ee,xx,yy);
     costh = costh>1 ? 1 : costh; //protect <=1
 
-    histyCosTh.Fill(costh,yy);
+    // histyCosTh.Fill(costh,yy);
 
     auto sinth=TMath::Sqrt(1-costh*costh);
 

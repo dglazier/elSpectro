@@ -30,7 +30,8 @@ namespace elSpectro{
 		       0, kFALSE,
 		       0, 0, "virtual", 9999);
 
-    pdgDB->AddParticle("deuteron","deuteron", 1.875612, kTRUE,0, 1, "Baryon", 45);
+    pdgDB->AddParticle("deuteron","deuteron", 1.875612, kTRUE,0, 1, "Baryon", 45); //Jlab CLAS numbering
+    pdgDB->AddParticle("deuteron","deuteron", 1.875612, kTRUE,0, 1, "Baryon", 1000010020); //PDG code numbering
     
   }
   Particle*  ParticleManager::Take(Particle* p){
@@ -62,6 +63,13 @@ namespace elSpectro{
     pdgDB->AddParticle(Form("Particle%d",pdg),"resonance",
 		       mass, kFALSE,
 		       0, 0, "virtual", pdg);
+  }
+  Double_t ParticleManager::GetMassFor(int pdg){
+    TDatabasePDG *pdgDB = TDatabasePDG::Instance();
+    if(pdgDB->GetParticle(pdg)==nullptr){
+      std::cerr<<"ParticleManager::GetMassFor no particle with pdg code "<<pdg<<std::endl;
+    }
+    return pdgDB->GetParticle(pdg)->Mass();
   }
   
 }

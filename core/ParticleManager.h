@@ -57,7 +57,7 @@ namespace elSpectro{
     }
 
     void AddToPdgTable(int pdg,double mass);
-    
+    Double_t GetMassFor(int pdg);
     /* void RegisterMassSquaredDistribution(int pdg, Distribution* dist){ */
     /*   _mass2Dist[pdg]=dist_uptr{dist}; */
     /* } */
