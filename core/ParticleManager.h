@@ -74,14 +74,17 @@ namespace elSpectro{
     void MoveStableToLab(Particle* particle){
       //So the particle does not get boosted
       //but is written out to final state
-      _stables.erase(std::remove(_stables.begin(),_stables.end(),particle),_stables.end());
+     std::cout<<"MoveStableToLab( "<<particle->Pdg()<<" "<<_stables.size()<<std::endl;
+       _stables.erase(std::remove(_stables.begin(),_stables.end(),particle),_stables.end());
       _stableslab.push_back(particle);
     }
    void RemoveStable(Particle* particle){
+     std::cout<<"RemoveStable( "<<particle->Pdg()<<" "<<_stables.size()<<std::endl;
       //So the particle does not get boosted
       //or written out to final state
       _stables.erase(std::remove(_stables.begin(),_stables.end(),particle),_stables.end());
-    }
+    std::cout<<"RemoveStable( "<<particle->Pdg()<<" "<<_stables.size()<<std::endl;
+     }
     
     const decaying_ptrs UnstableParticles()const {return _unstables;}
     const particle_ptrs StableParticles()const {

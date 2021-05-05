@@ -58,7 +58,7 @@ namespace elSpectro{
       _stables.push_back(p);
     }
     
-    
+    std::cout<<"Take Partice "<<pdg<<" s "<<_stables.size()<<" i "<<_initials.size()<<" u "<<_unstables.size()<<std::endl;
     return p;
   }
   

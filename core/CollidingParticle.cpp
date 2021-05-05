@@ -34,7 +34,7 @@ namespace elSpectro{
    UInt_t position=0;
    for(auto& p:_model->Products()){
        
-      
+     std::cout<<"CollidingParticle prod "<<p->Pdg()<<std::endl;
       if(p->Pdg()==pdg){
 	
 	if(_interactingParticle!=nullptr){
@@ -42,11 +42,11 @@ namespace elSpectro{
 	}
 	else{	
 	  _interactingParticle=p->P4ptr();
-	  _model->SwapProducts(0,position); //make sure interacting particle is first in products vector
 	}
 	//Not a stable final state particle!
 	Manager::Instance().Particles().RemoveStable(p);
-      }
+	_model->SwapProducts(0,position); //make sure interacting particle is first in products vector, must be done after remove
+     }
       else{ //not a beam particle but "spectator"
 	//remove from stable particle list
 	//as these will be boosted to lab
