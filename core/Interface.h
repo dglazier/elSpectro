@@ -50,20 +50,14 @@ namespace elSpectro{
     return dynamic_cast<DecayingParticle*>(p);
   }
   //////////////////////////////////////////////////////////////
-  inline CollidingParticle* initial(int pdg,int parentpdg,DecayModel* model,DecayVectors* decayer){
-    return dynamic_cast<CollidingParticle*>(particles().Take(new CollidingParticle{pdg,parentpdg,model,decayer}));
-  }
-  //////////////////////////////////////////////////////////////
-  inline CollidingParticle* initial(int pdg,LorentzVector lv){
-    return dynamic_cast<CollidingParticle*>(particles().Take(new CollidingParticle{pdg,lv}));
+  inline CollidingParticle* initial(int pdg,Double_t momentum,int parentpdg,DecayModel* model,DecayVectors* decayer){
+    return dynamic_cast<CollidingParticle*>(particles().Take(new CollidingParticle{pdg,momentum,parentpdg,model,decayer}));
   }
   //////////////////////////////////////////////////////////////
   inline CollidingParticle* initial(int pdg,Double_t momentum){
-     auto mass= particles().GetMassFor(pdg);
-     LorentzVector lv(0,0,momentum,TMath::Sqrt(momentum*momentum+mass*mass));
-     return initial(pdg,lv);
+    return dynamic_cast<CollidingParticle*>(particles().Take(new CollidingParticle{pdg,momentum}));
   }
-  /////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
   inline void add_particle_species(int pdg,double mass){
     particles().AddToPdgTable(pdg,mass);
   }
@@ -121,6 +115,17 @@ namespace elSpectro{
     }
     else	
       generator().Reaction(new ElectronScattering(ep,0, totalXsec,ionpdg));
+	
+    return  generator().Reaction();
+  }
+  inline ProductionProcess*  mesonex(CollidingParticle* el,CollidingParticle* pr,DecayModelQ2W *totalXsec=nullptr){
+  
+    if(totalXsec!=nullptr){
+      model(totalXsec); //register ownership of model with manager
+      generator().Reaction(new ElectronScattering(el,pr, totalXsec ));
+    }
+    else	
+      generator().Reaction(new ElectronScattering(el,pr,totalXsec));
 	
     return  generator().Reaction();
   }

@@ -21,14 +21,14 @@ namespace elSpectro{
     
     CollidingParticle()=delete;
     //cannot default construct at least need a 4-momentum
-    CollidingParticle(int pdg,LorentzVector lv);
+    CollidingParticle(int pdg,Double_t momentum);
     //or a model to generate a 4-momentum
-    CollidingParticle(int pdg,int parentpdg,DecayModel* model,DecayVectors* decayer);
+    CollidingParticle(int pdg,Double_t momentum,int parentpdg,DecayModel* model,DecayVectors* decayer);
  
     DecayModel*  Model()const {return _model;}
 
     double Generate(){
-      if(_decayer.get()==nullptr) return 1.0;
+       if(_decayer.get()==nullptr) return 1.0;
       return _decayer->Generate(P4(),_model->Products());
     }
 
@@ -36,29 +36,31 @@ namespace elSpectro{
     void SetDecayer(DecayVectors* decayer){_decayer.reset(decayer);}
     
     Double_t  GenerateComponents(){
-      Double_t weight=Generate();
+      if(_model==nullptr )return 1.0;
       
-      if(_model )weight*=_model->Intensity();
-
+      Double_t weight=0;
+      while((weight)==0){ //sample until physical
+	weight=Generate();
+	weight*=_model->Intensity();
+      }
       // can add beam divergence etc. here
       // ...
       return weight;
     }
+    DecayType IsDecay() const noexcept final {return DecayType::Production;}
 
-    void PostInit(ReactionInfo* info){
-
-    }
+    void PostInit(ReactionInfo* info) ;
     
-    LorentzVector* GetInteracting4Vector() const {return _interactingParticle;}
+    const LorentzVector* GetInteracting4Vector() const {return _interactingParticle;}
+    Int_t GetInteractingPdg()const {return _interactingPdg;}
     
-    void SetVertexXYZT(double x,double y,double z,double t){
+    /*void SetVertexXYZT(double x,double y,double z,double t){
       _productionVertex.SetXYZT(x,y,z,t);
-    }
+      }*/
 
-
-    void SetAngleTheta(Double_t angle){_dirTheta=angle;}
-    void SetAnglePhi(Double_t angle){_dirPhi=angle;}
-     void SetHorSize(Double_t s){_sizeHor=s;}
+ 
+    void SetAngleThetaPhi(Double_t th,Double_t phi);
+    void SetHorSize(Double_t s){_sizeHor=s;}
     void SetVerSize(Double_t s){_sizeVer=s;}
     void SetHorDivergence(Double_t s){_divHor=s;}
     void SetVerDivergence(Double_t s){_divVer=s;}
@@ -72,9 +74,10 @@ namespace elSpectro{
 
     LorentzVector *_interactingParticle={nullptr}; //not owner;
     
-    LorentzVector _productionVertex;
-    int _prodVertexID={0};
-    
+    LorentzVector _nominal; //nominal beam 4-momentum
+    // LorentzVector _productionVertex;
+    //int _prodVertexID={0};
+    int _interactingPdg={0};
     Double_t _dirTheta={0};
     Double_t _dirPhi={0};
     Double_t _sizeHor={0};

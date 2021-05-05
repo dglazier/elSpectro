@@ -27,7 +27,8 @@ namespace elSpectro{
     }
     
     dist_pair SamplePair()   noexcept final {
-      _forIntegral==false ? FindWithAcceptReject() : FindFlat();
+      //    _forIntegral==false ? FindWithAcceptReject() : FindFlat();
+      FindWithAcceptReject();
       return _xy;
     }
 
@@ -44,8 +45,10 @@ namespace elSpectro{
     double GetMinX() const noexcept final{return 0;}
     double GetMaxX() const noexcept final{return 1;}
 
+    double GetWMin() const noexcept {return TMath::Sqrt(_Wthresh2);}
+
     void FindWithAcceptReject();
-    void FindFlat();
+    // void FindFlat();
     
     void SetElecE(double ee){_ebeam=ee;}
     void SetM(double m){_mTar=m;}

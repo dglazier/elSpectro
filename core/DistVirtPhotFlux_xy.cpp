@@ -49,7 +49,7 @@ namespace elSpectro{
     double ymin = rmin/(2*_mTar*_ebeam);
     if(ymin==0) ymin=1E-50;
        //now find the y limits with this threshold
-    //  std::cout<<"ymin "<<ymin<<" "<<rmin<<" "<<_Wthresh2<<" "<<_mTar<<" "<<_ebeam<<" "<<_Wthresh2-_mTar*_mTar<<" "<<_requestQ2min<<std::endl;
+    std::cout<<Wmin<<" "<<_mTar<<"  ymin "<<ymin<<" "<<rmin<<" "<<_Wthresh2<<" "<<_mTar<<" "<<_ebeam<<" "<<_Wthresh2-_mTar*_mTar<<" "<<_requestQ2min<<std::endl;
  
     //if(_requestYmin!=0){
     if(_requestYmin>ymin)
@@ -64,8 +64,9 @@ namespace elSpectro{
       _lnymax=TMath::Log(1.);
     
     double xmin =XMin(ymin);						 
-    
-    //random search for the maximum value
+
+
+     //random search for the maximum value
     _max_val=0;
   
     for(int i=0;i<1E5;i++){
@@ -84,7 +85,10 @@ namespace elSpectro{
       if(avail_xmin<_maxPossiblexRange)
 	_maxPossiblexRange=avail_xmin;
     }
-    
+     
+    std::cout<<"DistVirtPhotFlux_xy::SetWThreshold new Wmin "<<GetWMin() <<" "<<TMath::Sqrt(2*_mTar*_ebeam*ymin+_mTar*_mTar)<<" "<<TMath::Sqrt(rmin + _mTar*_mTar)-_mTar*_mTar*ymin*ymin/(1-ymin)<<" "<<sqrt( _mTar*(_mTar + 2*ymin*_ebeam ) -  escat::Q2_xy( _ebeam,_maxPossiblexRange,ymin))<<" xmin "<<xmin<<" "<<XMin(ymin)<<" ymin "<<ymin<<std::endl;
+    _Wthresh2 =_mTar*(_mTar + 2*ymin*_ebeam )-  escat::Q2_xy( _ebeam,_maxPossiblexRange,ymin);
+  
     std::cout<<"DistVirtPhotFlux_xy max "<<_max_val<<" within y limits "<<TMath::Exp(_lnymin)<<" "<<TMath::Exp(_lnymax)<<" minimum possible x "<<_maxPossiblexRange<<std::endl;
     std::cout<<"  Other limits : "<<std::endl;
 
@@ -185,11 +189,13 @@ namespace elSpectro{
     
     _val=escat::flux_dxdy(_ebeam,x,y);
  
-   
+  
     //return x and y values
     _xy=std::make_pair(x,y);
   
   }
+
+  /*
    void DistVirtPhotFlux_xy::FindFlat(){
 
      _val=0;
@@ -219,11 +225,11 @@ namespace elSpectro{
      //return x and y values
      _xy=std::make_pair(x,y);
      
-     
-      
+       
      return;
      
    }
+  */
   /*
    void DistVirtPhotFlux_xy::FindFlat(){
 

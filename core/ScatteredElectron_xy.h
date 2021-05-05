@@ -54,7 +54,8 @@ namespace elSpectro{
     LorentzVector _parent_in_elFrame;
     
     ROOT::Math::RotationZYX _sc_rotateToZaxis;
-    LorentzVector _cachedParent;
+    ROOT::Math::RotationZ _sc_rotateAroundZaxis;//save memory allocation
+   LorentzVector _cachedParent;
     
     // TH1D *hist, *histW;
     TH1D histy={"ydist","ydist",1000,0,1};
@@ -72,9 +73,13 @@ namespace elSpectro{
     if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
       _cachedParent = parent;
       //_rotateToZaxis.SetAngle(_cachedParent.Theta());
-      _sc_rotateToZaxis.SetComponents(-_cachedParent.Phi(),-_cachedParent.Theta(),0);
+      _sc_rotateToZaxis.SetComponents(_cachedParent.Phi(),_cachedParent.Theta(),0);
+      _sc_rotateAroundZaxis.SetAngle(_cachedParent.Phi());
+      // _sc_rotateToZaxis.SetComponents(0,-_cachedParent.Theta(),0);
      }
     child=_sc_rotateToZaxis*child;
+    child =_sc_rotateAroundZaxis*child; 
+
   }
   
 }

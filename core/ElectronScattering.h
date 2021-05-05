@@ -39,6 +39,7 @@ namespace elSpectro{
 		       double anglee,double anglep,DecayModel* model=new PhaseSpaceDecay{{},{11,-2211}},int ionpdg=2212);
     ElectronScattering(double ep,double ionp,DecayModel* model=new PhaseSpaceDecay{{},{11,-2211}},int ionpdg=2212);
 
+    ElectronScattering(CollidingParticle *electron,CollidingParticle* target,  DecayModel* model);
     
     DecayStatus  GenerateProducts( ) override;
 
@@ -83,7 +84,8 @@ namespace elSpectro{
 
     
     void SetBeamCondtion();
-    
+    void SetNominalBeamCondtion();
+
     Particle _beamElec;
     Particle _beamNucl;
     LorentzVector _nuclRestElec;
@@ -116,7 +118,9 @@ namespace elSpectro{
     short _cacheIntegrals={0};
     
     DecayingParticle* _gStarN={nullptr}; 
-     
+    CollidingParticle* _electronptr={nullptr};
+    CollidingParticle* _targetptr={nullptr};
+    
     ClassDefOverride(elSpectro::ElectronScattering,1); //class ElectronScattering
  
   };

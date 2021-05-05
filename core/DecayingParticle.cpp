@@ -37,7 +37,8 @@ namespace elSpectro{
    
     //decay vertex position
     auto& products=_decay->Products();
-    if(IsDecay()==DecayType::Detached||IsDecay()==DecayType::Production){
+    //    if(IsDecay()==DecayType::Detached||IsDecay()==DecayType::Production){
+    if(IsDecay()==DecayType::Detached){
       //create a new detached vertex
       _decayVertexID=Manager::Instance().AddVertex(&_decayVertex);
       for(auto* prod: products){
@@ -67,7 +68,7 @@ namespace elSpectro{
 
     double _maxWeight=1;
   
-    //  std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<_decay->Products().size()<<" "<<" "<<_decay->Products()[0]->Pdg()<<" "<<_decay->Products()[1]->Pdg()<<std::endl;
+    //std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<_decay->Products().size()<<" "<<" "<<_decay->Products()[0]->Pdg()<<" "<<_decay->Products()[1]->Pdg()<<std::endl;
     //if in charge of phase space calculate masses for full decay chain
     Manager::Instance().FindMassPhaseSpace(Mass(),Model());
   
@@ -75,6 +76,7 @@ namespace elSpectro{
     //samplingWeight = 1 for phase space decay
     //for others it allows to weigth phase space back in 
     auto samplingWeight= Decay();
+
     if(Model()->HasAngularDistribution()==false)samplingWeight=1; //Model has no angular distribution
     
     //samplingWeight ==0 => not physical (below threshold)
@@ -83,6 +85,7 @@ namespace elSpectro{
     //evaluate the model intensity for the product vectors
     double weight = 1;
     if(Model()!=nullptr)  weight = Model()->Intensity();
+    //std::cout<<"DecayingParticle::GenerateProducts "<<samplingWeight<<" "<<weight<<std::endl;
     if(weight==0)  return DecayStatus::ReGenerate;
     if(samplingWeight - weight < -1E7 ){
       std::cout<<"DecayingParticle::GenerateProducts model weight is greater than envelope " <<Mass()<<" "<<Model()->GetName()<<" "<<Class_Name()<<" weights "<<samplingWeight <<" "<<weight<<" masses "<<Model()->Products()[0]->Mass()<<" "<<Model()->Products()[1]->Mass()<<" difference in weights "<<samplingWeight-weight <<std::endl;

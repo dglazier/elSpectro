@@ -41,6 +41,7 @@ namespace elSpectro{
     double GetValueFor(double valX,double valY=0) final  {return (static_cast<TH1D*>(&_th1))->Interpolate(valX);}
     
     const TH1& GetTH1() const noexcept {return _th1;}
+    void Draw(const TString& opt) { _th1.Draw(opt);}
     
   private:
     //no one should use default constructor

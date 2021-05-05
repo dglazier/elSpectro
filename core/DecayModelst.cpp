@@ -112,12 +112,12 @@ namespace elSpectro{
     auto M2 = _target->M();
     auto M3 = _meson->Mass(); //should be pdg value here
     auto M4 = _baryon->Mass();
-    // auto Wmin = M3+M4;
     auto Wmin = Parent()->MinimumMassPossible();
-  
-    _Wmax = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
-
-    std::cout<<" DecayModelst::FindMaxOfIntensity()  "<<Wmin<<" "<<_Wmax<<" "<<M3<<std::endl;
+   
+    //    _Wmax = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
+    _Wmax = _prodInfo->_Wmax;
+    
+    std::cout<<" DecayModelst::FindMaxOfIntensity()  Wmin = "<<Wmin<<" Wmax = "<<_Wmax<<" meson mass = "<<M3<<std::endl;
 
     auto Fmax = [&M1,&M2,&M3,&M4,&Wmin,this](const double *x)
       {
@@ -230,8 +230,8 @@ namespace elSpectro{
       // Set the free variables to be minimized !
       minimum->SetVariable(0,"W",variable[0], step[0]);
       minimum->SetVariable(1,"t",variable[1], step[1]);
-      minimum->SetVariableLimits(0,Wmin,_Wmax);
-      minimum->SetVariableLimits(1,tmax,0);
+      // minimum->SetVariableLimits(0,Wmin,_Wmax);
+      // minimum->SetVariableLimits(1,tmax,0);
 
       // do the minimization
       minimum->Minimize();
@@ -258,8 +258,8 @@ namespace elSpectro{
 	
 	std::cout << "Minimum Mass Maximum : Probabiltiy Dist at ( W=" << minW << " , t = "  << mint << "): "<< -minimum->MinValue()<< " note t0 "<<kine::t0(minW,M1,M2,M3,M4)  << std::endl;
 
-	if(minminVal>minVal){
-	  //std::cout<<"minmin "<<-minminVal<<" < "<<-minVal<<std::endl;
+	if(minminVal<minVal){
+	 std::cout<<"minmin "<<-minminVal<<" < "<<-minVal<<std::endl;
 	  minVal=minminVal;
 	}
 	//back to PDg mass if exists
@@ -270,6 +270,7 @@ namespace elSpectro{
 
       if(gridMin<minVal){
 	Warning("DecayModelst::FindMaxOfIntensity()","grid search value already bigger than minimised, so will revert to that max value +5 percent");
+	std::cout<<"gridMin "<<gridMin<<" "<<minVal<<std::endl;
 	minVal=gridMin*1.05;
       }
       return -minVal ;

@@ -9,6 +9,7 @@
 #include "DecayVectors.h"
 #include "Distribution.h"
 #include "DistTF1.h"
+#include "DistTH1.h"
 #include "LorentzVector.h"
 #include <TRandom.h> //for gRandom
 #include <Math/VectorUtil.h> //for boosts etc.
@@ -53,7 +54,10 @@ namespace elSpectro{
  
 
   };
- 
+
+  namespace QuasiFree{
+    DistTH1* CDBonnMomentum(const Int_t Nbins=1000,const Double_t pmin=0,const Double_t pmax=1);
+  }
   
 }
   

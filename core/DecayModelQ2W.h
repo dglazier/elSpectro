@@ -57,7 +57,8 @@ namespace elSpectro{
     }
 
     double getQ2() const noexcept{return -_gamma.M2();}
-    double getW() const noexcept{ return GetGammaN()->Mass();}
+    //double getW() const noexcept{ return GetGammaN()->Mass();}
+    double getW() const noexcept{ return _gstarNuc->Mass();}
     double getThreshold() const noexcept{return _threshold;}
     void setThreshold(double val) noexcept{
       if(val<_threshold) return;

@@ -95,6 +95,7 @@ namespace elSpectro{
     void SetVertex(int vertexID,const LorentzVector* v){
       _vertexID=vertexID;
       _vertex=v;
+      std::cout<<"PArticle SetVertex "<<_pdg<<" "<<_vertexID<<" "<<v<<std::endl;
     }
     const LorentzVector* VertexPosition()const noexcept{return _vertex;}
     int VertexID()const noexcept{return _vertexID;}

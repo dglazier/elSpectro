@@ -42,10 +42,60 @@ namespace elSpectro{
     _beamNucl{ionpdg},
     ProductionProcess{0,nullptr,model}
   {
-  
       SetBeamCondtion();
   }
+  /////////////////////////////////////////////////////////////////////
+  ElectronScattering::ElectronScattering(CollidingParticle *electron,CollidingParticle* target,  DecayModel* model):
+    ProductionProcess{electron,target,model},
+    _beamElec{11},
+    _beamNucl{target->GetInteractingPdg()}
+  {
+    //For convenience keep our own
+    //pointers to electron and target
+    _electronptr =electron;
+    _targetptr = target;
+    
+      SetNominalBeamCondtion();
+  }
 
+  /////////////////////////////////////////////////////////////////////
+  void ElectronScattering::SetNominalBeamCondtion(){
+    
+    
+    _beamElec.SetP4(*(_electronptr->GetInteracting4Vector()));
+    
+    _beamNucl.SetP4(*(_targetptr->GetInteracting4Vector()));
+    _massIon=_beamNucl.PdgMass();
+
+    /*  //not sure why this was there
+    //For decaying
+    SetXYZT(_beamElec.P4().X(),_beamElec.P4().Y(),
+	    _beamElec.P4().Z(),_beamElec.P4().T());
+    */
+
+    //For nominal beam conditions set nucleon rest frame vectors
+    //in case info is needed in PostInit stage
+    //Boost into ion rest frame
+    auto prBoost=_beamNucl.P4().BoostToCM();
+    _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.Mass());
+    _nuclRestElec= boost(_beamElec.P4(),prBoost);
+
+    //set inital lab particles
+    //this can be written to output file
+    std::cout<<"ElectronScattering vertex "<<_electronptr->VertexPosition()<<std::endl;
+    AddInitialParticlePtr(_electronptr);
+    AddInitialParticlePtr(_targetptr);
+  //set inital lab particles
+    //AddInitialParticlePtr(&_beamElec);
+    //AddInitialParticlePtr(&_beamNucl);
+
+
+    std::cout<<" ElectronScattering::SetNominalBeamCondtion() e- lab "<<_beamElec.P4()<<std::endl;
+   std::cout<<" ElectronScattering::SetNominalBeamCondtion() tar lab "<<_beamNucl.P4()<<std::endl;
+   std::cout<<" ElectronScattering::SetNominalBeamCondtion() e- prest "<<_nuclRestElec<<std::endl;
+   std::cout<<" ElectronScattering::SetNominalBeamCondtion() tar prest "<<_nuclRestNucl<<std::endl;
+
+   }
   /////////////////////////////////////////////////////////////////////
   void ElectronScattering::SetBeamCondtion(){
     
@@ -188,19 +238,20 @@ namespace elSpectro{
       std::cout<<" setting lowest W as "<<minMass<<std::endl;
       decayer->Dist().SetWThreshold(minMass);
       _Wmin=minMass;
+      if(dynamic_cast<DistVirtPhotFlux_xy*>(&(decayer->Dist())))_Wmin=dynamic_cast<DistVirtPhotFlux_xy*>((&decayer->Dist()))->GetWMin();//can be effected by angle limits etc
     }
     
-  
+    std::cout<<"ElectronScattering::InitGen() final minimum W "<<_Wmin<<std::endl;
     if(_gStarN!=nullptr){
-      _gStarN->SetMinMass(minMass);
+      _gStarN->SetMinMass(_Wmin);
        if(auto Q2WModel=dynamic_cast<DecayModelQ2W*>(Model())){
-	Q2WModel->setThreshold(minMass);
-      }
+	 Q2WModel->setThreshold(_Wmin);
+     }
       generator().SetModelForMassPhaseSpace(_gStarN->Model());
     }
 
     
-    DecayingParticle::PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
+    ProductionProcess::PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
     //now scattered electron should be set
     //_scattered= _reactionInfo._scattered;
 
@@ -240,7 +291,16 @@ namespace elSpectro{
 
  
   LorentzVector ElectronScattering::MakeCollision(){
-    
+    //Generate collision 4-momentum
+    if(_electronptr!=nullptr){
+      _electronptr->GenerateComponents();
+      _beamElec.SetP4(*(_electronptr->GetInteracting4Vector()));
+    }
+    if(_targetptr!=nullptr){
+      _targetptr->GenerateComponents();
+      _beamNucl.SetP4(*(_targetptr->GetInteracting4Vector()));
+    }
+
     //First, Eventually want to sample from beam divergence distributions
     LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
     //Boost into ion rest frame
@@ -250,6 +310,7 @@ namespace elSpectro{
     _nuclRestElec= boost(_beamElec.P4(),prBoost);
     //set decay parent for e -> e'g*
     SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
+    //  std::cout<<"ElectronScattering::MakeCollision() "<<collision<<std::endl;
     return collision;
   }
   //////////////////////////////////////////////////////////////////////////
@@ -334,133 +395,24 @@ namespace elSpectro{
   }
 /////////////////////////////////////////////////////////////////////////
   DecayStatus  ElectronScattering::GenerateProducts(){
-  /*//First, Eventually want to sample from beam divergence distributions
-    LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
 
-    //Boost into ion rest frame
-    auto prBoost=_beamNucl.P4().BoostToCM();
-    collision=boost(collision,prBoost);
-    _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.Mass());
-    _nuclRestElec= boost(_beamElec.P4(),prBoost);
-    //set decay parent for e -> e'g*
-    SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
- */
     auto collision=MakeCollision();
     
     //proceed through decay chain
     while(DecayingParticle::GenerateProducts()!=DecayStatus::Decayed){
-      //std::cout<<"not decayed "<<_nsamples<<std::endl;
       _nsamples++;
+      collision=MakeCollision();
+      //std::cout<<"ElectronScattering::GenerateProducts() "<<_nsamples<<std::endl;
     }//DecayModelQ2W
     
-    
+     
     //Boost all stable particles back to lab
     auto prBoost=_beamNucl.P4().BoostToCM();
-    //    Manager::Instance().Particles().BoostStable(-prBoost);
-    Manager::Instance().Particles().BoostToFrame(-prBoost,collision);
+    Manager::Instance().Particles().BoostStable(-prBoost);
+    //Manager::Instance().Particles().BoostToFrame(-prBoost,collision);
+   
     return DecayStatus::Decayed;
   }
 
 }
 
-
-// /*
-//      exit(0);
-//     // 
-//   //integration
-
-    
-//     long _NIntegrateW=50000;
-//     long _NIntegratet=1;
-//     long Npass=0;
-//     double integral=0;
-//    gBenchmark->Start("LoopIntegral");
- 
-//     //auto eleDist=static_cast<DistVirtPhotFlux_xy*>(&decayer->Dist());
-//     // static_cast<TwoBodyFlat*>(& _gStarN->mutableDecayer()->Dist())->ForIntegrate(true);
-//     for(long iW=0;iW<_NIntegrateW;++iW){
-//       LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
-
-//       //Boost into ion rest frame
-//       auto prBoost=_beamNucl.P4().BoostToCM();
-//       collision=boost(collision,prBoost);
-//       _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.Mass());
-//       _nuclRestElec= boost(_beamElec.P4(),prBoost);
-//       //set decay parent for e -> e'g*
-//       SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
- 
-//       Decay(); //sample e' and calculate dsigma
-
-//       auto pass=Model()->Intensity();//calculate photon
-//       if(pass==0) continue; //intensity 0 => does not contribute
-      
-//       double intet=0;
-//       Npass++;
-//       //dynamic_cast<DecayModelst*>(_gStarN->Model())->kin_tFromWCosTh()
-//       _gStarN->Decay(); //sample t
-//       _gStarN->Model()->Intensity(); //calculate dsigma
-
-      
-//       //  _gStarN->Model()->DifferentialXSect();
-
-// 	//correct for electron sampling distribution /Decayer()->Probabilty()
-//       //and differential cross section sampling /_gStarN->Decayer()->Probability();
-
-//       integral+=dsigma()
-// 	/Decayer()->Probability()
-// 	/_gStarN->Decayer()->Probability();
-      
-//       // std::cout<<_gStarN->Model()->GetName()<<" "<<integral<<" "<<dsigma()<<" "<<Decayer()->Probability()<<" "<<_gStarN->Decayer()->Probability()<<std::endl;
-//       if(TMath::IsNaN(integral)){  std::cout<<"ElectronScattering integral "<<integral<<" "<<dsigma()<<" "<<Decayer()->Probability()<<" "<<_gStarN->Decayer()->Probability()<<std::endl; exit(0);}
-//       //TH1D histt("t","t",100,-30,0);
-//       /*
-//       for(long it=0;it<_NIntegratet;++it){
-
-//        _gStarN->Decay(); //random t/cosTh
-//        _gStarN->Model()->Intensity();
-
-
-
-// 	//histt.Fill(static_cast<DecayModelst*>(_gStarN->Model())->get_t());
-	
-// 	intet+=dsigma();
-// 	}*/
-//       //integral+=intet;
-//       //TH1D histCross("XSection","XSection",1,_gStarN->Mass()-0.001,_gStarN->Mass()+0.001);
-//       //double Wmid=gRandom->Uniform(5.5,6.5);
-//       //TH1D histCross("XSection","XSection",1,Wmid-0.001,Wmid+0.001);
-//       // static_cast<DecayModelst*>(_gStarN->Model())->HistIntegratedXSection(histCross);
-//       //std::cout<<"Integral for t "<<_gStarN->Mass()<<" "<<intet/_NIntegratet<<" integration "<<histCross.GetBinContent(1)<<" at "<<_reactionInfo._photon->M2()<<"phase Q2 "<<histCross.GetBinContent(1)*static_cast<DecayModelQ2W*>(Model())->PhaseSpaceFactorToQ2eq0(_gStarN->Mass(),_beamNucl.Mass())<<std::endl <<std::endl <<std::endl ;
-      
-//       //  integral+=intet/_NIntegratet;
-
-
-
-
-      
-//       // TFile * crossFile=new TFile("XSection.root","recreate");
-//       //histt.Write();
-//       //delete crossFile;
-//       //exit(0); 
-//     }
-
-
-//     //samint=myFns.Integral(0,100);sum=0;for(int i=0;i<1E6;i++){auto val=myFns.GetRandom();sum+=myFn2.Eval(val)/myFns.Eval(val)*samint;}
-    
-//     //static_cast<DistVirtPhotFlux_xy*>(&decayer->Dist())->ForIntegrate(false);
-//     double Wmax = (_nuclRestNucl + _nuclRestElec).M();
-//     std::cout<<"Integral "<< _Wmin<<" - "<<Wmax<<" mean "<<integral/Npass<<" "<<integral/_NIntegrateW <<"  int  "<<integral/_NIntegrateW*(Wmax-_Wmin) << " "<<integral/_NIntegrateW/_NIntegratet*(Wmax-_nuclRestNucl.M()) <<std::endl <<std::endl <<" ROOFIT "<<RFintegral*(Wmax-_Wmin)<<std::endl;
-//     gBenchmark->Stop("LoopFitIntegral");
-//     gBenchmark->Print("LoopFitIntegral");
-
-//     //exit(0);
-//     /*TH1D histCross("XSection","XSection",10,Wmin,Wmax);
-//     std::cout<< "hist integral for "<<_gStarN->Model()->GetName()<<std::endl;
-//     static_cast<DecayModelst*>(_gStarN->Model())->HistIntegratedXSection(histCross);
-//     TFile * crossFile=new TFile("XSection.root","recreate");
-//     histCross.Write();
-//     delete crossFile;
-   
-//     exit(0);
-//     */
-// */

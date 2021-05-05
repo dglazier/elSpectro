@@ -40,9 +40,6 @@ namespace elSpectro{
 
     virtual double Probability() const {return 1;}
 
-  protected:
-    
-    mutable double _weight={1};
 
     virtual void BoostToParent(const LorentzVector& parent, const particle_ptrs& products){
   
@@ -86,6 +83,8 @@ namespace elSpectro{
       auto check = _cachedParent;
       check=_rotateToZaxis*check;
    }
+
+    /*
    virtual void RotateToParent(const LorentzVector& parent, LorentzVector& child){
   
       if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
@@ -101,11 +100,14 @@ namespace elSpectro{
       child=_rotateAroundZaxis * child; 
       
    }
-
-    virtual double RandomPhi() const noexcept { return gRandom->Uniform(-TMath::Pi(),TMath::Pi()); }
- 
+    */
+    
   protected:
     
+    mutable double _weight={1};
+    virtual double RandomPhi() const noexcept { return gRandom->Uniform(-TMath::Pi(),TMath::Pi()); }
+ 
+     
   private:
     
     LorentzVector _cachedParent;

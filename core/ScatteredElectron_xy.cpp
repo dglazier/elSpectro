@@ -19,7 +19,7 @@ namespace elSpectro{
   ///Sample a and y which are bound [0,1] so independent of eenrgy scale
   ///Return a weight that gives phase-space distribution
   double ScatteredElectron_xy::Generate(const LorentzVector& parent, const particle_ptrs& products)  {
-
+   
     double xx,yy;
     std::tie(xx,yy) = _random_xy.SamplePair();
     CompleteGivenXandY(parent, products, xx, yy);
@@ -142,9 +142,9 @@ namespace elSpectro{
     //still in rest system of nucl, just need rotation
     //std::cout<<"1 ScatteredElectron_xy::CompleteGivenXandY"<<_parent_in_elFrame<<" "<<_scattered<<" "<<_parent_in_elFrame -_scattered<<" W "<<(_parent_in_elFrame -_scattered).M()<<std::endl;
     RotateZaxisToCMDirection(parent,_scattered);
-    RotateZaxisToCMDirection(parent,_parent_in_elFrame);
-    //std::cout<<" check parents match "<<parent<< " with "<<_parent_in_elFrame<<std::endl;
-    //std::cout<<"2 ScatteredElectron_xy::CompleteGivenXandY"<<parent<<" "<<_scattered<<" "<<parent -_scattered<<" "<<(parent -_scattered).M()<<std::endl;
+    //RotateZaxisToCMDirection(parent,_parent_in_elFrame);
+    //std::cout<<" check parents match "<<parent<<" phi "<<parent.Phi()<< " with "<<_parent_in_elFrame<<std::endl;
+    // std::cout<<"2 ScatteredElectron_xy::CompleteGivenXandY"<<parent<<" "<<_scattered<<" "<<parent -_scattered<<" "<<(parent -_scattered).M()<<std::endl;
     if(products[0]->Pdg()==11){
       products[0]->SetP4(_scattered);
       products[1]->SetP4(parent -_scattered);
@@ -153,6 +153,7 @@ namespace elSpectro{
       products[1]->SetP4(_scattered);
       products[0]->SetP4(parent -_scattered);
     }
+
     return 1.;
   }
 }
