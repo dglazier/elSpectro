@@ -34,7 +34,6 @@ namespace elSpectro{
    UInt_t position=0;
    for(auto& p:_model->Products()){
        
-     std::cout<<"CollidingParticle prod "<<p->Pdg()<<std::endl;
       if(p->Pdg()==pdg){
 	
 	if(_interactingParticle!=nullptr){
