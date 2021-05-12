@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////
 ///
-///Class:		VectorSDMEDecay
+///Class:		TensorSDMEDecay
 ///Description:
 ///             Calculate intensity based on vector SDME
 ///             See Schilling and Wolf formalism
@@ -12,27 +12,27 @@
 namespace elSpectro{
 
  
-  class VectorSDMEDecay : public SDMEDecay {
+  class TensorSDMEDecay : public SDMEDecay {
 
   public:
     
-    VectorSDMEDecay()=default;
+    TensorSDMEDecay()=default;
     //only declaring default constructor
     //so other 5 constructors also defaulted(rule of 5)
     //constructor to decay into particles
-    VectorSDMEDecay( particle_ptrs , const std::vector<int> pdgs );
+    TensorSDMEDecay( particle_ptrs , const std::vector<int> pdgs );
 
     // Each model must define its intensity
     double Intensity() const final;
     
     //void PostInit(ReactionInfo* info) final;
     
-    short Spin() const final{ return 1;}
+     short Spin() const final{ return 2;}
 
   private:
  
-   ClassDefOverride(elSpectro::VectorSDMEDecay,1); //class VectorSDMEDecay
+   ClassDefOverride(elSpectro::TensorSDMEDecay,1); //class TensorSDMEDecay
     
-  };//class VectorSDMEDecay
+  };//class TensorSDMEDecay
 
 }//namespace elSpectro

@@ -1,4 +1,5 @@
 #include "DecayModelst.h"
+#include "SDMEDecay.h"
 #include "FunctionsForGenvector.h"
 #include <TDatabasePDG.h>
 #include <Math/GSLIntegrator.h>
@@ -32,7 +33,8 @@ namespace elSpectro{
 
     if( dynamic_cast<DecayingParticle*>(_meson) ){
       if( dynamic_cast<DecayingParticle*>(_meson)->Model()->CanUseSDME() ){
-	_sdmeMeson = _meson->InitSDME(1,4);
+	auto sdmeModel=dynamic_cast<SDMEDecay*>(dynamic_cast<DecayingParticle*>(_meson)->Model());
+      _sdmeMeson = _meson->InitSDME(sdmeModel->Spin(),4); //4=>photoproduction
 	//could have electroproduced baryon spin 3/2
 	//_sdmeBaryon = _baryon->InitSDME(3,9);
       }
@@ -424,9 +426,9 @@ namespace elSpectro{
 	_W=hist.GetXaxis()->GetBinCenter(ih);
 	if( _W < Wmin )
 	  hist.SetBinContent(ih, 0);
-	if( TMath::IsNaN(kine::tmax(_W,M1,M2,M3,M4)) )
+	else if( TMath::IsNaN(kine::tmax(_W,M1,M2,M3,M4)) )
 	  hist.SetBinContent(ih, 0);
-	if( TMath::IsNaN(kine::t0(_W,M1,M2,M3,M4)) )
+	else if( TMath::IsNaN(kine::t0(_W,M1,M2,M3,M4)) )
 	  hist.SetBinContent(ih, 0);
 	else{
 	  double max_at_W=0;

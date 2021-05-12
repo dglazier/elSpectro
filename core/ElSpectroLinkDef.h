@@ -22,6 +22,8 @@
 #pragma link C++ class elSpectro::DecayGammaN_Test+;
 #pragma link C++ class elSpectro::PhaseSpaceDecay+;
 #pragma link C++ class elSpectro::NuclearBreakup+;
+#pragma link C++ class elSpectro::SDMEDecay+;
+#pragma link C++ class elSpectro::TensorSDMEDecay+;
 #pragma link C++ class elSpectro::VectorSDMEDecay+;
 
 #pragma link C++ class elSpectro::DecayVectors+;

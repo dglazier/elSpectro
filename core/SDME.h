@@ -43,7 +43,7 @@ namespace elSpectro{
       _elements[alpha][x][_J+y] = val;
     }
     
-    
+    uint Spin()const {return _J;}
   private:
   
     uint _J={0};

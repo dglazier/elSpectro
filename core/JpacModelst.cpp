@@ -33,15 +33,49 @@ namespace elSpectro{
     auto *sdme=GetMesonSDMEs();
     
     if(sdme){ //note this is vector formalism
-      sdme->SetElement(0,0,0,(_amp->SDME(0, 0, 0, get_s(), get_t())));
-      sdme->SetElement(0,1,0,(_amp->SDME(0, 1, 0, get_s(), get_t())));
-      sdme->SetElement(0,1,-1,(_amp->SDME(0, 1, -1, get_s(), get_t())));
-      sdme->SetElement(1,1,1,(_amp->SDME(1, 1, 1, get_s(), get_t())));
-      sdme->SetElement(1,0,0,(_amp->SDME(1, 0, 0, get_s(), get_t())));
-      sdme->SetElement(1,1,0,(_amp->SDME(1, 1, 0, get_s(), get_t())));
-      sdme->SetElement(1,1,-1,(_amp->SDME(1, 1, -1, get_s(), get_t())));
-      sdme->SetElement(2,1,0,(_amp->SDME(2, 1, 0, get_s(), get_t())));
-      sdme->SetElement(2,1,-1,(_amp->SDME(2, 1, -1, get_s(), get_t())));
+      if(sdme->Spin()==1){
+	sdme->SetElement(0,0,0,(_amp->SDME(0, 0, 0, get_s(), get_t())));
+	sdme->SetElement(0,1,0,(_amp->SDME(0, 1, 0, get_s(), get_t())));
+	sdme->SetElement(0,1,-1,(_amp->SDME(0, 1, -1, get_s(), get_t())));
+	sdme->SetElement(1,1,1,(_amp->SDME(1, 1, 1, get_s(), get_t())));
+	sdme->SetElement(1,0,0,(_amp->SDME(1, 0, 0, get_s(), get_t())));
+	sdme->SetElement(1,1,0,(_amp->SDME(1, 1, 0, get_s(), get_t())));
+	sdme->SetElement(1,1,-1,(_amp->SDME(1, 1, -1, get_s(), get_t())));
+	sdme->SetElement(2,1,0,(_amp->SDME(2, 1, 0, get_s(), get_t())));
+	sdme->SetElement(2,1,-1,(_amp->SDME(2, 1, -1, get_s(), get_t())));
+      }
+      else if(sdme->Spin()==2){
+	sdme->SetElement(0,0,0,(_amp->SDME(0, 0, 0, get_s(), get_t())));
+	sdme->SetElement(0,1,0,(_amp->SDME(0, 1, 0, get_s(), get_t())));
+	sdme->SetElement(0,1,-1,(_amp->SDME(0, 1, -1, get_s(), get_t())));
+	sdme->SetElement(0,1,1,(_amp->SDME(0, 1, 1, get_s(), get_t())));
+	sdme->SetElement(0,2,-1,(_amp->SDME(0, 2, -1, get_s(), get_t())));
+	sdme->SetElement(0,2,-2,0.25);
+	//sdme->SetElement(0,2,-2,(_amp->SDME(0, 2, -2, get_s(), get_t())));
+	sdme->SetElement(0,2,0,(_amp->SDME(0, 2, 0, get_s(), get_t())));
+	sdme->SetElement(0,2,1,(_amp->SDME(0, 2, 1, get_s(), get_t())));
+	sdme->SetElement(0,2,2,(_amp->SDME(0, 2, 2, get_s(), get_t())));
+	
+	sdme->SetElement(1,0,0,(_amp->SDME(0, 0, 0, get_s(), get_t())));
+	sdme->SetElement(1,1,0,(_amp->SDME(0, 1, 0, get_s(), get_t())));
+	sdme->SetElement(1,1,-1,(_amp->SDME(0, 1, -1, get_s(), get_t())));
+	sdme->SetElement(1,1,1,(_amp->SDME(0, 1, 1, get_s(), get_t())));
+	sdme->SetElement(1,2,-1,(_amp->SDME(0, 2, -1, get_s(), get_t())));
+	sdme->SetElement(1,2,-2,(_amp->SDME(0, 2, -2, get_s(), get_t())));
+	sdme->SetElement(1,2,0,(_amp->SDME(0, 2, 0, get_s(), get_t())));
+	sdme->SetElement(1,2,1,(_amp->SDME(0, 2, 1, get_s(), get_t())));
+	sdme->SetElement(1,2,2,(_amp->SDME(0, 2, 2, get_s(), get_t())));
+
+	sdme->SetElement(2,1,0,(_amp->SDME(0, 1, 0, get_s(), get_t())));
+	sdme->SetElement(2,1,-1,(_amp->SDME(0, 1, -1, get_s(), get_t())));
+	sdme->SetElement(2,2,-1,(_amp->SDME(0, 2, -1, get_s(), get_t())));
+	sdme->SetElement(2,2,-2,(_amp->SDME(0, 2, -2, get_s(), get_t())));
+	sdme->SetElement(2,2,0,(_amp->SDME(0, 2, 0, get_s(), get_t())));
+	sdme->SetElement(2,2,1,(_amp->SDME(0, 2, 1, get_s(), get_t())));
+
+
+
+      }
     }
 
 

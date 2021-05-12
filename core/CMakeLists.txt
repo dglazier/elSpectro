@@ -12,6 +12,8 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   DecayModel.h
   PhaseSpaceDecay.h
   NuclearBreakup.h
+  SDMEDecay.h
+  TensorSDMEDecay.h
   VectorSDMEDecay.h
   DecayModelQ2W.h
   DecayModelst.h
@@ -55,6 +57,8 @@ add_library(${ELSPECTRO} SHARED
   DecayModel.cpp
   PhaseSpaceDecay.cpp
   NuclearBreakup.cpp
+  SDMEDecay.cpp
+  TensorSDMEDecay.cpp
   VectorSDMEDecay.cpp
   DecayModelQ2W.cpp
   DecayModelst.cpp

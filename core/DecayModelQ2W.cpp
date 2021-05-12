@@ -115,8 +115,9 @@ namespace elSpectro{
     auto delta = 2*escat::M2_el()/getQ2()*(1-epsilon);
     
     _photonPol.SetEpsilon(epsilon);
+    //_photonPol.SetEpsilon(1);
     _photonPol.SetDelta(delta);
-
+ 
     //Get envelope weight from integrated cross section
     double weight=_Wrealphoto_Dist->GetWeightFor( W  );
 
@@ -225,7 +226,6 @@ namespace elSpectro{
 	//on efficiency from this
 	
 	if(val<max_so_far){
-	  // hist.SetBinContent(ibin,(0.5*max_so_far+0.5*val)*1.05 );
 	  hist.SetBinContent(ibin,max_so_far );
 	}
 	else{
