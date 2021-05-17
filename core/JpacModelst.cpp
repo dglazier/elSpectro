@@ -49,9 +49,7 @@ namespace elSpectro{
 	sdme->SetElement(0,1,0,(_amp->SDME(0, 1, 0, get_s(), get_t())));
 	sdme->SetElement(0,1,-1,(_amp->SDME(0, 1, -1, get_s(), get_t())));
 	sdme->SetElement(0,1,1,(_amp->SDME(0, 1, 1, get_s(), get_t())));
-	sdme->SetElement(0,2,-1,(_amp->SDME(0, 2, -1, get_s(), get_t())));
-	sdme->SetElement(0,2,-2,0.25);
-	//sdme->SetElement(0,2,-2,(_amp->SDME(0, 2, -2, get_s(), get_t())));
+	sdme->SetElement(0,2,-2,(_amp->SDME(0, 2, -2, get_s(), get_t())));
 	sdme->SetElement(0,2,0,(_amp->SDME(0, 2, 0, get_s(), get_t())));
 	sdme->SetElement(0,2,1,(_amp->SDME(0, 2, 1, get_s(), get_t())));
 	sdme->SetElement(0,2,2,(_amp->SDME(0, 2, 2, get_s(), get_t())));

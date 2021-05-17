@@ -16,12 +16,11 @@ namespace elSpectro{
   //////////////////////////////////////////////////////////////
   double  TensorSDMEDecay::Intensity() const{
     // std::cout<<" TensorSDMEDecay::Intensity() "<<_photon<<" "<<_meson<<" "<<_baryon<<" "<<_child1<<std::endl;
-    //std::cout<<"SDME2 "<< _rho->Val(1,1,1)<<" "<<std::endl;
-
+ 
     //get decay angles in GJ frame
     MomentumVector decayAngles={0,0,1};
     kine::mesonDecayGJ(_photon,_meson,_baryon,_child1,&decayAngles);
-    // std::cout<<"VEctor "<<decayAngles.Theta()<<" "<<decayAngles.Phi()<<std::endl;
+   
     //avoid calling trig functions where possible....
     auto theta= decayAngles.Theta();
     auto phi= decayAngles.Phi();
@@ -40,19 +39,6 @@ namespace elSpectro{
     auto sin4Ph=TMath::Sin(4*phi);
     auto sinCubeTh=sinSqTh*TMath::Sqrt(sinSqTh);
     auto sinSq2Th =sin2Th*sin2Th;
-    /*
-    auto cos2Th=cosSqTh - sinSqTh;
-    auto sinSq2Th = ( 1 - cos2Th*cos2Th );
-    auto sin2Th = TMath::Sin();;
-    auto cosPh=TMath::Cos(decayAngles.Phi());
-    auto sinPh=TMath::Sqrt(1-cosPh*cosPh);
-    auto cos2Ph=TMath::Cos(2*decayAngles.Phi());
-    auto cos3Ph=TMath::Cos(3*decayAngles.Phi());
-    auto cos4Ph=TMath::Cos(4*decayAngles.Phi());
-    auto sin2Ph=TMath::Sqrt(1-cos2Ph*cos2Ph);
-    auto sin3Ph=TMath::Sqrt(1-cos3Ph*cos3Ph);
-    auto sin4Ph=TMath::Sqrt(1-cos4Ph*cos4Ph);
-    */
 
     std::array<double,8> W={0,0,0,0,0,0,0,0};
     //  Eqn E11 in https://arxiv.org/pdf/2005.01617.pdf "Exclusive tensor meson photoproduction, V. Mathieu"
