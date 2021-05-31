@@ -20,11 +20,12 @@
 
 namespace elSpectro{
   
-
+  
   class ElectronScattering : public ProductionProcess {
 
   public:
-    
+    static int NintegralsElectronScattering;// keep track of number of integrations in same root sesssion
+
     //or if decayer already give required distribution
    
     /*  ElectronScattering(double ep,double ionp,
@@ -38,6 +39,7 @@ namespace elSpectro{
 		       double anglee,double anglep,DecayModel* model=new PhaseSpaceDecay{{},{11,-2211}},int ionpdg=2212);
     ElectronScattering(double ep,double ionp,DecayModel* model=new PhaseSpaceDecay{{},{11,-2211}},int ionpdg=2212);
 
+    ElectronScattering(CollidingParticle *electron,CollidingParticle* target,  DecayModel* model);
     
     DecayStatus  GenerateProducts( ) override;
 
@@ -73,13 +75,17 @@ namespace elSpectro{
     double IntegrateCrossSection() override;
     double IntegrateCrossSectionFast() override;
     LorentzVector MakeCollision();
+
+    void SetCacheIntegrals(int doit=1){_cacheIntegrals=doit;}
+    
   private:
     
     ElectronScattering()=default;
 
     
     void SetBeamCondtion();
-    
+    void SetNominalBeamCondtion();
+
     Particle _beamElec;
     Particle _beamNucl;
     LorentzVector _nuclRestElec;
@@ -109,9 +115,12 @@ namespace elSpectro{
     long _nsamples=0;
     int _pdgIon={2212}; //species of ion
 
-  
+    short _cacheIntegrals={0};
+    
     DecayingParticle* _gStarN={nullptr}; 
-     
+    CollidingParticle* _electronptr={nullptr};
+    CollidingParticle* _targetptr={nullptr};
+    
     ClassDefOverride(elSpectro::ElectronScattering,1); //class ElectronScattering
  
   };

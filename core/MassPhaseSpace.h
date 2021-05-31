@@ -53,7 +53,7 @@ namespace elSpectro{
       double wee=0;
       while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max ){
 	//reject this combintation
-	if(wee==0)	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
+	//if(wee==0)	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
       }
       if(wee>_sampledMax){
 	_sampledMax = wee;

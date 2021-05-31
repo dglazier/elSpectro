@@ -18,7 +18,9 @@ namespace elSpectro{
 
     virtual ~ReactionInfo()=default;
 
-    
+    double _Wmax=0;
+    double _Wmin=0;
+
   };
 
   class ReactionPhotoProd : public ReactionInfo {
@@ -36,7 +38,6 @@ namespace elSpectro{
     PhotonPolarisationVector* _photonPol={nullptr};
     
     mutable double _sWeight = {1}; //s=W^2 excitation function weight
-    
   };
 
   class ReactionElectroProd : public ReactionPhotoProd {

@@ -49,6 +49,7 @@ namespace elSpectro{
     virtual double  Intensity() const=0;
 
     const particle_ptrs& Products() const{ return _products;}
+    const Particle*  Product(UInt_t i) const{ return _products[i];}
     const decaying_ptrs& UnstableProducts() const{ return _unstables;}
     const particle_ptrs& StableProducts() const{ return _stables;}
 

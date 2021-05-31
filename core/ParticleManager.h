@@ -10,6 +10,7 @@
 #pragma once
 
 #include "DecayingParticle.h"
+#include "CollidingParticle.h"
 #include "Distribution.h"
 #include <Math/RotationZYX.h>
 #include <Math/RotationZ.h>
@@ -23,6 +24,8 @@ namespace elSpectro{
   using particle_constptrs= std::vector<const Particle*> ;
   using decaying_ptrs= std::vector<DecayingParticle*> ;
   using decaying_constptrs= std::vector<const DecayingParticle*> ;
+  using colliding_ptrs= std::vector<CollidingParticle*> ;
+  using colliding_constptrs= std::vector<const CollidingParticle*> ;
 
   using ROOT::Math::VectorUtil::boost;
 
@@ -47,9 +50,8 @@ namespace elSpectro{
     }
     
     int RegisterNewPdgParticle(double nominalMass,Distribution* dist=nullptr){
-      std::cout<<"RegisterNewPdgParticle "<<dist <<" "<<_nextPdg<<std::endl;
+      std::cout<<"RegisterNewPdgParticle "<<" "<<_nextPdg<<std::endl;
       AddToPdgTable(_nextPdg,nominalMass);
-      std::cout<<"RegisterNewPdgParticle "<<std::endl;
       if(dist != nullptr){
 	RegisterMassDistribution(_nextPdg,dist);
       }
@@ -58,7 +60,7 @@ namespace elSpectro{
     }
 
     void AddToPdgTable(int pdg,double mass);
-    
+    Double_t GetMassFor(int pdg);
     /* void RegisterMassSquaredDistribution(int pdg, Distribution* dist){ */
     /*   _mass2Dist[pdg]=dist_uptr{dist}; */
     /* } */
@@ -69,8 +71,25 @@ namespace elSpectro{
       std::for_each(_stables.begin(),_stables.end(),[&vboost](Particle* p){p->Boost(vboost);});
     }
 
+    void MoveStableToLab(Particle* particle){
+      //So the particle does not get boosted
+      //but is written out to final state
+      _stables.erase(std::remove(_stables.begin(),_stables.end(),particle),_stables.end());
+      _stableslab.push_back(particle);
+    }
+   void RemoveStable(Particle* particle){
+       //So the particle does not get boosted
+      //or written out to final state
+      _stables.erase(std::remove(_stables.begin(),_stables.end(),particle),_stables.end());
+      }
+    
     const decaying_ptrs UnstableParticles()const {return _unstables;}
-    const particle_ptrs StableParticles()const {return _stables;}
+    const particle_ptrs StableParticles()const {
+      particle_ptrs allstables;
+      allstables.insert(std::end(allstables), std::begin(_stables), std::end(_stables));
+      allstables.insert(std::end(allstables), std::begin(_stableslab), std::end(_stableslab));
+      return allstables;
+    }
     
     void BoostToFrame(const BetaVector& vboost,const LorentzVector& parent){
 
@@ -102,7 +121,9 @@ namespace elSpectro{
     std::vector<particle_uptr> _particles;
     
     particle_ptrs _stables; //products which are stable (to be detected)
+    particle_ptrs _stableslab; //products which are stable and in lab frame
     decaying_ptrs _unstables; //products which decay
+    colliding_ptrs _initials; //intial interactin particles
 
     //distribitions for generating dynamic particle masses
     std::map<int,dist_uptr> _massDist; 

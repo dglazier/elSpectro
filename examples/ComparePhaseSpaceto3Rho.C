@@ -77,13 +77,13 @@ void ComparePhaseSpaceto3Rho() {
    
    prho->SetXYZT(W.X(),W.Y(),W.Z(),W.T());
 
-   auto pionp = rho->Model()->Products()[0];
-   auto pionm = rho->Model()->Products()[1];
-   auto proton = prho->Model()->Products()[1];
+   auto pionp = rho->Model()->Product(0);
+   auto pionm = rho->Model()->Product(1);
+   auto proton = prho->Model()->Product(1);
 
    
    gBenchmark->Start("elspectro");
- 
+   prho->PostInit(nullptr);
    for (Int_t n=0;n<Nevents;n++) {
      prho->GenerateProducts();
      auto p4rho =pionp->P4()+pionm->P4();

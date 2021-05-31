@@ -16,7 +16,7 @@ void ComparePhaseSpaceto4PiRho() {
    TH2F *h2 = new TH2F("h2","h2", 50,1.1,20.8, 50,1.1,20.8);
    TH2F *h2weight = new TH2F("h2weight","h2weight",100,0,10.2,100,0,0.5);
    TH1F* h1 = new TH1F("h1","h1", 100,0,5);
-   TH1F* hMeson = new TH1F("hMeson","Meson Mass", 1000,0,10);
+   TH1F* hMeson = new TH1F("hMeson","Meson Mass", 100,0,10);
    TH1F* h1un = new TH1F("h1un","h1un", 100,0,5);
    h1un->SetLineColor(3);
    
@@ -26,7 +26,7 @@ void ComparePhaseSpaceto4PiRho() {
    auto bwmax=bw.GetMaximum();
    gBenchmark->Start("tgenphasespace");
    Long64_t counter=0;
-   Long64_t Nevents=5000;
+   Long64_t Nevents=500;
    
    for (Int_t n=0;;n++) {
    
@@ -73,7 +73,7 @@ void ComparePhaseSpaceto4PiRho() {
    hel2->SetMarkerColor(2);
    TH1F* hel1 = new TH1F("hel1","h1", 100,0,5);
    hel1->SetLineColor(2);
-   TH1F* hMeson2 = new TH1F("hMeson2","Meson Mass", 1000,0,10);
+   TH1F* hMeson2 = new TH1F("hMeson2","Meson Mass", 100,0,10);
    hMeson2->SetLineColor(2);
    
    using namespace elSpectro;
@@ -99,17 +99,14 @@ void ComparePhaseSpaceto4PiRho() {
    
    prho->SetXYZT(W.X(),W.Y(),W.Z(),W.T());
 
-   //auto pionp = prho->Model()->Products()[3];
-   //auto pionm = prho->Model()->Products()[4];
 
-   auto pionp = rho->Model()->Products()[0];
-   auto pionm = rho->Model()->Products()[1];
+   auto pionp = rho->Model()->Product(0);
+   auto pionm = rho->Model()->Product(1);
    
    Particle* proton =nullptr;
    //Particle* pionp =nullptr;
    //Particle* pionm =nullptr;
-   
-   for(auto& pp:particles().StableParticles()){
+    for(auto& pp:particles().StableParticles()){
      if(pp->Pdg()==2212){
        proton=pp;
      }
@@ -120,9 +117,9 @@ void ComparePhaseSpaceto4PiRho() {
        pionm=pp;
        }*/
    }
- 
-   
-   gBenchmark->Start("elspectro");
+    
+    prho->PostInit(nullptr);
+    gBenchmark->Start("elspectro");
 
    double scale = 100;
    

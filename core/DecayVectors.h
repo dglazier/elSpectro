@@ -38,12 +38,8 @@ namespace elSpectro{
 
     virtual double dsigma() const {return 1;}
 
-    void ForIntegrate(bool integ){_forIntegral=integ;}
     virtual double Probability() const {return 1;}
 
-  protected:
-    
-    mutable double _weight={1};
 
     virtual void BoostToParent(const LorentzVector& parent, const particle_ptrs& products){
   
@@ -87,6 +83,8 @@ namespace elSpectro{
       auto check = _cachedParent;
       check=_rotateToZaxis*check;
    }
+
+    /*
    virtual void RotateToParent(const LorentzVector& parent, LorentzVector& child){
   
       if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
@@ -97,18 +95,19 @@ namespace elSpectro{
       
       //Apply random phi angle now z-axis is in correct direction
       _rotateAroundZaxis.SetAngle(RandomPhi());
-      
+       
       child=_rotateToZaxis * child;
       child=_rotateAroundZaxis * child; 
       
    }
-
-    virtual double RandomPhi() const noexcept { return gRandom->Uniform(-TMath::Pi(),TMath::Pi()); }
- 
+    */
+    
   protected:
     
-    bool _forIntegral=false;
-
+    mutable double _weight={1};
+    virtual double RandomPhi() const noexcept { return gRandom->Uniform(-TMath::Pi(),TMath::Pi()); }
+ 
+     
   private:
     
     LorentzVector _cachedParent;

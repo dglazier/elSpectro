@@ -95,7 +95,7 @@ namespace elSpectro{
     void SetVertex(int vertexID,const LorentzVector* v){
       _vertexID=vertexID;
       _vertex=v;
-    }
+     }
     const LorentzVector* VertexPosition()const noexcept{return _vertex;}
     int VertexID()const noexcept{return _vertexID;}
 

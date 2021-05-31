@@ -30,7 +30,8 @@ namespace elSpectro{
 		       0, kFALSE,
 		       0, 0, "virtual", 9999);
 
-    pdgDB->AddParticle("deuteron","deuteron", 1.875612, kTRUE,0, 1, "Baryon", 45);
+    pdgDB->AddParticle("deuteron","deuteron", 1.875612, kTRUE,0, 1, "Baryon", 45); //Jlab CLAS numbering
+    pdgDB->AddParticle("deuteron","deuteron", 1.875612, kTRUE,0, 1, "Baryon", 1000010020); //PDG code numbering
     
   }
   Particle*  ParticleManager::Take(Particle* p){
@@ -44,24 +45,35 @@ namespace elSpectro{
       p->SetMassDist(_massDist.at(pdg).get());
      
     auto dp=dynamic_cast<DecayingParticle* >( p );
+    auto cp=dynamic_cast<CollidingParticle* >( p );
       
-    //distinguish between stable and unstable particles
+    //distinguish between colliding, stable and unstable particles
     if(dp!=nullptr){
       _unstables.push_back(dp);
+    }
+    else if(cp!=nullptr){
+      _initials.push_back(cp);
     }
     else{
       _stables.push_back(p);
     }
-    
     
     return p;
   }
   
   void ParticleManager::AddToPdgTable(int pdg,double mass){
     TDatabasePDG *pdgDB = TDatabasePDG::Instance();
+    //Note make Baryons in case need to write as beam (see LundWriter)
     pdgDB->AddParticle(Form("Particle%d",pdg),"resonance",
 		       mass, kFALSE,
-		       0, 0, "virtual", pdg);
+		       0, 0, "Baryon", pdg);
+  }
+  Double_t ParticleManager::GetMassFor(int pdg){
+    TDatabasePDG *pdgDB = TDatabasePDG::Instance();
+    if(pdgDB->GetParticle(pdg)==nullptr){
+      std::cerr<<"ParticleManager::GetMassFor no particle with pdg code "<<pdg<<std::endl;
+    }
+    return pdgDB->GetParticle(pdg)->Mass();
   }
   
 }

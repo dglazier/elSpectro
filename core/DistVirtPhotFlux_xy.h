@@ -27,7 +27,8 @@ namespace elSpectro{
     }
     
     dist_pair SamplePair()   noexcept final {
-      _forIntegral==false ? FindWithAcceptReject() : FindFlat();
+      //    _forIntegral==false ? FindWithAcceptReject() : FindFlat();
+      FindWithAcceptReject();
       return _xy;
     }
 
@@ -44,8 +45,10 @@ namespace elSpectro{
     double GetMinX() const noexcept final{return 0;}
     double GetMaxX() const noexcept final{return 1;}
 
+    double GetWMin() const noexcept {return TMath::Sqrt(_Wthresh2);}
+
     void FindWithAcceptReject();
-    void FindFlat();
+    // void FindFlat();
     
     void SetElecE(double ee){_ebeam=ee;}
     void SetM(double m){_mTar=m;}
@@ -119,7 +122,7 @@ namespace elSpectro{
 
   };
 
-  /* //evaluate photon flux as function of lnx and lny
+   //evaluate photon flux as function of lnx and lny
   inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
 
     double lnx=x[0];
@@ -141,7 +144,8 @@ namespace elSpectro{
     if(currx<avail_xmin){ return 0; }
     
     return escat::flux_dlnxdlny(_ebeam,lnx,lny);
-    }*/
+    }
+  /*
   inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
     //given x and y evaluate photon flux
 
@@ -164,7 +168,7 @@ namespace elSpectro{
     if(currx<avail_xmin){ return 0; }
     
     return escat::flux_dxdy(_ebeam,currx,y);
-  }
+    }*/
 
   inline  double DistVirtPhotFlux_xy::XMin(double y) const{
       double r = 2*_mTar*_ebeam*y;

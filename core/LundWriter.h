@@ -45,7 +45,7 @@ namespace elSpectro{
        // # of Particles, # of Target Nucleons, # of Target Protons,
        // Pol. of Target, Pol. of Electron,
        // BeamType, BeamEnergy,Target ID, ProcessID, Weight
-
+  
        _stream<< "\t "<<_finalParticles.size()<<" "<<1<<" "<<1
 	      <<" "<<0.<<" "<<0.
 	      <<" "<<_beamPdg<<" "<<_inBeam->P4().E()<<" "<<_targetPdg<<" "<< _inTarget->P4().E() <<" "<<0.<<"\n";
@@ -53,7 +53,6 @@ namespace elSpectro{
      void StreamParticle(const Particle* p,int status){
        auto p4=p->P4();
        auto ver=p->VertexPosition();
-
        //second entry 0. == lifetime Could add to Particle.h
        _stream<<_id++<<" "<<0.<<" "<<status
 	      <<" "<<p->Pdg()<<" "<<0<<" "<<0<<" "

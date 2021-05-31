@@ -24,7 +24,7 @@ namespace elSpectro{
   void PhaseSpaceDecay::PostInit(ReactionInfo* info){
     DecayModel::PostInit(info);
     if(Parent()->MassDistribution()==nullptr){//production proces does not have mass distribution
-      if(dynamic_cast<ProductionProcess*>(Parent())==nullptr){
+      if(dynamic_cast<ProductionProcess*>(Parent())==nullptr&&Parent()->Pdg()!=-2211){
 	std::cerr<<"PhaseSpaceDecay::PostInit parent needs a mass distribution for pdg = "<<Parent()->Pdg();
 	std::cerr<<"\n  you need to use \n >>   mass_distribution(PDG,new DistTF1{TF1(\"massDist\",\"1\",MINMASS,MAXMASS)});";
 	std::cerr<<" \n where PDG (9995-9999) is the pdg number you assigned the decaying particle, and MINMAMSS and MAXMASS is the mass limits it will be allowed to have, for pure phase space this must be at least the kinematically allowed range";

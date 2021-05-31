@@ -49,7 +49,7 @@ namespace elSpectro{
     double ymin = rmin/(2*_mTar*_ebeam);
     if(ymin==0) ymin=1E-50;
        //now find the y limits with this threshold
-    //  std::cout<<"ymin "<<ymin<<" "<<rmin<<" "<<_Wthresh2<<" "<<_mTar<<" "<<_ebeam<<" "<<_Wthresh2-_mTar*_mTar<<" "<<_requestQ2min<<std::endl;
+    std::cout<<Wmin<<" "<<_mTar<<"  ymin "<<ymin<<" "<<rmin<<" "<<_Wthresh2<<" "<<_mTar<<" "<<_ebeam<<" "<<_Wthresh2-_mTar*_mTar<<" "<<_requestQ2min<<std::endl;
  
     //if(_requestYmin!=0){
     if(_requestYmin>ymin)
@@ -64,8 +64,9 @@ namespace elSpectro{
       _lnymax=TMath::Log(1.);
     
     double xmin =XMin(ymin);						 
-    
-    //random search for the maximum value
+
+
+     //random search for the maximum value
     _max_val=0;
   
     for(int i=0;i<1E5;i++){
@@ -80,11 +81,17 @@ namespace elSpectro{
     ymin = TMath::Exp(_lnymin);
     double ymax = TMath::Exp(_lnymax);
     for(int i=0;i<1E5;i++){
-      double avail_xmin = XMin(static_cast<double>(i*(ymax-ymin) + ymin)/1E5);
-      if(avail_xmin<_maxPossiblexRange)
+      //     double avail_xmin = XMin(static_cast<double>(i*(ymax-ymin) + ymin)/1E5);
+      //Need xmin with no experiment based limits on Q2 or theta
+      double yformin=static_cast<double>(i*(ymax-ymin) + ymin)/1E5;
+      double avail_xmin =escat::M2_el()*yformin/(2*_mTar*_ebeam)/(1-yformin);
+       if(avail_xmin<_maxPossiblexRange)
 	_maxPossiblexRange=avail_xmin;
     }
-    
+     
+    std::cout<<"DistVirtPhotFlux_xy::SetWThreshold new Wmin "<<GetWMin() <<" "<<TMath::Sqrt(2*_mTar*_ebeam*ymin+_mTar*_mTar)<<" "<<TMath::Sqrt(rmin + _mTar*_mTar)-_mTar*_mTar*ymin*ymin/(1-ymin)<<" "<<sqrt( _mTar*(_mTar + 2*ymin*_ebeam ) -  escat::Q2_xy( _ebeam,_maxPossiblexRange,ymin))<<" xmin "<<xmin<<" "<<XMin(ymin)<<" ymin "<<ymin<<std::endl;
+    _Wthresh2 =_mTar*(_mTar + 2*ymin*_ebeam )-  escat::Q2_xy( _ebeam,_maxPossiblexRange,ymin);
+  
     std::cout<<"DistVirtPhotFlux_xy max "<<_max_val<<" within y limits "<<TMath::Exp(_lnymin)<<" "<<TMath::Exp(_lnymax)<<" minimum possible x "<<_maxPossiblexRange<<std::endl;
     std::cout<<"  Other limits : "<<std::endl;
 
@@ -108,10 +115,10 @@ namespace elSpectro{
     _lnxmax=0;
 
     //Finally, Integrate over photon flux
-    //auto xvar = RooRealVar("x","x",(_lnxmax-_lnxmin)/2,_lnxmin,_lnxmax,"");
-    //auto yvar = RooRealVar("y","y",(_lnymax-_lnymin)/2,_lnymin,_lnymax,"");
-    auto xvar = RooRealVar("x","x",TMath::Exp((_lnxmax-_lnxmin)/2),TMath::Exp(_lnxmin),TMath::Exp(_lnxmax),"");
-    auto yvar = RooRealVar("y","y",TMath::Exp((_lnymax-_lnymin)/2),TMath::Exp(_lnymin),TMath::Exp(_lnymax),"");
+    auto xvar = RooRealVar("x","x",(_lnxmax-_lnxmin)/2,_lnxmin,_lnxmax,"");
+    auto yvar = RooRealVar("y","y",(_lnymax-_lnymin)/2,_lnymin,_lnymax,"");
+    // auto xvar = RooRealVar("x","x",TMath::Exp((_lnxmax-_lnxmin)/2),TMath::Exp(_lnxmin),TMath::Exp(_lnxmax),"");
+    //auto yvar = RooRealVar("y","y",TMath::Exp((_lnymax-_lnymin)/2),TMath::Exp(_lnymin),TMath::Exp(_lnymax),"");
     xvar.Print();
     yvar.Print();
     
@@ -185,11 +192,13 @@ namespace elSpectro{
     
     _val=escat::flux_dxdy(_ebeam,x,y);
  
-   
+  
     //return x and y values
     _xy=std::make_pair(x,y);
   
   }
+
+  /*
    void DistVirtPhotFlux_xy::FindFlat(){
 
      _val=0;
@@ -219,11 +228,11 @@ namespace elSpectro{
      //return x and y values
      _xy=std::make_pair(x,y);
      
-     
-      
+       
      return;
      
    }
+  */
   /*
    void DistVirtPhotFlux_xy::FindFlat(){
 

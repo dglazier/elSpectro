@@ -78,32 +78,33 @@ namespace elSpectro{
     void HistIntegratedXSection(TH1D& hist);
     void HistMaxXSection(TH1D& hist);
     
-  protected:
-    
-    virtual double MatrixElementsSquared_L() const {return 0; }
-    virtual double MatrixElementsSquared_T() const {return 1; } //just real photon by default
-    
-    constexpr double  PhaseSpaceNorm() const {return 1./(2.56819E-6)/64/TMath::Pi();}// Convert from GeV^-2 -> nb
     double PhaseSpaceFactor() const noexcept {
-       /* auto fluxPhaseSpace = p1*_W;//eqn 47.28b https://pdg.lbl.gov/2019/reviews/rpp2019-rev-kinematics.pdf
-      auto ans =  1./fluxPhaseSpace
-	* kine::PhaseSpaceFactorDt(_W,p1,_meson->Mass(),_baryon->Mass())
-	* kine::PDK(_W,_meson->Mass(),_baryon->Mass())/_W
-	* PhaseSpaceNorm();//nbarn it
-	*/ //Note above full calculation simplifies to
+      /* auto fluxPhaseSpace = p1*_W;//eqn 47.28b https://pdg.lbl.gov/2019/reviews/rpp2019-rev-kinematics.pdf
+	 auto ans =  1./fluxPhaseSpace
+	 * kine::PhaseSpaceFactorDt(_W,p1,_meson->Mass(),_baryon->Mass())
+	 * kine::PDK(_W,_meson->Mass(),_baryon->Mass())/_W
+	 * PhaseSpaceNorm();//nbarn it
+	 */ //Note above full calculation simplifies to
       //return PhaseSpaceNorm()/_s/kine::PDK2(_W,_photon->M(),_target->M());
       //Please note kine::PDK2(_W,_photon->M(),_target->M()) does not give
       //correct momentum
       return PhaseSpaceNorm()/_s/PgammaCMsq();
       //this would not be the case if the differential was dcosth rather than t
     }
-
-    constexpr double  PhaseSpaceNormCosTh() const {return 1./(2.56819E-6)/32/TMath::Pi();}// Convert from GeV^-2 -> nb
     
     double PhaseSpaceFactorCosTh() const noexcept {
       return PhaseSpaceNormCosTh()* kine::PDK(_W,_meson->Mass(),_baryon->Mass())/_s/PgammaCM();
     }
     
+  protected:
+    
+    virtual double MatrixElementsSquared_L() const {return 0; }
+    virtual double MatrixElementsSquared_T() const {return 1; } //just real photon by default
+    
+    constexpr double  PhaseSpaceNorm() const {return 1./(2.56819E-6)/64/TMath::Pi();}// Convert from GeV^-2 -> nb
+ 
+    constexpr double  PhaseSpaceNormCosTh() const {return 1./(2.56819E-6)/32/TMath::Pi();}// Convert from GeV^-2 -> nb
+
     
     SDME* const  GetMesonSDMEs() const {return _sdmeMeson;}
     SDME* const  GetBaryonSDMEs() const {return _sdmeBaryon;}

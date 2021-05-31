@@ -3,12 +3,17 @@ set(DIRNAME core)
 set(BASE $ENV{ELSPECTRO})
 
 include_directories($ENV{JPACPHOTO}/include)
+include_directories($ENV{JPACPHOTO}/include/amplitudes)
 
 ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   Particle.h
   DecayingParticle.h
+  CollidingParticle.h
   DecayModel.h
   PhaseSpaceDecay.h
+  NuclearBreakup.h
+  SDMEDecay.h
+  TensorSDMEDecay.h
   VectorSDMEDecay.h
   DecayModelQ2W.h
   DecayModelst.h
@@ -19,6 +24,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   TwoBodyFlat.h
   TwoBody_stu.h
   ScatteredElectron_xy.h
+  QuasiFreeNucleon.h
   ProductionProcess.h
   ElectronScattering.h
   Distribution.h
@@ -31,7 +37,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   SDME.h
   PhotonPolarisationVector.h
   DistVirtPhotFlux_xy.h
-  CurrentEventInfo.h
+#  CurrentEventInfo.h
   ParticleManager.h
   DecayManager.h
   MassPhaseSpace.h
@@ -47,8 +53,12 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
 add_library(${ELSPECTRO} SHARED
   Particle.cpp
   DecayingParticle.cpp
+  CollidingParticle.cpp
   DecayModel.cpp
   PhaseSpaceDecay.cpp
+  NuclearBreakup.cpp
+  SDMEDecay.cpp
+  TensorSDMEDecay.cpp
   VectorSDMEDecay.cpp
   DecayModelQ2W.cpp
   DecayModelst.cpp
@@ -59,6 +69,7 @@ add_library(${ELSPECTRO} SHARED
   TwoBodyFlat.cpp
   TwoBody_stu.cpp
   ScatteredElectron_xy.cpp
+  QuasiFreeNucleon.cpp
   ProductionProcess.cpp
   ElectronScattering.cpp
   Distribution.cpp
@@ -69,7 +80,7 @@ add_library(${ELSPECTRO} SHARED
   DistVirtPhotFlux_xy.cpp
   SDME.cpp
   PhotonPolarisationVector.cpp
-  CurrentEventInfo.cpp
+#  CurrentEventInfo.cpp
   ParticleManager.cpp
   DecayManager.cpp
   MassPhaseSpace.cpp
