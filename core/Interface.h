@@ -129,5 +129,15 @@ namespace elSpectro{
 	
     return  generator().Reaction();
   }
+  inline ProductionProcess*  eic(CollidingParticle* el,CollidingParticle* pr,DecayModelQ2W *totalXsec=nullptr){
+  
+    if(totalXsec!=nullptr){
+      generator().Reaction(new ElectronScattering(el,pr, totalXsec ));
+    }
+    else	
+      generator().Reaction(new ElectronScattering(el,pr,totalXsec));
+	
+    return  generator().Reaction();
+  }
  
 }//namespace elSpectro

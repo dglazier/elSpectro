@@ -81,8 +81,11 @@ namespace elSpectro{
     ymin = TMath::Exp(_lnymin);
     double ymax = TMath::Exp(_lnymax);
     for(int i=0;i<1E5;i++){
-      double avail_xmin = XMin(static_cast<double>(i*(ymax-ymin) + ymin)/1E5);
-      if(avail_xmin<_maxPossiblexRange)
+      //     double avail_xmin = XMin(static_cast<double>(i*(ymax-ymin) + ymin)/1E5);
+      //Need xmin with no experiment based limits on Q2 or theta
+      double yformin=static_cast<double>(i*(ymax-ymin) + ymin)/1E5;
+      double avail_xmin =escat::M2_el()*yformin/(2*_mTar*_ebeam)/(1-yformin);
+       if(avail_xmin<_maxPossiblexRange)
 	_maxPossiblexRange=avail_xmin;
     }
      
