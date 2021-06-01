@@ -47,6 +47,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   FunctionsForJpac.h
   Manager.h
   Interface.h
+  amplitude_blend.hpp
   LINKDEF ElSpectroLinkDef.h
   )
 
@@ -89,6 +90,7 @@ add_library(${ELSPECTRO} SHARED
   LundWriter.cpp
   Manager.cpp
   FunctionsForJpac.cpp
+  amplitude_blend.cpp
   G__${ELSPECTRO}.cxx
   )
 
