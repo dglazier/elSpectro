@@ -16,7 +16,7 @@ namespace elSpectro{
     _ebeam(eb),
     _mTar(mion)
    {
-     // SetWThreshold(Wmin);
+
    }
   
   void DistVirtPhotFlux_xy::SetWThreshold(double Wmin){
@@ -94,11 +94,6 @@ namespace elSpectro{
   
     std::cout<<"DistVirtPhotFlux_xy max "<<_max_val<<" within y limits "<<TMath::Exp(_lnymin)<<" "<<TMath::Exp(_lnymax)<<" minimum possible x "<<_maxPossiblexRange<<std::endl;
     std::cout<<"  Other limits : "<<std::endl;
-
-    // if(_maxPossiblexRange==0)
-    // _maxPossiblexRange=200;
-    //else
-    //  _maxPossiblexRange=-TMath::Log(_maxPossiblexRange);
     
     if(_requestQ2min!=0)std::cout<<"\tQ2min "<<_requestQ2min<<std::endl;
     if(_requestQ2max!=0)std::cout<<"\tQ2max "<<_requestQ2max<<std::endl;
@@ -117,8 +112,6 @@ namespace elSpectro{
     //Finally, Integrate over photon flux
     auto xvar = RooRealVar("x","x",-(_lnxmax-_lnxmin)/2,_lnxmin,_lnxmax,"");
     auto yvar = RooRealVar("y","y",-(_lnymax-_lnymin)/2,_lnymin,_lnymax,"");
-    // auto xvar = RooRealVar("x","x",TMath::Exp((_lnxmax-_lnxmin)/2),TMath::Exp(_lnxmin),TMath::Exp(_lnxmax),"");
-    //auto yvar = RooRealVar("y","y",TMath::Exp((_lnymax-_lnymin)/2),TMath::Exp(_lnymin),TMath::Exp(_lnymax),"");
     xvar.Print();
     yvar.Print();
     
@@ -179,7 +172,7 @@ namespace elSpectro{
 	    (_val=escat::flux_dlnxdlny(_ebeam,lnx,lny)) ) {
       if(_val>_max_val){
 	_max_val=_val;
-	std::cout<<" MAX REACHED "<<_val<<" "<<_max_val<<std::endl;
+	std::cout<<"DistVirtPhotFlux_xy::FindWithAcceptReject() MAX REACHED "<<_val<<" "<<_max_val<<std::endl;
 	exit(0);
       }
       getRandomXY(); //sample another pair
@@ -198,83 +191,5 @@ namespace elSpectro{
   
   }
 
-  /*
-   void DistVirtPhotFlux_xy::FindFlat(){
 
-     _val=0;
-     _xy=std::make_pair(-1,-1); //unphysical should never be used
-     double y = gRandom->Uniform( TMath::Exp(_lnymin),TMath::Exp(_lnymax) );
-     //double y = gRandom->Uniform( 1E-8,1 );
-     //if(y<0.1) return; 
-     //calculate the fraction of x-space available
-     //now calculate x limits
-     //y = r/2ME and x = Q2/r 
-     double avail_xmax = XMax(y);
-     double avail_xmin = XMin(y);
-  
-     //if(avail_xmin>=1){ return; }
-     //_maxPossiblexRange=0;
-     double x=-1;
-     if(_maxPossiblexRange)
-       //for efficiency we need not sample below lowest possible x value
-       x = gRandom->Uniform(_maxPossiblexRange,1);
-     else 
-       x = gRandom->Uniform(0,1);
-     
-     //check if we are within allowed x-range
-     if( x<avail_xmax && x>avail_xmin )
-       _val=escat::flux_dxdy(_ebeam,x,y);
-     
-     //return x and y values
-     _xy=std::make_pair(x,y);
-     
-       
-     return;
-     
-   }
-  */
-  /*
-   void DistVirtPhotFlux_xy::FindFlat(){
-
-     TF1 sampleX("sampleX","TMath::Exp(-x[0])",0,1);
-     sampleX.SetRange(0,1);
-     sampleX.SetNpx(1E4);
-     TF1 sampleY("sampleY","TMath::Exp(-x[0])",0,1);
-     sampleY.SetRange(TMath::Exp(_lnymin),TMath::Exp(_lnymax));
-     sampleY.SetNpx(1E4);
-    
-     _val=0;
-     _xy=std::make_pair(-1,-1); //unphysical should never be used
-    
-      double y = sampleY.GetRandom();
-      double sampleYVal=sampleY.Eval(y)/sampleYIntegral;
-     
-     //calculate the fraction of x-space available
-     //now calculate x limits
-     //y = r/2ME and x = Q2/r 
-     double avail_xmax = XMax(y);
-     double avail_xmin = XMin(y);
-  
-     if(avail_xmin>=1){ return; }
-
-     double x=-1;
-     while(x<_maxPossiblexRange)
-        x = sampleX.GetRandom();
-     
-     double sampleXVal=sampleX.Eval(x)/sampleXIntegral;  //value of PDF
-    
-     //check if we are within allowed x-range
-     if( x<avail_xmax && x>avail_xmin )
-       _val=escat::flux_dxdy(_ebeam,x,y)/sampleYVal/sampleXVal;
-     
-     //return x and y values
-     _xy=std::make_pair(x,y);
-     
-     
-      
-     return;
-     
-   }
-
-  */
 }//namespace

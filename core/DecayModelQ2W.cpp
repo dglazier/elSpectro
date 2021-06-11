@@ -18,15 +18,6 @@ namespace elSpectro{
   }
   ///////////////////////////////////////////////////////
   ///constructor includes subseqent decay of Ngamma* system
-  /* DecayModelQ2W::DecayModelQ2W( double thresh, DecayModel* gNmodel) :
-    _threshold{thresh},
-    DecayModel{{ new DecayingParticle{-2211,primary} },{11}}
-  {
-    _name={"DecayModelQ2W_with_primary_decay"};
-    Init();
-    }*/
-  ///////////////////////////////////////////////////////
-  ///constructor includes subseqent decay of Ngamma* system
   DecayModelQ2W::DecayModelQ2W( double thresh,
 				DecayModel* gNmodel,DecayVectors* gNdecayer) :
     _threshold{thresh},
@@ -115,7 +106,6 @@ namespace elSpectro{
     auto delta = 2*escat::M2_el()/getQ2()*(1-epsilon);
     
     _photonPol.SetEpsilon(epsilon);
-    //_photonPol.SetEpsilon(1);
     _photonPol.SetDelta(delta);
  
     //Get envelope weight from integrated cross section
@@ -193,14 +183,7 @@ namespace elSpectro{
       std::cout<<"DecayModelQ2W::FindExcitationSpectra()  result   "<<hist.GetMaximum()<<" "<<hist.GetBinCenter(hist.GetMaximumBin())<<" "<<hist.GetNbinsX()<<std::endl;
       hist.SetName("Wdist");
 
-      /*
-      TFile ff("debug.root","recreate");
-      hist.Write();
-      histpeak.Write();
-      histlow.Write();
-      ff.Close();
-      */
-      
+        
      _Wrealphoto_Dist.reset( new DistTH1(hist) );
     }
     else{

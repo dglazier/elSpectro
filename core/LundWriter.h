@@ -54,10 +54,11 @@ namespace elSpectro{
        auto p4=p->P4();
        auto ver=p->VertexPosition();
        //second entry 0. == lifetime Could add to Particle.h
+       //note convert vertex mm->cm
        _stream<<_id++<<" "<<0.<<" "<<status
 	      <<" "<<p->Pdg()<<" "<<0<<" "<<0<<" "
 	      <<p4.X()<<" "<<p4.Y()<<" "<<p4.Z()<<" "<<p4.T()<<" "
-	      <<p4.M()<<" "<<ver->X()<<" "<<ver->Y()<<" "<<ver->Z()<<"\n";
+	      <<p4.M()<<" "<<ver->X()/10<<" "<<ver->Y()/10<<" "<<ver->Z()/10<<"\n";
      }
    
      //data members

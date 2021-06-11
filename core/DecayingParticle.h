@@ -14,6 +14,7 @@
 #include "DecayVectors.h"
 #include "TwoBodyFlat.h"
 #include "ReactionInfo.h"
+#include "DistTF1.h"
 
 namespace elSpectro{
   
@@ -76,13 +77,8 @@ namespace elSpectro{
     virtual void PostInit(ReactionInfo* info);
 
     //temporary until deal with vertices properly i.e. non zero
-    virtual void GenerateVertexPosition()  noexcept{
-      //auto old=VertexPosition();
-      if( IsDecay()==DecayType::Detached){
-
-      }
-      // _decayVertex.SetXYZT(old.X(),old.Y(),old.Z(),old.T());
-    }
+    virtual void GenerateVertexPosition()  noexcept;
+    
     const LorentzVector& DecayVertexPosition()const noexcept{return _decayVertex;}
     int DecayVertexID()const noexcept{return _decayVertexID;}
 
@@ -106,7 +102,8 @@ namespace elSpectro{
     DecayModel* _decay={nullptr}; //not owner
     
     std::unique_ptr<DecayVectors> _decayer={nullptr}; //owner
-
+    DistTF1* _decVertexDist=nullptr;//! needed if detached vertex
+    
     double _minMass={0};
     LorentzVector _decayVertex;
     int _decayVertexID={0};
