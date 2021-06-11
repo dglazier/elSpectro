@@ -3,7 +3,7 @@
 Event Generator framework for incorporating Spectroscopy into electro / photoproduction reactions.
 
 # Prerequisites
-
+ 
 ROOT 6
 
 with MathMore RooFit GenVector EG
