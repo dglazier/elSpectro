@@ -7,7 +7,7 @@ namespace elSpectro{
   ParticleManager::ParticleManager(){
     
     TDatabasePDG *pdgDB = new TDatabasePDG();
-    pdgDB->ReadPDGtable(Form("%s/etc/el_pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
+    pdgDB->ReadPDGTable(Form("%s/etc/el_pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
  
     //name,title,mass,stable,width,charge,type.code 
     pdgDB->AddParticle("gamma_star","gamma_star", 0.0, kFALSE,
