@@ -1,5 +1,6 @@
 #include "ParticleManager.h"
 #include <TDatabasePDG.h>
+#include <TSystem.h>
 
 namespace elSpectro{
 
@@ -7,7 +8,7 @@ namespace elSpectro{
     
     TDatabasePDG *pdgDB = new TDatabasePDG();
     pdgDB->ReadPDGtable(Form("%s/etc/el_pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
-      //TDatabasePDG *pdgDB = TDatabasePDG::Instance();
+ 
     //name,title,mass,stable,width,charge,type.code 
     pdgDB->AddParticle("gamma_star","gamma_star", 0.0, kFALSE,
 		       0, 0, "virtual", -22);
