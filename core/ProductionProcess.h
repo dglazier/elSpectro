@@ -17,7 +17,7 @@
 #include "DistConst.h"
 
 namespace elSpectro{
-  
+
   
   class ProductionProcess : public DecayingParticle {
 
@@ -72,7 +72,13 @@ namespace elSpectro{
 
     CollidingParticle* Incident1() const {return _in1;}
     CollidingParticle* Incident2() const {return _in2;}
-    
+
+    void BoostToLab(LorentzVector& boostme) const{
+      boostme=ROOT::Math::VectorUtil::boost(boostme,_boostToLab);
+    }
+    void SetBoostToLab(const elSpectro::BetaVector& boostv){
+      _boostToLab=boostv;
+    }
   protected:
 
    
@@ -91,6 +97,8 @@ namespace elSpectro{
     CollidingParticle* _in1={nullptr};
     CollidingParticle* _in2={nullptr};
     
+    elSpectro::BetaVector _boostToLab;
+
   };
 
 

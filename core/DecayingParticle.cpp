@@ -1,6 +1,7 @@
 #include "DecayingParticle.h"
 #include "TwoBodyFlat.h"
 #include "Manager.h"
+#include "Interface.h"
 #include <TRandom.h>
 #include <TDatabasePDG.h>
 
@@ -25,10 +26,13 @@ namespace elSpectro{
   void DecayingParticle::PostInit(ReactionInfo* info) {
     //Decay type depends on Lifetime
     if(TDatabasePDG::Instance()->GetParticle(Pdg())){
-      double meanFreePath=TDatabasePDG::Instance()->GetParticle(Pdg())->Lifetime();
-      meanFreePath*=TMath::C()*100; //in mm
-      if( meanFreePath>0.01 ){ //10umm
+      double lifetime=TDatabasePDG::Instance()->GetParticle(Pdg())->Lifetime();
+      double meanFreePath=lifetime*TMath::C()*1000; //in mm
+      if( meanFreePath>0.1 ){ //0.1mm
     	_decayType=DecayType::Detached;
+	_decVertexDist = new DistTF1(TF1("MFP","TMath::Exp(-x/[0])",0,25*lifetime));//in mm
+	_decVertexDist->GetTF1().SetParameter(0,lifetime);
+	_decVertexDist->GetTF1().SetNpx(500);
       }
       else _decayType=DecayType::Attached;
     }
@@ -141,5 +145,22 @@ namespace elSpectro{
     
   }
 
-
+   void DecayingParticle::GenerateVertexPosition()  noexcept{
+      //auto old=VertexPosition();
+      if( IsDecay()==DecayType::Detached){
+	Double_t t0=_decVertexDist->SampleSingle();//in s
+	//Need lab 4-vector
+	LorentzVector lab=P4();
+	generator().BoostToLab(lab);
+	
+	Double_t r= t0 * lab.Gamma() * TMath::C() * lab.Beta() *1000; //Lorentz contraction , mm
+	Double_t labP=lab.P();
+	//Set in direction of particle momentum
+	//with length of decay
+	_decayVertex.SetXYZT(lab.X()/labP*r,lab.Y()/labP*r,lab.Z()/labP*r,r/1000/TMath::C());
+	//add production vertex
+	_decayVertex+=*VertexPosition(); 
+      }
+    }
+ 
 }

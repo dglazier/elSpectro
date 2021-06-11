@@ -74,8 +74,10 @@ namespace elSpectro{
      void Reaction(ProductionProcess* prod){
        _process.reset(prod);
      }
-     
-     ProductionProcess* Reaction(){return _process.get();}
+    void BoostToLab(LorentzVector& boostme){
+      _process->BoostToLab(boostme);
+    }
+    ProductionProcess* Reaction(){return _process.get();}
 
      void SetSeed(ULong_t seed = 0){gRandom->SetSeed(seed);}
 

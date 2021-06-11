@@ -306,6 +306,7 @@ namespace elSpectro{
     //Boost into ion rest frame
     auto prBoost=_beamNucl.P4().BoostToCM();
     collision=boost(collision,prBoost);
+    SetBoostToLab(-prBoost);
     _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.Mass());
     _nuclRestElec= boost(_beamElec.P4(),prBoost);
     //set decay parent for e -> e'g*
