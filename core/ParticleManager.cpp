@@ -5,7 +5,9 @@ namespace elSpectro{
 
   ParticleManager::ParticleManager(){
     
-    TDatabasePDG *pdgDB = TDatabasePDG::Instance();
+    TDatabasePDG *pdgDB = new TDatabasePDG();
+    pdgDB->ReadPDGtable(Form("%s/etc/el_pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
+      //TDatabasePDG *pdgDB = TDatabasePDG::Instance();
     //name,title,mass,stable,width,charge,type.code 
     pdgDB->AddParticle("gamma_star","gamma_star", 0.0, kFALSE,
 		       0, 0, "virtual", -22);
@@ -32,6 +34,8 @@ namespace elSpectro{
 
     pdgDB->AddParticle("deuteron","deuteron", 1.875612, kTRUE,0, 1, "Baryon", 45); //Jlab CLAS numbering
     pdgDB->AddParticle("deuteron","deuteron", 1.875612, kTRUE,0, 1, "Baryon", 1000010020); //PDG code numbering
+
+    //Lambda des not have lifetime in pdg_table.txt
     
   }
   Particle*  ParticleManager::Take(Particle* p){
