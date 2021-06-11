@@ -125,25 +125,14 @@ namespace elSpectro{
       {
 	_s = x[0]*x[0];
 	_W=x[0];
-	//if( _W < Wmin ) return 1E2;
-	//if( _W < M3+M4 ) return 1E2;
 	if( _W < Wmin ) return 0.;
 	if( _W < M3+M4 ) return 0.;
-	//	if( x[1] > kine::t0(_W,M1,M2,M3,M4) ) return 0.;
-	//	if( x[1]< kine::tmax(_W,M1,M2,M3,M4) ) return 0.;
 
 	auto myt0=kine::t0(_W,M1,M2,M3,M4);
 	auto mytmax=kine::tmax(_W,M1,M2,M3,M4);
 
 	auto currt=x[1];
 	
-	/*if( TMath::IsNaN(val) ) {
-	  if(TMath::Abs(x[1]-myt0)<TMath::Abs(x[1]-myt0) )
-	    curr_t = 0;
-	  else x[1] = mytmax- myt0;
-	  }*/
-	
-	//	if( TMath::IsNaN(x[1]) ) return 1E2;
 	if( TMath::IsNaN(x[1]) ) return 0.;
 
 	//make smooth function at boundary, but must be lower than max
@@ -152,23 +141,16 @@ namespace elSpectro{
 	if( x[1] >  myt0){
 	  _t=myt0;
 	  factor*=(1-1*(x[1]-myt0)); //lower result
-	  //return 0.;
-	  // std::cout<<"too low "<<x[1]<<" "<<_t<<" "<<myt0<<std::endl;
 	}
 	else if( x[1]< mytmax ){
 	  _t=mytmax;
 	  factor*=(1-1*(mytmax-x[1])); //lower result
-	  // std::cout<<"too high "<<x[1]<<" "<<_t<<" "<<mytmax<<std::endl;
-	  //return 0.;
 	}
 	else _t=x[1];
 	if(factor<0) factor = 0;
 
 	double val = DifferentialXSect()* (myt0-mytmax)*factor;
-	//std::cout<<factor<<" "<<val<<" "<<(myt0-mytmax)<<"t "<<_t<<" "<<myt0<<" "<<mytmax<<" W "<<_W<<" x1 "<<x[1]<<"         "<<DifferentialXSect()<<std::endl;
-      	//if(val==0)return 1E2;
 	if( TMath::IsNaN(val) ) return 0.;
-	//if( TMath::IsNaN(val) ) return 1E2;
 	return -(val); //using a minimiser!
       };
     

@@ -19,7 +19,6 @@ namespace elSpectro{
     
   public :
 
-    //DistVirtPhotFlux_xy(double ebeam,float xmin,float xmax,float ymin,float ymax);
     DistVirtPhotFlux_xy(double eb, double mion, double Wmin);
  
     double SampleSingle()   noexcept final {
@@ -27,7 +26,6 @@ namespace elSpectro{
     }
     
     dist_pair SamplePair()   noexcept final {
-      //    _forIntegral==false ? FindWithAcceptReject() : FindFlat();
       FindWithAcceptReject();
       return _xy;
     }
@@ -48,7 +46,6 @@ namespace elSpectro{
     double GetWMin() const noexcept {return TMath::Sqrt(_Wthresh2);}
 
     void FindWithAcceptReject();
-    // void FindFlat();
     
     void SetElecE(double ee){_ebeam=ee;}
     void SetM(double m){_mTar=m;}
