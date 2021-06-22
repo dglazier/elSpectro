@@ -70,7 +70,7 @@ namespace elSpectro{
     _t = (_meson->P4()-*_photon).M2();//_amp->kinematics->t_man(s,cmMeson.Theta());
     _dt=0;
     _dsigma=0;
-  
+    //std::cout<<"DecayModelst t= "<<_t<<" Q2 "<<_photon->M2()<<" W "<< _W<<std::endl;
     //check above threshold for meson and baryon masses
     if(_W<_meson->P4().M()+_baryon->P4().M()) return 0;
     
@@ -96,7 +96,7 @@ namespace elSpectro{
     
     //Correct for W weighting which has already been applied
     weight/=_prodInfo->_sWeight;
-    
+    // std::cout<<" s weight "<<_prodInfo->_sWeight<<" weight "<<weight<<" "<<_W<<std::endl;
     if(weight>1){
       std::cout<<" s weight "<<_prodInfo->_sWeight<<" Q2 "<<-_photon->M2()<<" 2Mmu "<<2*_target->M()*_photon->E() <<" W "<<_W<<" t "<<_t<<" new weight "<<weight*_prodInfo->_sWeight<<" meson "<<_meson->Mass()<<std::endl;
       std::cout<<"DecayModelst::Intensity sWeight corrected weight too large "<<weight <<" "<<_prodInfo->_sWeight<<"  max "<<_max<<" val "<< weight*_prodInfo->_sWeight*_max<<std::endl;

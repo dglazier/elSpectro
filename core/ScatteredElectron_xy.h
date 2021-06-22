@@ -38,6 +38,8 @@ namespace elSpectro{
 
     double Probability() const final{return _random_xy.Probability();}
 
+    void PostInit(ReactionInfo* info) final;
+    
   protected:
 
     void RotateZaxisToCMDirection(const LorentzVector& parent, LorentzVector& child);

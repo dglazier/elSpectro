@@ -91,7 +91,7 @@ namespace elSpectro{
     if(Model()!=nullptr)  weight = Model()->Intensity();
     // std::cout<<"DecayingParticle::GenerateProducts "<<samplingWeight<<" "<<weight<<std::endl;
     if(weight==0)  return DecayStatus::ReGenerate;
-    if(samplingWeight - weight < -1E7 ){
+    if(samplingWeight - weight < -1E-4 ){//tolerance 0.0001
       std::cout<<"DecayingParticle::GenerateProducts model weight is greater than envelope " <<Mass()<<" "<<Model()->GetName()<<" "<<Class_Name()<<" weights "<<samplingWeight <<" "<<weight<<" masses "<<Model()->Products()[0]->Mass()<<" "<<Model()->Products()[1]->Mass()<<" difference in weights "<<samplingWeight-weight <<std::endl;
     //exit(0);
     }
@@ -103,7 +103,7 @@ namespace elSpectro{
     //accept/reject this decay
     //if decay depends on variable chosen by parent need to regenerate on fail
     //if decay indendent of parent variables can just try for another
-    //std::cout<<Pdg()<<" "<<weight <<" "<<_maxWeight<<" "<<samplingWeight<<std::endl;
+    // std::cout<<Pdg()<<" "<<weight <<" "<<_maxWeight<<" "<<samplingWeight<<std::endl;
     decayed = weight > gRandom->Uniform()*_maxWeight ;
     if (decayed == false && (Model()->RegenerateOnFail()==false) )
       return DecayStatus::TryAnother;

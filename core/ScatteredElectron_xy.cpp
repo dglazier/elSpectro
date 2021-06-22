@@ -12,7 +12,11 @@ namespace elSpectro{
   {
 
   }
-  
+  void ScatteredElectron_xy::PostInit(ReactionInfo* info){
+
+    //_random_xy.SetApproxWDist(dynamic_cast<DistTH1*>(dynamic_cast<ReactionElectroProd*> (info)->_Wdist));
+    
+  }
   ////////////////////////////////////////////////////////////////////
   ///Caclulate electron scattering kinematics from
   ///parent electron beam in nucleon target rest frame

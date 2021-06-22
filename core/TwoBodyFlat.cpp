@@ -27,13 +27,13 @@ namespace elSpectro{
     auto costh = RandomCosTh();
     auto sinth=TMath::Sqrt(1-costh*costh);
     
-    auto phi =  0; //RandomPhi(); , sample phi when z-axis is rotated to simplify  i.e. in BoostToParent
-    auto sinphi=0;//TMath::Sin(phi);
-    auto cosphi=1;//TMath::Sqrt(1-sinphi*sinphi);
+    auto phi =  RandomPhi(); // sample phi when z-axis is rotated to simplify  i.e. in BoostToParent
+    auto sinphi=TMath::Sin(phi);
+    auto cosphi=TMath::Sqrt(1-sinphi*sinphi);
  
     //momentum components in CM frame
     auto x_a = p_a * sinth * cosphi;
-    auto y_a = 0;//p_a * sinth * sinphi;
+    auto y_a = p_a * sinth * sinphi;
     auto z_a = p_a * costh;
 
  

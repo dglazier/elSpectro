@@ -77,8 +77,7 @@ namespace elSpectro{
       
  
       FindExcitationSpectra();
-     
-
+  
   }
   
   ////////////////////////////////////////////////////////
@@ -110,7 +109,7 @@ namespace elSpectro{
  
     //Get envelope weight from integrated cross section
     double weight=_Wrealphoto_Dist->GetWeightFor( W  );
-
+      
     if(getQ2() > 2*p4tar.M()*_gamma.E()){
       std::cout<<"Q2 above max how ? "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<std::endl;
       exit(0);
@@ -121,14 +120,14 @@ namespace elSpectro{
 
 
     _prodInfo->_sWeight=weight; //might be used in s and t
-
-  
+   
     if(weight>1){
     auto cmBoost=_gstarNuc->P4().BoostToCM();
     auto p1cm=boost(_gamma,cmBoost);
       std::cout<<" Q2 DEPENDENECE "<<PhaseSpaceFactorToQ2eq0(W,p4tar.M() )<<"      "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<"             PDKs     "<< kine::PDK(W, -getQ2(),p4tar.M())<<" "<< kine::PDK(W, getQ2(),p4tar.M())<<" "<< kine::PDK(W, 0 ,p4tar.M())<<" "<< p1cm.P()<<std::endl;
     }
-    
+
+ 
     //now add Q2 depedence to get weighted here
     
     //Q2 dependence of phase space needed to effectively multiply st max value
@@ -137,8 +136,8 @@ namespace elSpectro{
     //_prodInfo->_sWeight*=PhaseSpaceFactorToQ2eq0(W,p4tar.M() );
     
     //Q2 dependence of cross section
-    weight*=Q2H1Rho();
-    
+     weight*=Q2H1Rho();
+     //std::cout<<" Q things "<<getQ2()<<"   "<<_prodInfo->_sWeight<<" "<<weight<<" "<<std::endl;
     return weight;
     
   }

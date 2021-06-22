@@ -37,7 +37,7 @@ namespace elSpectro{
     double GetMaxX() const noexcept final{return _th1.GetXaxis()->GetXmax();}
 
     //  double GetWeightFor(double valX)  {return  (static_cast<TH1D*>(&_th1))->GetBinContent((static_cast<TH1D*>(&_th1))->FindBin(valX))/_max_val;}
-    double GetWeightFor(double valX)  {return (static_cast<TH1D*>(&_th1))->Interpolate(valX)/_max_val;}
+    // double GetWeightFor(double valX)  {return (static_cast<TH1D*>(&_th1))->Interpolate(valX)/_max_val;}
     double GetValueFor(double valX,double valY=0) final  {return (static_cast<TH1D*>(&_th1))->Interpolate(valX);}
     
     const TH1& GetTH1() const noexcept {return _th1;}

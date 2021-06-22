@@ -41,7 +41,7 @@ namespace elSpectro{
     virtual double Probability() const {return 1;}
 
 
-    virtual void BoostToParent(const LorentzVector& parent, const particle_ptrs& products){
+    /*   virtual void BoostToParent(const LorentzVector& parent, const particle_ptrs& products){
   
       if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
 	_cachedParent = parent;
@@ -62,7 +62,7 @@ namespace elSpectro{
 	child->SetP4(p4);
       }
       
-    }
+      }*/
    virtual void BoostToParent(const LorentzVector& parent, LorentzVector& child){
   
       if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
@@ -71,13 +71,13 @@ namespace elSpectro{
       }
       
       //Apply random phi angle when z-axis is in correct direction
-      _rotateAroundZaxis.SetAngle(RandomPhi());
+      //_rotateAroundZaxis.SetAngle(RandomPhi());
  
       //boost from parent rest frame 
       auto boostFromParent=-_cachedParent.BoostToCM();
       
       child=_rotateToZaxis * child;
-      child=_rotateAroundZaxis * child; 
+      // child=_rotateAroundZaxis * child; 
       child=boost(child,boostFromParent);//ROOT::Math::VectorUtil::boost;
       
       auto check = _cachedParent;
