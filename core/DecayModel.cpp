@@ -116,7 +116,12 @@ namespace elSpectro{
       }//below threshold, start again
     }
 
-    if(TCM<0){  std::cout<<"DecayModel::PhaseSpaceWeightSq "<<Parent()->Pdg()<<" "<<GetName()<<" "<< MinimumMassPossible()<<" W "<<W<<" T "<<TCM<<" after stables "<<std::endl; return 0;}//below threshold, start again
+    //Allow for rounding errors in check
+    if(TCM<0){
+      if(TCM<-1E-6){
+	std::cout<<"DecayModel::PhaseSpaceWeightSq "<<Parent()->Pdg()<<" "<<GetName()<<" "<< MinimumMassPossible()<<" W "<<W<<" T "<<TCM<<" after stables "<<std::endl;}
+      return 0;
+    }//below threshold (probably precission issue), start again
       
  
     result  *= kine::PDK2(W,_products[0]->Mass(),_products[1]->Mass());

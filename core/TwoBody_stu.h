@@ -81,6 +81,8 @@ namespace elSpectro{
       //_weight *= TMath::Exp( (_t-tmin) * _t_slope) * _t_strength + _strength;
 
          // if(TMath::IsNaN(tmin)) exit(0);
+
+      // std::cout<<"TwoBody_stu t = "<<_t<<" and tmin "<<tmin<<std::endl;
       return (1 - (tmin - _t)/2/P1/P3); //cos(theta) from t
       
     }

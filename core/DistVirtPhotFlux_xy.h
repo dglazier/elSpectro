@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Distribution.h"
+#include "DistTH1.h"
 #include "FunctionsForElectronScattering.h"
 #include <TMath.h>
 #include <RooRealVar.h>
@@ -75,7 +76,26 @@ namespace elSpectro{
       return Eval(arr);
     }
  
-    
+    void FindMaxVal();
+
+    /*
+//tested but not used, apply W weighting from cross section
+//at this stage, slightly faster or slower in different cases 
+//tends to be faster at high W
+//Note if we use this we also need to multuply max val by WeightForW
+//And Set weight = 1 in DecayModelQ2W
+    void SetApproxWDist(DistTH1* dist){
+      if(dist==nullptr) return;
+      TH1D hist = *dynamic_cast<const TH1D*>(&dist->GetTH1());//copy W depednent hist
+      hist.SetName("ApproxWDist");
+      //create new distribution
+      _approxWDist.reset(new DistTH1(hist));
+      FindMaxVal();
+    }
+    double WeightForW(double valX,double valY){
+      return _approxWDist->GetWeightFor(escat::W_EMyx(_ebeam,_mTar,valX,valY));
+    }
+    */
   protected:
     double XMin(double y) const;
     double XMax(double y) const;
@@ -113,6 +133,8 @@ namespace elSpectro{
     double _integral=1;
 
     bool _forIntegral=false;
+
+    //  std::unique_ptr<DistTH1> _approxWDist;
     
     ClassDef(elSpectro::DistVirtPhotFlux_xy,1); //class DistVirtPhotFlux_xy
  

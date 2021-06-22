@@ -36,6 +36,7 @@ namespace elSpectro{
     virtual double GetMaxY() const noexcept {return 0;}
 
     double GetCurrentWeight() const noexcept { return CurrentValue()/MaxValue();}
+    double GetWeightFor(double valX,double valY=0)  {return GetValueFor(valX,valY)/MaxValue();}
 
     virtual double GetValueFor(double valX,double valY=0)= 0 ;
     

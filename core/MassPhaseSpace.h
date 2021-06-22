@@ -51,15 +51,20 @@ namespace elSpectro{
       //as W dependence accounted for elsewere
       //PhaseSpaceWeight will try alternative masses
       double wee=0;
-      while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max ){
+      while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max )
+	{
+	  // if(wee>max){
+	  // _sampledMax=wee;
+	  //  std::cout<<" weight >  max "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
+	  // }
 	//reject this combintation
-	//if(wee==0)	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
+	  //	if(wee==0)	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
       }
-      if(wee>_sampledMax){
-	_sampledMax = wee;
-	if(_sampledMax>max )
-	  std::cerr<<"MassPhaseSpace weight > max "<<std::endl;
+      if(wee>max){
+	// _sampledMax=wee;
+	std::cerr<<"MassPhaseSpace check weight >  max,  W "<<parentM<<" this "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
       }
+
       _successN++;
     }
     bool AcceptPhaseSpace(double parentM){

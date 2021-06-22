@@ -66,16 +66,8 @@ namespace elSpectro{
     double xmin =XMin(ymin);						 
 
 
-     //random search for the maximum value
-    _max_val=0;
-  
-    for(int i=0;i<1E5;i++){
-      //note r=Q2/A2 when W=Mtar so xmin==1, so just scan from low x instead
-      double val  = escat::flux_dlnxdlny(_ebeam,gRandom->Uniform(TMath::Log(1E-40),TMath::Log(1)),gRandom->Uniform(_lnymin,_lnymax));
-      if(val>_max_val)_max_val=val;
-    }
-    _max_val*=1.01; //to be sure got max
-
+    // FindMaxVal();
+    
     //Seacrh for lowest possible x...
     _maxPossiblexRange=1;
     ymin = TMath::Exp(_lnymin);
@@ -132,8 +124,22 @@ namespace elSpectro{
 
     std::cout<<"DistVirtPhotFlux_xy INTEGRAL "<<pdf.getNorm(roovars)<<" at proton rest frame e- energy "<<_ebeam<<" and W threshold "<<TMath::Sqrt(_Wthresh2)<< std::endl;
   }
-  
 
+  void DistVirtPhotFlux_xy::FindMaxVal(){
+    //random search for the maximum value
+    _max_val=0;
+    
+    for(int i=0;i<1E7;i++){
+      //note r=Q2/A2 when W=Mtar so xmin==1, so just scan from low x instead
+      double ranX=gRandom->Uniform(TMath::Log(_maxPossiblexRange),TMath::Log(1));
+      double ranY=gRandom->Uniform(_lnymin,_lnymax);
+      double val  = escat::flux_dlnxdlny(_ebeam,ranX,ranY);
+      //double val  = escat::flux_dlnxdlny(_ebeam,ranX,ranY)*WeightForW(TMath::Exp(ranX),TMath::Exp(ranY));
+      if(val>_max_val){_max_val=val;}
+    }
+    _max_val*=1.02; //to be sure got max
+   }
+ 
   void DistVirtPhotFlux_xy::FindWithAcceptReject(){
     
     double lny=0;
@@ -167,7 +173,6 @@ namespace elSpectro{
 
     getRandomXY();//intial sample
 
-   
     while(  gRandom->Uniform()*_max_val >
 	    (_val=escat::flux_dlnxdlny(_ebeam,lnx,lny)) ) {
       if(_val>_max_val){
@@ -191,5 +196,68 @@ namespace elSpectro{
   
   }
 
+ /*
+  void DistVirtPhotFlux_xy::FindWithAcceptReject(){
+    
+    double lny=0;
+    double lnx=0;
+    
+    auto getRandomXY = [&lny,&lnx,this](){
+      
+      lny = gRandom->Uniform(_lnymin,_lnymax);
+      double y = TMath::Exp(lny);
 
+      //calculate the fraction of x-space available
+      //now calculate x limits
+      //y = r/2ME and x = Q2/r 
+      double avail_xmax = XMax(y);
+      double avail_xmin = XMin(y);
+  
+      if(avail_xmin>=1){ lnx=1;return; }
+
+      if(_maxPossiblexRange)
+	//for efficiency we need not sample below lowest possible x value
+	lnx = gRandom->Uniform(TMath::Log(_maxPossiblexRange),TMath::Log(1));
+      else 
+ 	lnx = gRandom->Uniform(TMath::Log(1E-50),TMath::Log(1));
+  
+      //check if we are within allowed x-range
+      //if not return and throw another y value
+      auto currx=TMath::Exp(lnx);
+      if(currx>avail_xmax){ lnx=1;return; }
+      if(currx<avail_xmin){ lnx=1;return; }
+    };
+
+    getRandomXY();//intial sample
+
+    auto x=TMath::Exp(lnx);
+    auto y=TMath::Exp(lny);
+    while(  gRandom->Uniform()*_max_val >
+    	    (_val=escat::flux_dlnxdlny(_ebeam,lnx,lny)*WeightForW(x,y) )) {
+      //while(  gRandom->Uniform()*_max_val >
+      //    (_val=escat::flux_dlnxdlny(_ebeam,lnx,lny)) ) {
+       //if(gRandom->Uniform()>WeightForW(x,y))
+       // continue;
+       
+      if(_val>_max_val){
+    std::cout<< "check "<<escat::flux_dlnxdlny(_ebeam,TMath::Log(6.70592e-12), TMath::Log( 0.00908638))*WeightForW(6.70592e-12,0.00908638)<<std::endl;
+	std::cout<<"DistVirtPhotFlux_xy::FindWithAcceptReject() MAX REACHED "<<_val<<" "<<_max_val<<" x "<<x <<" y "<<y<<" eb "<<_ebeam<<std::endl;
+	exit(0);
+      }
+      getRandomXY(); //sample another pair
+      x=TMath::Exp(lnx);
+      y=TMath::Exp(lny);
+    }
+    
+
+    //now we want the value of ths function to be Photon flux as function of x and y
+    
+    //  _val=escat::flux_dxdy(_ebeam,x,y)*WeightForW(x,y);
+ 
+    // std::cout<<"Dist weight    "<<WeightForW(x,y)<<std::endl;
+    //return x and y values
+    _xy=std::make_pair(x,y);
+  
+  }
+  */  
 }//namespace

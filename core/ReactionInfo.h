@@ -48,7 +48,7 @@ namespace elSpectro{
 
     LorentzVector* _scattered={nullptr}; //scattered electron   
     LorentzVector* _ebeam={nullptr}; //beam electron   
-    
+    //Distribution* _Wdist={nullptr}; //W photoproduction
   };
 
 
