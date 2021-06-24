@@ -51,7 +51,7 @@ namespace elSpectro{
     
      double maxW = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
 
-     _max = FindMaxOfIntensity()*1.05; //add 5% for Q2,meson mass effects etc.
+     _max = FindMaxOfIntensity()*1.08; //add 5% for Q2,meson mass effects etc.
 
      std::cout<<"DecayModelst::PostInit max value "<<_max<<" "<<_meson<<" "<<_meson->Pdg()<<" "<<_sdmeMeson<<std::endl;
   }
@@ -70,9 +70,8 @@ namespace elSpectro{
     _t = (_meson->P4()-*_photon).M2();//_amp->kinematics->t_man(s,cmMeson.Theta());
     _dt=0;
     _dsigma=0;
-    //std::cout<<"DecayModelst t= "<<_t<<" Q2 "<<_photon->M2()<<" W "<< _W<<std::endl;
     //check above threshold for meson and baryon masses
-    if(_W<_meson->P4().M()+_baryon->P4().M()) return 0;
+    if( _W < (_meson->P4().M()+_baryon->P4().M()) ) return 0;
     
     //now we can define production/polarisation plane
     MomentumVector decayAngles;

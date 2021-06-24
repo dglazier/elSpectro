@@ -21,8 +21,8 @@ namespace elSpectro{
     auto pxtar      = ptar * sinthtar;
     auto pytar      = 0;
     auto pztar      = ptar * costhtar;
-  
-    // Force spectator on mass shell
+
+     // Force spectator on mass shell
     //get its mass from input data and PDG database
     auto smass2=products[1]->M2(); //Note interacting particle is [0]
     auto Espec = TMath::Sqrt(ptar*ptar + smass2);
@@ -40,11 +40,7 @@ namespace elSpectro{
     //i.e. boost vector should only have z component
     //Please note this needs checked for correct rotation
     //Also add the random phi angle...
-    //std::cout<<"spectator "<<_spectator<<" "<<_spectator.M()<<std::endl;
-    //std::cout<<"nucleon "<<_nucleon<<" "<<_nucleon.M()<<std::endl;
-    //_a.SetXYZT( x_a, y_a, z_a, e_a);
-    BoostToParent(parent,_spectator);
-    // std::cout<<"spectator boosted "<<_spectator<<" "<<_spectator.M()<<std::endl;
+    BoostToParentWithRandPhi(parent,_spectator);
     products[1]->SetP4(_spectator);
     products[0]->SetP4( _nucleon= parent - _spectator );
     // std::cout<<"nucleon boosted"<<_nucleon<<" "<<_nucleon.M()<<std::endl;

@@ -60,8 +60,8 @@ namespace elSpectro{
       //this ignores that one might be a quasifree nucleon
       //but kinematically at high intiial nucleon momentum
       //we can approach this maximum....
-      info->_Wmax=(_in1->P4()+_in2->P4()).M();
-      std::cout<<"ProductionProcess::PostInit maximum W = "<< info->_Wmax <<std::endl;
+      info->_Wmax=(*_in1->GetInteracting4Vector()+*_in2->GetInteracting4Vector()).M();
+      std::cout<<"ProductionProcess::PostInit maximum W = "<< info->_Wmax <<_in1->GetInteracting4Vector()->M()<<" "<<_in2->GetInteracting4Vector()->M()<<std::endl;
     }
      DecayingParticle::PostInit(info);
   

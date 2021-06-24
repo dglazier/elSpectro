@@ -61,8 +61,10 @@ namespace elSpectro{
     
     //We need a "nominal" 4-momentum for our interacting particle
     //to do this we boost it from rest into lab frame of parent
-    _decayer->BoostToParent(P4(),(*_interactingParticle));
-  }
+   //Note theta= 0 from LorentzVector  lv(0,0,momentum,TMath::Sqrt(momentum*momentum+mass*mass));, so RandPhi does not matter
+    _decayer->BoostToParentWithRandPhi(P4(),(*_interactingParticle));
+
+    }
   /////////////////////////////////////////////////////////
   /// rotate beam angles
   void CollidingParticle::SetAngleThetaPhi(Double_t th,Double_t phi){

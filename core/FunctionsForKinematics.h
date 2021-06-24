@@ -172,8 +172,8 @@ namespace elSpectro {
       auto decBoost=meson->BoostToCM();
       auto decBar=boost(*baryon,decBoost);
       auto decGamma=boost(*gamma,decBoost);
-      auto zV=decGamma.Vect().Unit();
-      //auto zV=-decBar.Vect().Unit();
+      //auto zV=decGamma.Vect().Unit();
+      auto zV=-decBar.Vect().Unit();
       auto yV=decBar.Vect().Cross(decGamma.Vect()).Unit();
       auto xV=yV.Cross(zV).Unit();
     

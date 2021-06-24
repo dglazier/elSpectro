@@ -25,16 +25,14 @@ namespace elSpectro{
     // Each model must define its intensity
     // Phase space intensity is handled by MassPhaseSpace
     double Intensity() const final{
-	return 1.;
+      return 1.;
     }
     bool RegenerateOnFail() const  noexcept final {return false;}
     ///void SetParent(DecayingParticle* pa);
     //void PostInit(ReactionInfo* info) override;
     
   private:
-    
- 
-    ClassDefOverride(elSpectro::NuclearBreakup,1); //class NuclearBreakup
+     ClassDefOverride(elSpectro::NuclearBreakup,1); //class NuclearBreakup
     
   };//class NuclearBreakup
 

@@ -66,9 +66,8 @@ namespace elSpectro{
 	_prodInfo->_Wmax=( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
       }
       auto gNprods=dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->Products();
-      // std::cout<<"DecayModelQ2W::PostInit "<<_prodInfo<<" "<<gNprods[0]->Pdg()<<" "<<gNprods[1]->Pdg()<<std::endl;
-      
-      _prodInfo->_baryon=gNprods[1]->P4ptr();
+      //std::cout<<"DecayModelQ2W::PostInit "<<_prodInfo<<" "<<gNprods[0]->Pdg()<<" "<<gNprods[1]->Pdg()<<std::endl;
+       _prodInfo->_baryon=gNprods[1]->P4ptr();
       _prodInfo->_meson=gNprods[0]->P4ptr();
       
       
@@ -99,7 +98,8 @@ namespace elSpectro{
     const auto& p4scat=_electron->P4();
 
     _gamma = p4beam-p4scat;//can now use getQ2
-    
+    // std::cout<<"DecayModelQ2W "<<Parent()->Pdg()<<" "<<Parent()->P4().Vect().Unit()<<" "<<_gamma.Vect().Unit()<<" "<<(p4scat + _gstarNuc->P4()).Vect().Unit()<<"initial "<<(p4beam+p4tar).Vect().Unit()<<std::endl;
+
     //calculate photon polarisation
     auto epsilon = escat::virtualPhotonPolarisation(p4beam,p4tar,p4scat);
     auto delta = 2*escat::M2_el()/getQ2()*(1-epsilon);
