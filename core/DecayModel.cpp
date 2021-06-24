@@ -118,7 +118,7 @@ namespace elSpectro{
 
     //Allow for rounding errors in check
     if(TCM<0){
-      if(TCM<-1E-6){
+      if(TCM<-1E-5){
 	std::cout<<"DecayModel::PhaseSpaceWeightSq "<<Parent()->Pdg()<<" "<<GetName()<<" "<< MinimumMassPossible()<<" W "<<W<<" T "<<TCM<<" after stables "<<std::endl;}
       return 0;
     }//below threshold (probably precission issue), start again
