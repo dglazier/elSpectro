@@ -163,8 +163,9 @@ namespace elSpectro{
     double DifferentialXSect() const{//dont let others call this as need _s, _W and _t set
       //Note if your derived model already gives differential cross section
       //you will need to divide by PhaseSpaceFactor to get MatrixElementSquared from it
-      return _dsigma=PhaseSpaceFactor() * ( MatrixElementsSquared_T() +
-          				    (_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()); //eqn from Seyboth and Wolf
+      // std::cout<<" DifferentialXSect() "<<PhaseSpaceFactor()<<"  "<<" "<<PgammaCMsq()<<std::endl;
+      return _dsigma=PhaseSpaceFactor() *
+	( MatrixElementsSquared_T() + (_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()); //eqn from Seyboth and Wolf
     }
        
     SDME* _sdmeMeson={nullptr};

@@ -43,7 +43,7 @@ namespace elSpectro{
     BoostToParentWithRandPhi(parent,_a);
     products[0]->SetP4(_a);
     products[1]->SetP4( parent - _a );
-
+    //   std::cout<<"TwoBody "<<products[0]->P4()<<" "<<products[0]->P4().M()<<" "<<products[1]->P4()<<" "<<products[1]->P4().M()<<std::endl;
     return _weight; 
   }
 

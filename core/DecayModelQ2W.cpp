@@ -99,8 +99,7 @@ namespace elSpectro{
 
     _gamma = p4beam-p4scat;//can now use getQ2
     // std::cout<<"DecayModelQ2W "<<Parent()->Pdg()<<" "<<Parent()->P4().Vect().Unit()<<" "<<_gamma.Vect().Unit()<<" "<<(p4scat + _gstarNuc->P4()).Vect().Unit()<<"initial "<<(p4beam+p4tar).Vect().Unit()<<std::endl;
-
-    //calculate photon polarisation
+     //calculate photon polarisation
     auto epsilon = escat::virtualPhotonPolarisation(p4beam,p4tar,p4scat);
     auto delta = 2*escat::M2_el()/getQ2()*(1-epsilon);
     

@@ -45,8 +45,9 @@ namespace elSpectro{
 
 
    virtual void BoostToParentWithRandPhi(const LorentzVector& parent, LorentzVector& child){
-     if(parent.P()==0) return; //no boost to be done, or direction
-    
+     if(parent.P()==0){ return;} //no boost to be done, or direction
+     //std::cout<<"BoostToParentW "<<child<<" "<<child.M()<<" "<<parent.M()<<std::endl;
+   
     //Need axis to rotate around to align
      //z-axis with with parent vector
      //This is just  parent X z-axis
@@ -58,14 +59,14 @@ namespace elSpectro{
      ROOT::Math::AxisAngle rotAroundParent(parent.Vect().Unit(),RandomPhi());
      child=  rotAroundParent* child; 
  
-     // auto check2 = LorentzVector(0,0,1,1);
+     //auto check2 = LorentzVector(0,0,1,1);
      //check2=rot1*check2;
-     // std::cout<<" BoostToParentWithRandPhi "<<check2.Vect().Unit()<<" "<<parent.Vect().Unit()<<"      axis "<<axis1<<" rot "<<rot1<<std::endl;
+     //std::cout<<" BoostToParentWithRandPhi "<<check2.Vect().Unit()<<" "<<parent.Vect().Unit()<<"      axis "<<axis1<<" rot "<<rot1<<std::endl;
 
      //boost from parent rest frame 
      auto boostFromParent=-parent.BoostToCM();
      child=boost(child,boostFromParent);//ROOT::Math::VectorUtil::boost;
-  
+     //std::cout<<"Done BoostToParentW "<<child<<" "<<child.M()<<std::endl;
    }
 
   protected:

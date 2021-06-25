@@ -72,7 +72,8 @@ namespace elSpectro{
     _dsigma=0;
     //check above threshold for meson and baryon masses
     if( _W < (_meson->P4().M()+_baryon->P4().M()) ) return 0;
-    
+    //std::cout<<"DecayModelst "<<Parent()->Pdg()<<" "<<_meson->P4().M()<<" "<<_baryon->P4().M()<<std::endl;
+ 
     //now we can define production/polarisation plane
     MomentumVector decayAngles;
     kine::electroCMDecay(&Parent()->P4(),_ebeam,_photon,_meson->P4ptr(),&decayAngles);
@@ -118,9 +119,45 @@ namespace elSpectro{
     //    _Wmax = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
     _Wmax = _prodInfo->_Wmax;
     
-    std::cout<<" DecayModelst::FindMaxOfIntensity()  Wmin = "<<Wmin<<" Wmax = "<<_Wmax<<" meson mass = "<<M3<<std::endl;
+    std::cout<<" DecayModelst::FindMaxOfIntensity()  Wmin = "<<Wmin<<" Wmax = "<<_Wmax<<" meson mass = "<<M3<<" baryon mass = "<<M4<<" target mass = "<<M2<<std::endl;
 
     auto Fmax = [&M1,&M2,&M3,&M4,&Wmin,this](const double *x)
+      {
+	_s = x[0]*x[0];
+	_W=x[0];
+	if( _W < Wmin ) return 0.;
+	if( _W < M3+M4 ) return 0.;
+	if( _W > _Wmax ) return 0.;
+
+	auto currt=kine::tFromcosthW(x[1],_W,M1,M2,M3,M4);
+	auto myt0=kine::t0(_W,M1,M2,M3,M4);
+	auto mytmax=kine::tmax(_W,M1,M2,M3,M4);
+	if(currt>myt0) return 0.;
+	if(currt<mytmax) return 0.;
+	if( TMath::IsNaN(x[1]) ) return 0.;
+
+	//make smooth function at boundary, but must be lower than max
+	//this helps with the minimisation
+	/*Double_t factor=1;
+	if( x[1] >  myt0){
+	  _t=myt0;
+	  factor*=(1-1*(x[1]-myt0)); //lower result
+	}
+	else if( x[1]< mytmax ){
+	  _t=mytmax;
+	  factor*=(1-1*(mytmax-x[1])); //lower result
+	}
+	else _t=x[1];
+	if(factor<0) factor = 0;
+	*/
+	_t=currt;
+	auto dt=4* TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,M3,M4 );
+
+	double val = DifferentialXSect()*dt;
+	if( TMath::IsNaN(val) ) return 0.;
+	return -(val); //using a minimiser!
+      };
+    /*  auto Fmax = [&M1,&M2,&M3,&M4,&Wmin,this](const double *x)
       {
 	_s = x[0]*x[0];
 	_W=x[0];
@@ -148,11 +185,11 @@ namespace elSpectro{
 	else _t=x[1];
 	if(factor<0) factor = 0;
 
-	double val = DifferentialXSect()* (myt0-mytmax)*factor;
+	double val = DifferentialXSect()*(myt0-mytmax)*factor;
 	if( TMath::IsNaN(val) ) return 0.;
 	return -(val); //using a minimiser!
       };
-    
+    */
       //First perform grid search for intital values
       double Wrange=_Wmax-Wmin;
       double tmax=kine::tmax(_Wmax,M1,M2,M3,M4);
@@ -161,26 +198,27 @@ namespace elSpectro{
       double gridW=0;
       double gridt=0;
       double WtVals[2];
-      int Npoints=50;
-      for(int iW=1;iW<Npoints;iW++){
-	WtVals[0]=Wmin+iW*Wrange/Npoints - Wrange/Npoints/2;//mid point
-	double tming=kine::t0(WtVals[0],M1,M2,M3,M4);
-	double tmaxg=kine::tmax(WtVals[0],M1,M2,M3,M4);
-	double trange= tming-tmaxg;
+      // int Npoints=500;
+      // for(int iW=1;iW<Npoints;iW++){
+      // 	WtVals[0]=Wmin+iW*Wrange/Npoints - Wrange/Npoints/2;//mid point
+      // 	double tming=kine::t0(WtVals[0],M1,M2,M3,M4);
+      // 	double tmaxg=kine::tmax(WtVals[0],M1,M2,M3,M4);
+      // 	double trange= tming-tmaxg;
 
-	for(int it=0;it<Npoints;it++){
-	  WtVals[1]=tming-it*trange/Npoints;
-	  auto val = Fmax(WtVals);
-	  // if(it%10==0)std::cout<<WtVals[0]<<" "<<WtVals[1]<<" val "<<TMath::Exp(-val)<<" "<<PhaseSpaceFactor()<<" s "<<_s<<" pgam "<<PgammaCMsq()<<" at Q2 0  = "<<kine::PDK2(_W,0,_target->M())<<std::endl;
-	  if(val<gridMin) {
-	    gridMin=val;
-	    gridW=WtVals[0];
-	    gridt=WtVals[1];
-	  }
-	}
-      }
+      // 	for(int it=0;it<Npoints;it++){
+      // 	  WtVals[1]=tming-it*trange/Npoints;
+      // 	  auto val = Fmax(WtVals);
+      // 	  //if(it%10==0)
+      // 	    std::cout<<WtVals[0]<<" "<<WtVals[1]<<" val "<<(-val)<<" "<<PhaseSpaceFactor()<<" s "<<_s<<" pgam "<<PgammaCMsq()<<" at Q2 0  = "<<kine::PDK2(_W,0,_target->M())<<std::endl;
+      // 	  if(val<gridMin) {
+      // 	    gridMin=val;
+      // 	    gridW=WtVals[0];
+      // 	    gridt=WtVals[1];
+      // 	  }
+      // 	}
+      // }
 
-      std::cout<<"FindMaxOfProbabilityDistribution grid search max= "<<-gridMin<<" at W = "<<gridW<<" and t = "<<gridt<<" note t0 "<<kine::t0(gridW,M1,M2,M3,M4)<<std::endl;
+      // std::cout<<"FindMaxOfProbabilityDistribution grid search max= "<<-gridMin<<" at W = "<<gridW<<" and t = "<<gridt<<" note t0 "<<kine::t0(gridW,M1,M2,M3,M4)<<std::endl;  
       //gridW+=Wrange/100;
       //gridt+=tmax/1000;
       
@@ -202,11 +240,12 @@ namespace elSpectro{
       ROOT::Math::Functor wrapf(Fmax,2);
 
       //variable = W, variable 1 = t
-      double step[2] = {Wrange/500,0.001};
+      // double step[2] = {Wrange/500,0.001};
+      double step[2] = {Wrange/100,2./100};
       // starting point
       
-      double variable[2] = { gridW,gridt};
-      //double variable[2] = { 10,-0.1};
+      // double variable[2] = { gridW,gridt};
+      double variable[2] = {Wmin+Wrange/2,0};
       
       minimum->SetFunction(wrapf);
       
@@ -222,7 +261,7 @@ namespace elSpectro{
  
       auto minVal = minimum->MinValue();
       auto minW= xs[0];
-      auto mint= xs[1];
+      auto mint= kine::tFromcosthW(xs[1],minW,M1,M2,M3,M4);//xs[1];
    
       std::cout << "Maximum : Probabiltiy Dist at ( W=" << minW << " , t = "  << mint << "): "<< -minimum->MinValue()  << " note t0 "<<kine::t0(minW,M1,M2,M3,M4)<< std::endl;
 
@@ -236,17 +275,18 @@ namespace elSpectro{
 	const double *xs = minimum->X();
 	
 	auto minminVal = minimum->MinValue();
-	minW= xs[0];
-	mint= xs[1];
 	
-	std::cout << "Minimum Mass Maximum : Probabiltiy Dist at ( W=" << minW << " , t = "  << mint << "): "<< -minimum->MinValue()<< " note t0 "<<kine::t0(minW,M1,M2,M3,M4)  << std::endl;
 
 	if(minminVal<minVal){
-	 std::cout<<"minmin "<<-minminVal<<" < "<<-minVal<<std::endl;
+	  std::cout << "Minimum Mass Maximum : Probabiltiy Dist at ( W=" << minW << " , t = "  << mint << "): "<< -minimum->MinValue()<< " note t0 "<<kine::t0(minW,M1,M2,M3,M4)  << std::endl;
+	  std::cout<<"minmin "<<-minminVal<<" < "<<-minVal<<std::endl;
 	  minVal=minminVal;
+	  minW= xs[0];
+	  mint= xs[1];
 	}
 	//back to PDg mass if exists
 	if(_meson->PdgMass()>M3)
+	  M3=_meson->PdgMass();
 	  dynamic_cast<DecayingParticle*>(_meson)->TakePdgMass();
 
       }
@@ -256,7 +296,8 @@ namespace elSpectro{
 	std::cout<<"gridMin "<<gridMin<<" "<<minVal<<std::endl;
 	minVal=gridMin*1.05;
       }
-      return -minVal ;
+
+      return -minVal;//*dt ;//and convert to dt
   }
   /*
   void DecayModelst::HistIntegratedXSection(TH1D& hist){
