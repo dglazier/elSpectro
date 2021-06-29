@@ -83,6 +83,7 @@ namespace elSpectro{
 
 
      void SetModelForMassPhaseSpace(DecayModel* amodel){_massPhaseSpace.SetModel(amodel);}
+    void SuppressPhaseSpace(double val){_massPhaseSpace.SuppressPhaseSpace(val);}
      void  FindMassPhaseSpace(double parentM,const  DecayModel* amodel) {
        _massPhaseSpace.Find(parentM,amodel);
      }

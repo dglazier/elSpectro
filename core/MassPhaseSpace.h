@@ -23,7 +23,7 @@ namespace elSpectro{
     void Print(){
       std::cout<<"MassPhaseSpace number calcs= "<<_weightCalcN<<" number of successes = "<<_successN<<" ratio  ="<< double(_successN)/_weightCalcN <<std::endl;
     }
-    
+    void SuppressPhaseSpace(double val){_suppressPhaseSpace=val;}
   private:
     
     friend Manager; //only Manager can construct and use a MassPhaseSpace
@@ -51,7 +51,7 @@ namespace elSpectro{
       //as W dependence accounted for elsewere
       //PhaseSpaceWeight will try alternative masses
       double wee=0;
-      while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max )
+      while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max*_suppressPhaseSpace )
 	{
 	  // if(wee>max){
 	  // _sampledMax=wee;
@@ -95,6 +95,7 @@ namespace elSpectro{
     double _sampledMax = 0;
     mutable long _weightCalcN=0;
     mutable long _successN=0;
+    double _suppressPhaseSpace=1;
     
     ClassDef(elSpectro::MassPhaseSpace,1); //class MassPhaseSpace
   };
