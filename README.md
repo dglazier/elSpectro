@@ -32,6 +32,15 @@ Note, if you want to use jpacPhoto with jpacBox you need to add the C++ boost li
      cmake --build . --target install
 
 
+## Output files
+
+Currently you can write to CLAS12-Lund, HEPMC3, EICSmearSimple data formats e.g.
+
+  	  writer(new EICSimpleWriter{Form("outCollision/jpac_Zc3900_%d_%d.txt",(int)ebeamE,(int)pbeamE)});
+  	  writer(new HepMC3Writer{Form("out/jpac_x3872_%s_%d_%d.txt",ampPar.data(),(int)ebeamE,(int)pbeamE)});
+ 	  writer(new LundWriter{Form("out_mesonex/ep_to_nX3pi_%d.dat",(int)ebeamE)});
+ 
+
 ## Running examples
 
      cd examples
@@ -61,33 +70,35 @@ Note the --i option means retain interactive root session, if not included elsep
 
 1) e + p -> e' X (Jpsi (e+e-)rho(pi+,pi-)) p
 
-      elspectro 'EIC_JPAC_X3872.C("high",5,41,1E33,10)'
+      elspectro  --i 'EIC_JPAC_X3872.C("high",5,41,1E33,10)'
 
 Which will run with 5GeV e- energy, 41 GeV proton, Luminosity=10^33 for 10 days
 
 Or with diagnostic histgrams
 
-      elspectro 'EIC_JPAC_X3872_Hists.C("high",5,41,1E33,10)'
+      elspectro  --i 'EIC_JPAC_X3872_Hists.C("high",5,41,1E33,10)'
 
 The first argument can be "high" or "low" giving different parameterisations.
 
 To set luminosity and days change last 2 arguments, e.g. for luminosoty 10^33 and 25 days, e- energy 100 and p energy 100 with high energy paramterisation :
 
-      elspectro 'EIC_JPAC_X3872.C("high",100,100,1E33,25)'
+      elspectro  --i 'EIC_JPAC_X3872_Hists.C("high",100,100,1E33,25)'
 
 To just run a fixed number of events leave last argument 0 and nLumi=number of events
 
-     elspectro 'EIC_JPAC_X3872.C("high",100,100,1E4)'
+     elspectro  --i 'EIC_JPAC_X3872_Hists.C("high",100,100,1E4)'
 
 2) e + p -> e' Z(3900) (Jpsi (e+e-) pi+) n
 
+
+This exampl3 uses the amplitude_blend class rather than running either high or low amplitude.
 To run with luminosity 10^33 for 25 days
 
-      elspectro 'EIC_JPAC_nZc_Hists.C("low",5,41,1E33,25)'
+      elspectro --i  'EIC_JPAC_nZc_Hists.C(5,41,1E33,25)'
 
 or to just run 1000 events
 
-      elspectro 'EIC_JPAC_nZc_Hists.C("low",5,41,1000)'
+      elspectro  --i 'EIC_JPAC_nZc_Hists.C("low",5,41,1000)'
 
 ### Examples of MesonEx Quasi-real PhotoProduction
 
