@@ -181,6 +181,21 @@ namespace elSpectro {
     
       angles->SetXYZ(decD1.Vect().Dot(xV),decD1.Vect().Dot(yV),decD1.Vect().Dot(zV));
     }
+    ////////////////////////////////////////////////////////
+    ///z-axis along gamma direction in meson rest frame
+    inline void mesonDecayHel(const LorentzVector* gamma,const LorentzVector* meson,const LorentzVector* baryon,const LorentzVector* d1,MomentumVector* angles){
+      auto decBoost=meson->BoostToCM();
+      auto decBar=boost(*baryon,decBoost);
+      auto decGamma=boost(*gamma,decBoost);
+      auto zV=decGamma.Vect().Unit();
+      //auto zV=-decBar.Vect().Unit();
+      auto yV=decBar.Vect().Cross(decGamma.Vect()).Unit();
+      auto xV=yV.Cross(zV).Unit();
+    
+      LorentzVector decD1=boost(*d1,decBoost);
+    
+      angles->SetXYZ(decD1.Vect().Dot(xV),decD1.Vect().Dot(yV),decD1.Vect().Dot(zV));
+    }
     inline void electroCMDecay(const LorentzVector* CM,const LorentzVector* ein,const LorentzVector* gamma,const LorentzVector* meson,MomentumVector* angles){
     //CM frame defined by e-scattering
        auto CMBoost=CM->BoostToCM();

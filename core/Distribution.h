@@ -19,6 +19,7 @@ namespace elSpectro{
   public:
     
     Distribution()=default;
+    virtual ~Distribution()=default;
     
   public :
 

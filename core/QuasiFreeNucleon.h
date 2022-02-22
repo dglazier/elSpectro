@@ -25,7 +25,7 @@ namespace elSpectro{
     //default deuteron Fermi distribution, can overwrite when create object 
     QuasiFreeNucleon(Distribution* dist=new DistTF1{TF1("deuteronFermiDist","(x*(0.26**2-0.0456**2)/(x**2+0.0456**2)/(x**2+0.26**2))**2",0.,1)}):_fermiDist{dist}{};
     
-     virtual ~QuasiFreeNucleon()=default;
+    virtual ~QuasiFreeNucleon()=default;
     QuasiFreeNucleon(const QuasiFreeNucleon& other); //need the virtual destructor...so rule of 5
     QuasiFreeNucleon(QuasiFreeNucleon&&)=default;
     QuasiFreeNucleon& operator=(const QuasiFreeNucleon& other);

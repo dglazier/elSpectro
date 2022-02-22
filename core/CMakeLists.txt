@@ -17,7 +17,6 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   VectorSDMEDecay.h
   DecayModelQ2W.h
   DecayModelst.h
-  DecayGammaN_Test.h
   JpacModelst.h
   GenericModelst.h
   DecayVectors.h
@@ -37,7 +36,6 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   SDME.h
   PhotonPolarisationVector.h
   DistVirtPhotFlux_xy.h
-#  CurrentEventInfo.h
   ParticleManager.h
   DecayManager.h
   MassPhaseSpace.h
@@ -66,7 +64,6 @@ add_library(${ELSPECTRO} SHARED
   DecayModelst.cpp
   JpacModelst.cpp
   GenericModelst.cpp
-  DecayGammaN_Test.cpp
   DecayVectors.cpp
   TwoBodyFlat.cpp
   TwoBody_stu.cpp
@@ -82,7 +79,6 @@ add_library(${ELSPECTRO} SHARED
   DistVirtPhotFlux_xy.cpp
   SDME.cpp
   PhotonPolarisationVector.cpp
-#  CurrentEventInfo.cpp
   ParticleManager.cpp
   DecayManager.cpp
   MassPhaseSpace.cpp

@@ -19,7 +19,6 @@
 #pragma link C++ class elSpectro::DecayModelst+;
 #pragma link C++ class elSpectro::JpacModelst+;
 #pragma link C++ class elSpectro::GenericModelst+;
-#pragma link C++ class elSpectro::DecayGammaN_Test+;
 #pragma link C++ class elSpectro::PhaseSpaceDecay+;
 #pragma link C++ class elSpectro::NuclearBreakup+;
 #pragma link C++ class elSpectro::SDMEDecay+;

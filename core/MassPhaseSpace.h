@@ -45,14 +45,17 @@ namespace elSpectro{
       // double max= kine::PhaseSpaceWeightMax(parentM,_masses);//TGenPhaseSpace max . Note this is too high an estimate
 
       //Note PhaseSpaceWeightMaxFromEquDist does not quite get to max, so increase by 10% to be safe....will give warning if event weight is above this....
-      double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses)*1.05;
+      double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses)*1.1;
       //double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses);
       //accept or reject mass combinations until got one
       //as W dependence accounted for elsewere
       //PhaseSpaceWeight will try alternative masses
       double wee=0;
+    
       while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max*_suppressPhaseSpace )
 	{
+	  
+
 	  // if(wee>max){
 	  // _sampledMax=wee;
 	  //  std::cout<<" weight >  max "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
@@ -63,6 +66,10 @@ namespace elSpectro{
       if(wee>max){
 	// _sampledMax=wee;
 	std::cerr<<"MassPhaseSpace check weight >  max,  W "<<parentM<<" this "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
+	std::cout<<" parent "<<parentM<<" ";
+	for(auto& m:_masses)
+	  std::cout<<m<<" ";
+	std::cout<<std::endl;
       }
 
       _successN++;

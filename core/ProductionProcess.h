@@ -23,8 +23,8 @@ namespace elSpectro{
 
      
   public:
-    //virtual ~ProductionProcess()=default;
-
+ 
+    // ProductionProcess()=delete;
     //only construct via and take ownership of model 
     ProductionProcess(DecayModel* model);
     ProductionProcess(CollidingParticle* p1,CollidingParticle* p2,DecayModel* model);
@@ -84,7 +84,7 @@ namespace elSpectro{
    
     
   private:
-    ProductionProcess()=default;
+    ProductionProcess()=delete;
     particle_constptrs _initialParticles;
     
     dist_uptr _xvertexDist=dist_uptr{new DistConst{0}};

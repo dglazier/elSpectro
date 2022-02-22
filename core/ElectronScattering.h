@@ -80,7 +80,7 @@ namespace elSpectro{
     
   private:
     
-    ElectronScattering()=default;
+    ElectronScattering()=delete;
 
     
     void SetBeamCondtion();
