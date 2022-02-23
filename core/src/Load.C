@@ -33,7 +33,7 @@ void Load(){
   //First try libraries installed with source code
   auto ellib=gSystem->Load(ELSPECTRO+"/lib/libelSpectro."+gSystem->GetSoExt());
   //If not, check LD_LIBRARY_PATH
-  if(ellib!=0)gSystem->Load(TString("libelSpectro.")+gSystem->GetSoExt());
+  if(ellib!=0)ellib=gSystem->Load(TString("libelSpectro.")+gSystem->GetSoExt());
   if(ellib!=0) Fatal("elSpectro::Load","libelSpectro not found");
 
   //libs loaded can continue
