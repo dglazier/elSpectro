@@ -137,6 +137,7 @@ namespace elSpectro{
  	if(minRange>maxRange){//unphysical
 	  std::cout<<"Warning  Particle::DetermineDynamicMass min "<<minRange<<" greater than max "<<maxRange<<" for "<<_pdg<<std::endl;
 	  _dynamicMass=minRange;
+	  Fatal("Particle DetermineDynamicMass","note kinematically possible");
 	  break;
 	}
 	_dynamicMass= _massDist->SampleSingle(minRange,maxRange);
