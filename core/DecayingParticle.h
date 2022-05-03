@@ -45,6 +45,18 @@ namespace elSpectro{
     
     // virtual const CurrentEventInfo* EventInfo() const {return nullptr;}
 
+    double MaximumMassPossible() const  noexcept override {
+
+      Double_t maxMass=0;
+      if(MassDistribution()!=nullptr){
+	maxMass=MassDistribution()->GetMaxX();
+      }
+      else if(Pdg()!=-2211)
+	maxMass = Particle::MaximumMassPossible();
+
+      return maxMass;
+    }
+    
     double MinimumMassPossible() const  noexcept override {
       if(_minMass) return _minMass;
       

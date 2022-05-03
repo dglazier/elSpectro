@@ -46,9 +46,14 @@ namespace elSpectro{
     auto pdg=p->Pdg();
     //assign mass distribution if exists
     //note maybe this should be just for unstable
-    if(_massDist.count(pdg)!=0)
+    if(_massDist.count(pdg)!=0){
       p->SetMassDist(_massDist.at(pdg).get());
-     
+
+      //Just take minimum mass as pdg value as default in case needed
+      if(dynamic_cast<DecayingParticle* >(p)!=nullptr)
+	dynamic_cast<DecayingParticle* >(p)->SetPdgMass(_massDist.at(pdg)->GetMinX());
+    }
+    
     auto dp=dynamic_cast<DecayingParticle* >( p );
     auto cp=dynamic_cast<CollidingParticle* >( p );
       

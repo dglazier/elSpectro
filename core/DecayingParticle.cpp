@@ -55,6 +55,19 @@ namespace elSpectro{
       }
     }
 
+    if(Pdg()!=0&&Pdg()!=-2211){//for real particles
+      Double_t productMasses = 0.0;
+      for(auto* prod: products){
+	productMasses+=prod->MinimumMassPossible();
+      }
+      auto mmp=MaximumMassPossible();
+      if(mmp<productMasses){
+	std::cerr<<"DecayingParticle::PostInit  insufficient mass to decay to its products, max mass = "<<mmp<<" while product masses "<<productMasses<<std::endl;
+	Print();
+	exit(0);
+      }
+    }
+    
     if(_decay)_decay->PostInit(info);
     if(_decayer)_decayer->PostInit(info);
  
