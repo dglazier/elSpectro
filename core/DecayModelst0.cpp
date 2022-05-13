@@ -1,4 +1,4 @@
-#include "DecayModelst.h"
+#include "DecayModelst0.h"
 #include "SDMEDecay.h"
 #include "FunctionsForGenvector.h"
 #include <TDatabasePDG.h>
@@ -12,10 +12,10 @@
 namespace elSpectro{
   ///////////////////////////////////////////////////////
   ///constructor includes subseqent decay of Ngamma* system
-  DecayModelst::DecayModelst(particle_ptrs parts, const std::vector<int> pdgs) :
+  DecayModelst0::DecayModelst0(particle_ptrs parts, const std::vector<int> pdgs) :
     DecayModel{ parts, pdgs }
   {
-    _name={"DecayModelst"};
+    _name={"DecayModelst0"};
 
     //need to find meson and baryon
     if(TDatabasePDG::Instance()->GetParticle(Products()[0]->Pdg())->ParticleClass()==TString("Baryon") ){
@@ -29,8 +29,8 @@ namespace elSpectro{
     
   }
   /////////////////////////////////////////////////////////////////
-  void DecayModelst::PostInit(ReactionInfo* info){
-    std::cout<<"DecayModelst::PostInit  "<<std::endl;
+  void DecayModelst0::PostInit(ReactionInfo* info){
+
     if( dynamic_cast<DecayingParticle*>(_meson) ){
       if( dynamic_cast<DecayingParticle*>(_meson)->Model()->CanUseSDME() ){
 	auto sdmeModel=dynamic_cast<SDMEDecay*>(dynamic_cast<DecayingParticle*>(_meson)->Model());
@@ -39,31 +39,22 @@ namespace elSpectro{
 	//_sdmeBaryon = _baryon->InitSDME(3,9);
       }
     }
-      std::cout<<"DecayModelst::PostInit  "<<std::endl;
-  
+    
     DecayModel::PostInit(info);
-   std::cout<<"DecayModelst::PostInit  "<<std::endl;
- 
-    _isElProd=kTRUE;
-    _prodInfo= dynamic_cast<ReactionElectroProd*> (info); //I need Reaction info
-    if(_prodInfo==nullptr){
-      _isElProd=kFALSE;
-      _prodInfo= dynamic_cast<ReactionPhotoProd*> (info);
-    }
+    
+    _prodInfo= dynamic_cast<ReactionPhotoProd*> (info); //I need Reaction info
+
     _photon = _prodInfo->_photon;
     _target = _prodInfo->_target;
-    _ebeam = _prodInfo->_ebeam;
     _photonPol = _prodInfo->_photonPol;
-    
-     double maxW = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
-
+ 
      _max = FindMaxOfIntensity()*1.08; //add 5% for Q2,meson mass effects etc.
 
-     std::cout<<"DecayModelst::PostInit max value "<<_max<<" "<<_meson<<" "<<_meson->Pdg()<<" "<<_sdmeMeson<<std::endl;
+     std::cout<<"DecayModelst0::PostInit max value "<<_max<<" "<<_meson<<" "<<_meson->Pdg()<<" "<<_sdmeMeson<<std::endl;
   }
   
   //////////////////////////////////////////////////////////////////
-  double DecayModelst::Intensity() const
+  double DecayModelst0::Intensity() const
   {
     /*A      B        A/2    B/2        A*2/3   B   
       1      2         1/2    1          1/3    1   30each    5     10       
@@ -74,37 +65,31 @@ namespace elSpectro{
     _W = Parent()->P4().M();
     _s=_W*_W;
     _t = (_meson->P4()-*_photon).M2();//_amp->kinematics->t_man(s,cmMeson.Theta());
+    std::cout<<"DecayModelst0::Intensity() "<<_W<<" t "<<_t<<" photon "<<*_photon<<" meson "<<_meson->P4()<<" mass "<<_meson->P4().M()<<" baryon "<<_baryon->P4()<<" "<<_baryon->P4().M()<<" WMB "<<(_meson->P4()+_baryon->P4())<<" "<<(_meson->P4()+_baryon->P4()).M()<<std::endl;
     _dt=0;
     _dsigma=0;
     //check above threshold for meson and baryon masses
     if( _W < (_meson->P4().M()+_baryon->P4().M()) ) return 0;
-    //std::cout<<"DecayModelst "<<Parent()->Pdg()<<" "<<_meson->P4().M()<<" "<<_baryon->P4().M()<<std::endl;
+    //std::cout<<"DecayModelst0 "<<Parent()->Pdg()<<" "<<_meson->P4().M()<<" "<<_baryon->P4().M()<<std::endl;
+ 
+    //now we can define production/polarisation plane
+    //MomentumVector decayAngles;
+    //kine::electroCMDecay(&Parent()->P4(),_ebeam,_photon,_meson->P4ptr(),&decayAngles);
+    //_photonPol->SetPhi(decayAngles.Phi());
 
-    if(_isElProd==kTRUE){
-      //now we can define production/polarisation plane
-      MomentumVector decayAngles;
-      kine::electroCMDecay(&Parent()->P4(),_ebeam,_photon,_meson->P4ptr(),&decayAngles);
-      _photonPol->SetPhi(decayAngles.Phi());
-    }
-    else{//photoproduction
-      _photonPol->SetPhi(_meson->P4().Phi());
-    }
-
-    //now kinemaics
     _dt=4* TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,_meson->P4().M(),_baryon->P4().M() );
-      
+  
     double weight = DifferentialXSect() * _dt ;//must multiply by t-range for correct sampling
   
     CalcMesonSDMEs();
     CalcBaryonSDMEs();
 
     weight/=_max; //normalise range 0-1
-    if(_isElProd==kTRUE)
-      weight/= TMath::Sqrt(PgammaCMsq()/kine::PDK2(_W,0,_target->M())); //correct max for finite Q2 phase space
+    weight/= TMath::Sqrt(PgammaCMsq()/kine::PDK2(_W,0,_target->M())); //correct max for finite Q2 phase space
  
     if(weight>1){
       //don't change weight, likely due to large Q2 value....
-      std::cout<<"DecayModelst::Intensity weight too high but won't change maxprobable low meson mass and W from  "<<_max<<" to "<<weight*_max<<" meson "<<_meson->Mass()<<" W "<<_W<<std::endl;
+      std::cout<<"DecayModelst0::Intensity weight too high but won't change maxprobable low meson mass and W from  "<<_max<<" to "<<weight*_max<<" meson "<<_meson->Mass()<<" W "<<_W<<std::endl;
       }
     
     //Correct for W weighting which has already been applied
@@ -112,7 +97,7 @@ namespace elSpectro{
     // std::cout<<" s weight "<<_prodInfo->_sWeight<<" weight "<<weight<<" "<<_W<<std::endl;
     if(weight>1){
       std::cout<<" s weight "<<_prodInfo->_sWeight<<" Q2 "<<-_photon->M2()<<" 2Mmu "<<2*_target->M()*_photon->E() <<" W "<<_W<<" t "<<_t<<" new weight "<<weight*_prodInfo->_sWeight<<" meson "<<_meson->Mass()<<std::endl;
-      std::cout<<"DecayModelst::Intensity sWeight corrected weight too large "<<weight <<" "<<_prodInfo->_sWeight<<"  max "<<_max<<" val "<< weight*_prodInfo->_sWeight*_max<<std::endl;
+      std::cout<<"DecayModelst0::Intensity sWeight corrected weight too large "<<weight <<" "<<_prodInfo->_sWeight<<"  max "<<_max<<" val "<< weight*_prodInfo->_sWeight*_max<<std::endl;
       std::cout<<"DX "<<DifferentialXSect()<<" "<< _dt<<" pgam "<<TMath::Sqrt(PgammaCMsq())<<" M^2 "<<MatrixElementsSquared_T()<<" Q2 factor "<<TMath::Sqrt(PgammaCMsq())/kine::PDK(_W,0,_baryon->Mass())<<" PHASE SPACE "<<PhaseSpaceFactor()<<" s "<<_s<<" pgam "<<PgammaCMsq()<<" at Q2 0  = "<<kine::PDK2(_W,0,_target->M())<<std::endl;
       }
      
@@ -121,7 +106,7 @@ namespace elSpectro{
     
   }
   
-  double DecayModelst::FindMaxOfIntensity(){
+  double DecayModelst0::FindMaxOfIntensity(){
     
     auto M1 = 0;//assum real photon for max calculation
     auto M2 = _target->M();
@@ -132,7 +117,7 @@ namespace elSpectro{
     //    _Wmax = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
     _Wmax = _prodInfo->_Wmax;
     
-    std::cout<<" DecayModelst::FindMaxOfIntensity()  Wmin = "<<Wmin<<" Wmax = "<<_Wmax<<" meson mass = "<<M3<<" baryon mass = "<<M4<<" target mass = "<<M2<<std::endl;
+    std::cout<<" DecayModelst0::FindMaxOfIntensity()  Wmin = "<<Wmin<<" Wmax = "<<_Wmax<<" meson mass = "<<M3<<" baryon mass = "<<M4<<" target mass = "<<M2<<std::endl;
 
     auto Fmax = [&M1,&M2,&M3,&M4,&Wmin,this](const double *x)
       {
@@ -236,7 +221,7 @@ namespace elSpectro{
       }
 
       if(gridMin<minVal){
-	Warning("DecayModelst::FindMaxOfIntensity()","grid search value already bigger than minimised, so will revert to that max value +5 percent");
+	Warning("DecayModelst0::FindMaxOfIntensity()","grid search value already bigger than minimised, so will revert to that max value +5 percent");
 	std::cout<<"gridMin "<<gridMin<<" "<<minVal<<std::endl;
 	minVal=gridMin*1.05;
       }
@@ -244,7 +229,7 @@ namespace elSpectro{
       return -minVal;
   }
   /*
-  void DecayModelst::HistIntegratedXSection(TH1D& hist){
+  void DecayModelst0::HistIntegratedXSection(TH1D& hist){
 
  
     auto F = [this](double t)
@@ -290,7 +275,7 @@ namespace elSpectro{
       //done
   }
   */
-  void DecayModelst::HistIntegratedXSection(TH1D& hist){
+  void DecayModelst0::HistIntegratedXSection(TH1D& hist){
 
  
     auto M1 = 0;//assume real photon for calculation
@@ -326,7 +311,7 @@ namespace elSpectro{
       //done
   }
   
- void DecayModelst::HistIntegratedXSection_ds(TH1D& hist){
+ void DecayModelst0::HistIntegratedXSection_ds(TH1D& hist){
 
  
     auto M1 = 0;//assum real photon for calculation
@@ -366,7 +351,7 @@ namespace elSpectro{
       //done
   }
   
-  void DecayModelst::HistMaxXSection(TH1D& hist){
+  void DecayModelst0::HistMaxXSection(TH1D& hist){
 
  
     auto M1 = 0;//assum real photon for calculation

@@ -24,6 +24,9 @@ namespace elSpectro{
     //see eqn(91)
   public:
 
+    void SetRealPol(double eps,double phi){
+      SetEpsilonPhi(eps,phi);//[1] and [2]
+    }
     void SetEpsilonDeltaPhi(double eps,double delta,double phi){
       SetEpsilonPhi(eps,phi);//[1] and [2]
       auto sinphi=TMath::Sin(phi);
@@ -51,8 +54,14 @@ namespace elSpectro{
     void SetEpsilon(double eps){_epsilon =eps;}
     void SetDelta(double del){_delta =del;}
     void SetPhi(double phi){_phi =phi;}
+    void SetPolPlane(double phi){_phiPol =phi;}
+    void SetRealPhoto(){_realPhoto=true;}
 
-    void Calc(){SetEpsilonDeltaPhi(_epsilon,_delta,_phi);}
+    void Calc(){
+      if(_realPhoto)return SetRealPol(_epsilon,_phi-_phiPol);
+      //else electron scattering
+      SetEpsilonDeltaPhi(_epsilon,_delta,_phi);
+    }
     
     double& operator[](int i)  {return _elements[i];}
 
@@ -65,5 +74,7 @@ namespace elSpectro{
     double _epsilon={0};
     double _delta = {0};
     double _phi={0};
+    double _phiPol={0};//linear polarisation plane
+    bool _realPhoto={false};
   };
 }

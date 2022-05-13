@@ -252,11 +252,8 @@ namespace elSpectro{
 
     
     ProductionProcess::PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
-    //now scattered electron should be set
-    //_scattered= _reactionInfo._scattered;
-
-  
-  }
+ 
+   }
   //////////////////////////////////////////////////////////////////////////
   ///Use Frixione + sigma(W) to integrate cross section over x , y and t
   double ElectronScattering::IntegrateCrossSectionFast(){
@@ -323,17 +320,12 @@ namespace elSpectro{
 
     auto photonFlux= dynamic_cast<ScatteredElectron_xy* >(mutableDecayer());
 
-    // auto xvar = RooRealVar(Form("xIntegral%lf_%lf",photonFlux->Dist().GetMaxLnX(),photonFlux->Dist().GetMaxLnX()),"xIntegral",TMath::Exp(photonFlux->Dist().GetMinLnX()),TMath::Exp(photonFlux->Dist().GetMinLnX()),TMath::Exp(photonFlux->Dist().GetMaxLnX()),"");
-    //auto yvar = RooRealVar(Form("yIntegral%lf_%lf",photonFlux->Dist().GetMaxLnY(),photonFlux->Dist().GetMaxLnY()),"yIntegral",TMath::Exp(photonFlux->Dist().GetMinLnY()),TMath::Exp(photonFlux->Dist().GetMinLnY()),TMath::Exp(photonFlux->Dist().GetMaxLnY()),"");
-
     auto xvar = RooRealVar(Form("xIntegral%lf_%lf",photonFlux->Dist().GetMaxLnX(),photonFlux->Dist().GetMaxLnX()),"xIntegral",(photonFlux->Dist().GetMinLnX()),(photonFlux->Dist().GetMinLnX()),(photonFlux->Dist().GetMaxLnX()),"");
     auto yvar = RooRealVar(Form("yIntegral%lf_%lf",photonFlux->Dist().GetMaxLnY(),photonFlux->Dist().GetMaxLnY()),"yIntegral",(photonFlux->Dist().GetMinLnY()),(photonFlux->Dist().GetMinLnY()),(photonFlux->Dist().GetMaxLnY()),"");
 
 
     
-    // auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",-0.,-0.99999,0.99999,"");
-    //auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.99,-0.99999,0.99999,"");
-    auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.99,-1,1,"");
+     auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.99,-1,1,"");
     
     auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
     auto Q2WModel =dynamic_cast<DecayModelQ2W*>(Model());
@@ -403,7 +395,6 @@ namespace elSpectro{
     while(DecayingParticle::GenerateProducts()!=DecayStatus::Decayed){
       _nsamples++;
       collision=MakeCollision();
-      //std::cout<<"ElectronScattering::GenerateProducts() "<<_nsamples<<std::endl;
     }//DecayModelQ2W
     
      

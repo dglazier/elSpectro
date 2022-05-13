@@ -52,6 +52,8 @@ namespace elSpectro{
     void PostInit(ReactionInfo* info) ;
     
     const LorentzVector* GetInteracting4Vector() const {return _interactingParticle;}
+    const LorentzVector* GetNominal4Vector() const {return &_nominal;}
+    
     Int_t GetInteractingPdg()const {return _interactingPdg;}
     
     /*void SetVertexXYZT(double x,double y,double z,double t){

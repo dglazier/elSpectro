@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////
 ///
-///Class:		DecayModelst
+///Class:		DecayModelst"
 ///Description:
 ///             Control behaviour of Particle decay to Particle products
 ///             Defined by
@@ -8,7 +8,7 @@
 ///             
 ///
 ///            Note derived classes should include a constructor to initialise
-///            DecayModelst( particle_ptrs , const std::vector<int> pdgs );
+///            DecayModelst0( particle_ptrs , const std::vector<int> pdgs );
 #pragma once
 
 #include "DecayModel.h"
@@ -20,14 +20,14 @@
 namespace elSpectro{
 
  
-  class DecayModelst : public DecayModel {
+  class DecayModelst0 : public DecayModel {
 
   public:
     
-    DecayModelst()=delete;
+    DecayModelst0()=delete;
     //constructor giving jpac amplitude pointer (which we will now own)
     //and decay particles 
-    DecayModelst(  particle_ptrs parts,const std::vector<int> pdgs  );
+    DecayModelst0(  particle_ptrs parts,const std::vector<int> pdgs  );
     
     //
     double Intensity() const override; //this should perhaps be final so derived classes cannot overwrite...
@@ -61,19 +61,8 @@ namespace elSpectro{
       return p1cm.P();
     }
     
-    /* double PgammaCMsq() const noexcept{
-      //in case no photon 4-vector yet
-      if(_photon->M()==0) return kine::PDK2(_W,0,_target->M());
-      //else PDK does not qork for virtual photons
-      auto cmBoost=Parent()->P4().BoostToCM();
-      auto p1cm=boost(*_photon,cmBoost);
-      
-      //     std::cout<<"PgammaCMsq M"<<_photon->M()<<" PLAB "<<_photon->P()<<" PCM "<<p1cm.P()<<" or "<<kine::PDK(_W,_photon->M(),_target->M())<<" or "<<kine::PDK(_W,_photon->M2(),_target->M())<<" or "<<kine::PDK(_W,0,_target->M())<<std::endl;
-      return p1cm.P()*p1cm.P();
-      }*/
-    
+     
     const ReactionPhotoProd* ProductionInfo() const { return _prodInfo; }
-    //    const ReactionElectroProd* ProductionInfo() const { return _prodInfo; }
     
     void HistIntegratedXSection_ds(TH1D& hist);
     void HistIntegratedXSection(TH1D& hist);
@@ -119,8 +108,7 @@ namespace elSpectro{
     double get_s() const noexcept{ return _s; }
     double get_t() const noexcept { return _t; }
     double get_W() const noexcept { return _W; }
-    double get_Q2() const noexcept { return -_photon->M2(); }
-
+  
   
     double kinCM_MesonP(double W) const {
       //  std::cout<<"kinCM_MesonP "<< kine::PDK(W,_meson->P4().M(),_baryon->P4().M()) <<W<<" "<<_meson->P4().M()<<" "<<_baryon->P4().M()<<std::endl;
@@ -180,8 +168,7 @@ namespace elSpectro{
     Particle* _meson={nullptr};
     LorentzVector* _photon={nullptr};
     LorentzVector* _target={nullptr};//{0,0,0,escat::M_pr()};
-    const LorentzVector* _ebeam={nullptr};//{0,0,0,escat::M_pr()};
- 
+  
     mutable double _max={0};
     mutable double _s={0};
     mutable double _t={0};
@@ -191,10 +178,9 @@ namespace elSpectro{
     double _Wmax={0};
  
     bool _useSDME={false};
-    bool _isElProd={true};
+
+    ClassDefOverride(elSpectro::DecayModelst0,1); //class DecayModelst0
     
-    ClassDefOverride(elSpectro::DecayModelst,1); //class DecayModelst
-    
-  };//class DecayModelst
+  };//class DecayModelst0
 
 }//namespace elSpectro

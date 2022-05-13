@@ -17,22 +17,28 @@
 #pragma link C++ class elSpectro::DecayModel+;
 #pragma link C++ class elSpectro::DecayModelQ2W+;
 #pragma link C++ class elSpectro::DecayModelst+;
+#pragma link C++ class elSpectro::DecayModelW+;
+#pragma link C++ class elSpectro::DecayModelst0+;
 #pragma link C++ class elSpectro::JpacModelst+;
 #pragma link C++ class elSpectro::GenericModelst+;
 #pragma link C++ class elSpectro::PhaseSpaceDecay+;
 #pragma link C++ class elSpectro::NuclearBreakup+;
+#pragma link C++ class elSpectro::Bremsstrahlung+;
 #pragma link C++ class elSpectro::SDMEDecay+;
 #pragma link C++ class elSpectro::TensorSDMEDecay+;
 #pragma link C++ class elSpectro::VectorSDMEDecay+;
 
 #pragma link C++ class elSpectro::DecayVectors+;
+#pragma link C++ class elSpectro::DontDecay+;
 #pragma link C++ class elSpectro::TwoBodyFlat+;
 #pragma link C++ class elSpectro::TwoBody_stu+;
 #pragma link C++ class elSpectro::ScatteredElectron_xy+;
 #pragma link C++ class elSpectro::QuasiFreeNucleon+;
+#pragma link C++ class elSpectro::BremstrPhoton+;
 
 #pragma link C++ class elSpectro::ProductionProcess+;
 #pragma link C++ class elSpectro::ElectronScattering+;
+#pragma link C++ class elSpectro::PhotoProduction+;
 
 #pragma link C++ class elSpectro::Distribution+;
 #pragma link C++ class elSpectro::DistConst+;
