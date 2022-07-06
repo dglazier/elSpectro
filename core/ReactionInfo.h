@@ -34,6 +34,7 @@ namespace elSpectro{
     LorentzVector* _photoN{nullptr};   
     LorentzVector* _meson={nullptr};   
     LorentzVector* _baryon={nullptr};
+    const LorentzVector* _ebeam={nullptr}; //beam electron   
 
     PhotonPolarisationVector* _photonPol={nullptr};
     
@@ -47,7 +48,6 @@ namespace elSpectro{
     virtual ~ReactionElectroProd()=default;
 
     LorentzVector* _scattered={nullptr}; //scattered electron   
-    LorentzVector* _ebeam={nullptr}; //beam electron   
     //Distribution* _Wdist={nullptr}; //W photoproduction
   };
 

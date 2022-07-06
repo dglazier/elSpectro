@@ -12,20 +12,26 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   DecayModel.h
   PhaseSpaceDecay.h
   NuclearBreakup.h
+  Bremsstrahlung.h
   SDMEDecay.h
   TensorSDMEDecay.h
   VectorSDMEDecay.h
+  DecayModelW.h
   DecayModelQ2W.h
+  DecayModelst0.h
   DecayModelst.h
   JpacModelst.h
   GenericModelst.h
   DecayVectors.h
+  DontDecay.h
   TwoBodyFlat.h
   TwoBody_stu.h
   ScatteredElectron_xy.h
   QuasiFreeNucleon.h
+  BremstrPhoton.h
   ProductionProcess.h
   ElectronScattering.h
+  PhotoProduction.h
   Distribution.h
   DistTF1.h
   DistConst.h
@@ -42,6 +48,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   Writer.h
   HepMC3Writer.h
   LundWriter.h
+  GlueXWriter.h
   EICSimpleWriter.h
   FunctionsForJpac.h
   Manager.h
@@ -57,20 +64,26 @@ add_library(${ELSPECTRO} SHARED
   DecayModel.cpp
   PhaseSpaceDecay.cpp
   NuclearBreakup.cpp
+  Bremsstrahlung.cpp
   SDMEDecay.cpp
   TensorSDMEDecay.cpp
   VectorSDMEDecay.cpp
+  DecayModelW.cpp
   DecayModelQ2W.cpp
   DecayModelst.cpp
+  DecayModelst0.cpp
   JpacModelst.cpp
   GenericModelst.cpp
   DecayVectors.cpp
+  DontDecay.cpp
   TwoBodyFlat.cpp
   TwoBody_stu.cpp
   ScatteredElectron_xy.cpp
   QuasiFreeNucleon.cpp
+  BremstrPhoton.cpp
   ProductionProcess.cpp
   ElectronScattering.cpp
+  PhotoProduction.cpp
   Distribution.cpp
   DistTF1.cpp
   DistTH1.cpp
@@ -85,6 +98,7 @@ add_library(${ELSPECTRO} SHARED
   Writer.cpp
   HepMC3Writer.cpp
   LundWriter.cpp
+  GlueXWriter.cpp
   EICSimpleWriter.cpp
   Manager.cpp
   FunctionsForJpac.cpp
@@ -92,7 +106,7 @@ add_library(${ELSPECTRO} SHARED
   G__${ELSPECTRO}.cxx
   )
 
-target_link_libraries(${ELSPECTRO} ${ROOT_LIBRARIES} )
+target_link_libraries(${ELSPECTRO}   ROOT::Core ROOT::Rint ROOT::RIO ROOT::RooFit ROOT::MathMore ROOT::EG ROOT::GenVector )
 
 install(TARGETS ${ELSPECTRO} 
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")

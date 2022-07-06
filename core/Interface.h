@@ -5,9 +5,11 @@
 
 #include "Manager.h"
 #include "DecayModelQ2W.h"
+#include "DecayModelW.h"
 #include "Distribution.h"
 #include "DistVirtPhotFlux_xy.h"
 #include "ElectronScattering.h"
+#include "PhotoProduction.h"
 #include "ScatteredElectron_xy.h"
 #include "CollidingParticle.h"
 #include <TDatabasePDG.h>
@@ -129,7 +131,20 @@ namespace elSpectro{
 	
     return  generator().Reaction();
   }
-  inline ProductionProcess*  eic(CollidingParticle* el,CollidingParticle* pr,DecayModelQ2W *totalXsec=nullptr){
+
+  inline PhotoProduction*  photoprod(CollidingParticle* el,CollidingParticle* pr,DecayModelW *totalXsec=nullptr){
+  
+    if(totalXsec!=nullptr){
+      model(totalXsec); //register ownership of model with manager
+      generator().Reaction(new PhotoProduction(el,pr, totalXsec ));
+    }
+    else	
+      generator().Reaction(new PhotoProduction(el,pr,totalXsec));
+	
+    return  dynamic_cast<PhotoProduction*>( generator().Reaction());
+  }
+  
+  inline ElectronScattering*  eic(CollidingParticle* el,CollidingParticle* pr,DecayModelQ2W *totalXsec=nullptr){
   
     if(totalXsec!=nullptr){
       generator().Reaction(new ElectronScattering(el,pr, totalXsec ));
@@ -137,7 +152,7 @@ namespace elSpectro{
     else	
       generator().Reaction(new ElectronScattering(el,pr,totalXsec));
 	
-    return  generator().Reaction();
+    return  dynamic_cast<ElectronScattering*>( generator().Reaction());
   }
  
 }//namespace elSpectro
