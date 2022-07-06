@@ -48,6 +48,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   Writer.h
   HepMC3Writer.h
   LundWriter.h
+  GlueXWriter.h
   EICSimpleWriter.h
   FunctionsForJpac.h
   Manager.h
@@ -97,6 +98,7 @@ add_library(${ELSPECTRO} SHARED
   Writer.cpp
   HepMC3Writer.cpp
   LundWriter.cpp
+  GlueXWriter.cpp
   EICSimpleWriter.cpp
   Manager.cpp
   FunctionsForJpac.cpp
