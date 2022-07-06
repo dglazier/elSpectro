@@ -60,6 +60,7 @@ namespace elSpectro{
     double GetBeamEnergy() const {return _ebeam;}
     double GetMinEnergy() const {return _ebeam*_bremDist->GetMinX();}
     double GetMaxEnergy() const {return _ebeam*_bremDist->GetMaxX();}
+    DistTF1* GetPhotonEdist() const { auto tf1=dynamic_cast< DistTF1*>(_bremDist.get()); return tf1;}
     
     void PostInit(ReactionInfo* info);
 
