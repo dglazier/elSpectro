@@ -6,6 +6,7 @@
 #include "DontDecay.h"
 #include "BremstrPhoton.h"
 #include "Bremsstrahlung.h"
+#include "Distribution.h"
 #include "ScatteredElectron_xy.h"
 #include <TDatabasePDG.h>
 #include <TH1F.h>
@@ -142,8 +143,52 @@ namespace elSpectro{
   //////////////////////////////////////////////////////////////////////////
   ///Use Frixione + sigma(W) to integrate cross section over x , y and t
   double PhotoProduction::IntegrateCrossSectionFast(){
-    std::cout<<"PhotoProduction::IntegrateCrossSectionFast() needs impmented "<<std::endl;
-    return 0.0;
+    std::cout<<"PhotoProduction::IntegrateCrossSectionFast() "<<std::endl;
+
+    gBenchmark->Start("IntegrateCrossSectionFast");
+    auto collision=MakeCollision();
+    
+    auto gammaNModel =dynamic_cast<DecayModelst*>(_gammaN->Model());
+    auto threshold=gammaNModel->GetMeson()->PdgMass()+gammaNModel->GetBaryon()->PdgMass();
+    TH1D* hWdist=new  TH1D("sdisthigh","sdisthigh",100,threshold,collision.M());
+    gammaNModel->HistIntegratedXSection( *hWdist);
+    
+    TH1D* hEdist= new TH1D("egammadist","egammadist",100,threshold,collision.M());
+    auto bremPhot =dynamic_cast<const BremstrPhoton*>(_photonptr->Decayer());
+    std::cout<<"PhotoProduction::IntegrateCrossSectionFast() bremsstrahlung distribution:" <<std::endl;
+    DistTF1* Edist = bremPhot->GetPhotonEdist();
+    (Edist->GetTF1()).Print();
+    Double_t maxE = bremPhot->GetBeamEnergy();
+    std::cout<<"PhotoProduction::IntegrateCrossSectionFast() maxE = "<< maxE<<std::endl;
+    for(int i=0;i<1000000;i++){
+      Double_t energy = (Edist->SampleSingle())*maxE;
+      LorentzVector b(0,0,energy,energy);
+      LorentzVector t(0,0,0,_beamNucl.Mass());
+      // LorentzVector t(0,0,0,0.938);
+      Double_t W = (b+t).M();
+      if(W<hEdist->GetXaxis()->GetXmin()){
+        i--;
+        continue;
+      }
+      hEdist->Fill(W);
+    }
+
+    double integrated_xsection = 0; // get sigma_ep from integral over W: f(W)*sigma_gp(W)
+    for(int i=0; i<hWdist->GetNbinsX(); i++) {
+      double W = hWdist->GetXaxis()->GetBinCenter(i+1);
+      double WbinWidthScale = hWdist->GetBinWidth(i+1);
+      double W_xsection = hWdist->GetBinContent(i+1);
+      
+      double W_fluxWeight =  hEdist->GetBinContent(i+1)/1000000 * hEdist->GetNbinsX();
+      // double W_fluxWeight =  1;
+      integrated_xsection += W_xsection * W_fluxWeight* WbinWidthScale;
+    }
+    gBenchmark->Stop("IntegrateCrossSectionFast");
+    gBenchmark->Print("IntegrateCrossSectionFast");
+ 
+    return integrated_xsection;
+
+    // return 0.0;
    }
 
  
