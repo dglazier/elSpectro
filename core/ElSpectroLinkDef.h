@@ -52,6 +52,7 @@
 
 #pragma link C++ class elSpectro::Writer+;
 #pragma link C++ class elSpectro::LundWriter+;
+#pragma link C++ class elSpectro::GlueXWriter+;
 #pragma link C++ class elSpectro::EICSimpleWriter+;
 #pragma link C++ class elSpectro::HepMC3Writer+;
 
