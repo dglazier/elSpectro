@@ -27,27 +27,23 @@ namespace elSpectro{
     auto costh = RandomCosTh();
     auto sinth=TMath::Sqrt(1-costh*costh);
     
-    auto phi =  0; //RandomPhi(); , sample phi when z-axis is rotated to simplify  i.e. in BoostToParent
-    auto sinphi=0;//TMath::Sin(phi);
-    auto cosphi=1;//TMath::Sqrt(1-sinphi*sinphi);
- 
     //momentum components in CM frame
-    auto x_a = p_a * sinth * cosphi;
-    auto y_a = 0;//p_a * sinth * sinphi;
+    //y applied in rotation function
+    auto x_a = p_a* sinth;
+    auto y_a = 0;
     auto z_a = p_a * costh;
+    //auto x_a = p_a * sinth * cosphi;
+    //auto y_a = p_a * sinth * sinphi;
+    //auto z_a = p_a * costh;
 
  
-    //Must make sure scattered products are in the same frame as the parent
-    //theta=0 => moving along parent direction
-    //i.e. boost vector should only have z component
-    //Please note this needs checked for correct rotation
-    //Also add the random phi angle...
-  
+    //Rotate out of parent rest frame and boost
+    //to frame parent is in
     _a.SetXYZT( x_a, y_a, z_a, e_a);
-    BoostToParent(parent,_a);
+    BoostToParentWithRandPhi(parent,_a);
     products[0]->SetP4(_a);
     products[1]->SetP4( parent - _a );
-    
+    //   std::cout<<"TwoBody "<<products[0]->P4()<<" "<<products[0]->P4().M()<<" "<<products[1]->P4()<<" "<<products[1]->P4().M()<<std::endl;
     return _weight; 
   }
 

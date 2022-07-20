@@ -19,7 +19,7 @@ namespace elSpectro{
 
     TwoBody_stu(double s,double t,double t_slope,double u=0,double u_slope=0);
 
-    double MyRandomCosTh() const noexcept final{
+    double RandomCosTh() const noexcept final{
       _weight=1;
       auto randChannel = gRandom->Uniform();
       //  std::cout<<" TwoBody_stu RandomCosTh() "<<randChannel<<std::endl;
@@ -57,8 +57,6 @@ namespace elSpectro{
       double E1 = sqrt(M1*M1 + P1*P1);
       double E3 = sqrt(M3*M3 + P3*P3);
      
-      //std::cout<<W-M1-M2<<" "<<W-TMath::Abs(M1)-M2<<" "<<kine::PDK2(W,M1,M2)<<" "<<sqrt(-kine::PDK2(W,M1,M2))<<" "<< kine::PDK(W,TMath::Abs(M1),M2)<<std::endl;
-        
       /*auto prBoost=_p2->BoostToCM();
       auto p2cm=boost(*_p2,prBoost);
       p2cm=boost(p2cm,cmBoost);
@@ -72,15 +70,6 @@ namespace elSpectro{
       _t = tmax*2; //start off >tmax
       while( (_t=tmin - gRandom->Exp(1./_t_slope)) < tmax ){}; //tau=1/b0
       
-      // while( t < tmax || t > tmin ){t= - gRandom->Exp(1./_t_slope);}; //tau=1/b0
-      // t = -0.1+tmin;
-      //weight is value/max_value as for Distribution
-      //here max value =1 @ 0
-      //*= in case any other weighting used
-      //_weight *= TMath::Exp( (t) * _t_slope) * _t_strength;
-      //_weight *= TMath::Exp( (_t-tmin) * _t_slope) * _t_strength + _strength;
-
-         // if(TMath::IsNaN(tmin)) exit(0);
       return (1 - (tmin - _t)/2/P1/P3); //cos(theta) from t
       
     }

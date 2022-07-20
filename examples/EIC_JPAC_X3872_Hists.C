@@ -42,9 +42,18 @@ TH1F hRecoilPt("RecoilPt","; p_{T} (GeV)",200,0,5.0);
 
 void EIC_JPAC_X3872_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double nLumi=100, int nDays = 0) {
 
-  LorentzVector elbeam(0,0,-1*ebeamE,escat::E_el(ebeamE));
-  LorentzVector prbeam(0,0,pbeamE,escat::E_pr(pbeamE));
+  Double_t crossingAngle=0; //0mrad
+  //define e- beam, pdg =11
+  auto elBeam = initial(11,ebeamE);
+  auto elBeamP4=elBeam->GetInteracting4Vector();
+  elBeam->SetAngleThetaPhi(TMath::Pi()-crossingAngle,0);
 
+  //define pr beam, pdg =2212
+  auto prBeam = initial(2212,pbeamE);
+  auto prBeamP4=prBeam->GetInteracting4Vector();
+  prBeam->SetAngleThetaPhi(crossingAngle,0);
+  
+ 
   // ---------------------------------------------------------------------------
   // AMPLITUDES
   // ---------------------------------------------------------------------------
@@ -118,7 +127,7 @@ void EIC_JPAC_X3872_Hists(string ampPar="high",double ebeamE = 5, double pbeamE 
   auto photoprod = DecayModelQ2W{0,&pGammaStarDecay,new TwoBody_stu{0., 1.0, 2.5}};
 
   //combine beam, target and reaction products
-  auto production=eic( ebeamE, pbeamE, &photoprod );
+  auto production=eic( elBeam,prBeam,&photoprod );
 
   // ---------------------------------------------------------------------------
   // Initialize HepMC3
@@ -159,10 +168,10 @@ void EIC_JPAC_X3872_Hists(string ampPar="high",double ebeamE = 5, double pbeamE 
     countGenEvent();
     if(generator().GetNDone()%1000==0) std::cout<<"event number "<<generator().GetNDone()<<std::endl;
 
-    auto photon = elbeam - electron->P4();
+    auto photon = *elBeamP4 - electron->P4();
     double Q2 = -photon.M2();
-    double W = (photon+prbeam).M();
-    double t = -1*(proton->P4()-prbeam).M2();
+    double W = (photon+*prBeamP4).M();
+    double t = -1*(proton->P4()-*prBeamP4).M2();
     hQ2.Fill(Q2);
     hW.Fill(W);
     ht.Fill(t);

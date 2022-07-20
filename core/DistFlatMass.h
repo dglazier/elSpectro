@@ -42,6 +42,8 @@ namespace elSpectro{
     double GetMinX() const noexcept final{return 0;}
     double GetMaxX() const noexcept final{return 1;}
 
+    double GetValueFor(double valX,double valY=0) override  {return 1.;}
+
   protected :
     void SetIndex(uint index){_index=index;}
     uint Index() const noexcept {return _index;}
@@ -70,6 +72,8 @@ namespace elSpectro{
     }
 
     double SampleSingle()   noexcept final ;
+    
+    double GetValueFor(double valX,double valY=0) final  {return 1.;}
 
     uint AddClient(){
   

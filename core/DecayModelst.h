@@ -72,11 +72,30 @@ namespace elSpectro{
       return p1cm.P()*p1cm.P();
       }*/
     
-    const ReactionElectroProd* ProductionInfo() const { return _prodInfo; }
+    const ReactionPhotoProd* ProductionInfo() const { return _prodInfo; }
+    //    const ReactionElectroProd* ProductionInfo() const { return _prodInfo; }
     
     void HistIntegratedXSection_ds(TH1D& hist);
     void HistIntegratedXSection(TH1D& hist);
     void HistMaxXSection(TH1D& hist);
+    
+    double PhaseSpaceFactor() const noexcept {
+      /* auto fluxPhaseSpace = p1*_W;//eqn 47.28b https://pdg.lbl.gov/2019/reviews/rpp2019-rev-kinematics.pdf
+	 auto ans =  1./fluxPhaseSpace
+	 * kine::PhaseSpaceFactorDt(_W,p1,_meson->Mass(),_baryon->Mass())
+	 * kine::PDK(_W,_meson->Mass(),_baryon->Mass())/_W
+	 * PhaseSpaceNorm();//nbarn it
+	 */ //Note above full calculation simplifies to
+      //return PhaseSpaceNorm()/_s/kine::PDK2(_W,_photon->M(),_target->M());
+      //Please note kine::PDK2(_W,_photon->M(),_target->M()) does not give
+      //correct momentum
+      return PhaseSpaceNorm()/_s/PgammaCMsq();
+      //this would not be the case if the differential was dcosth rather than t
+    }
+    
+    double PhaseSpaceFactorCosTh() const noexcept {
+      return PhaseSpaceNormCosTh()* kine::PDK(_W,_meson->Mass(),_baryon->Mass())/_s/PgammaCM();
+    }
     
   protected:
     
@@ -84,26 +103,9 @@ namespace elSpectro{
     virtual double MatrixElementsSquared_T() const {return 1; } //just real photon by default
     
     constexpr double  PhaseSpaceNorm() const {return 1./(2.56819E-6)/64/TMath::Pi();}// Convert from GeV^-2 -> nb
-    double PhaseSpaceFactor() const noexcept {
-       /* auto fluxPhaseSpace = p1*_W;//eqn 47.28b https://pdg.lbl.gov/2019/reviews/rpp2019-rev-kinematics.pdf
-      auto ans =  1./fluxPhaseSpace
-	* kine::PhaseSpaceFactorDt(_W,p1,_meson->Mass(),_baryon->Mass())
-	* kine::PDK(_W,_meson->Mass(),_baryon->Mass())/_W
-	* PhaseSpaceNorm();//nbarn it
-	*/ //Note above full calculation simplifies to
-      //return PhaseSpaceNorm()/_s/kine::PDK2(_W,_photon->M(),_target->M());
-      //Please note kine::PDK2(_W,_photon->M(),_target->M()) does not give
-      //correct momentum
-      return PhaseSpaceNorm()/_s/PgammaCMsq();
-      //this would not be the case if the differential was dcosth rather than t
-    }
-
+ 
     constexpr double  PhaseSpaceNormCosTh() const {return 1./(2.56819E-6)/32/TMath::Pi();}// Convert from GeV^-2 -> nb
-    
-    double PhaseSpaceFactorCosTh() const noexcept {
-      return PhaseSpaceNormCosTh()* kine::PDK(_W,_meson->Mass(),_baryon->Mass())/_s/PgammaCM();
-    }
-    
+
     
     SDME* const  GetMesonSDMEs() const {return _sdmeMeson;}
     SDME* const  GetBaryonSDMEs() const {return _sdmeBaryon;}
@@ -162,8 +164,9 @@ namespace elSpectro{
     double DifferentialXSect() const{//dont let others call this as need _s, _W and _t set
       //Note if your derived model already gives differential cross section
       //you will need to divide by PhaseSpaceFactor to get MatrixElementSquared from it
-      return _dsigma=PhaseSpaceFactor() * ( MatrixElementsSquared_T() +
-          				    (_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()); //eqn from Seyboth and Wolf
+      // std::cout<<" DifferentialXSect() "<<PhaseSpaceFactor()<<"  "<<" "<<PgammaCMsq()<<std::endl;
+      return _dsigma=PhaseSpaceFactor() *
+	( MatrixElementsSquared_T() + (_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L()); //eqn from Seyboth and Wolf
     }
        
     SDME* _sdmeMeson={nullptr};
@@ -171,13 +174,13 @@ namespace elSpectro{
     PhotonPolarisationVector* _photonPol={nullptr};
  
 
-    ReactionElectroProd* _prodInfo={nullptr};
+    ReactionPhotoProd* _prodInfo={nullptr};
  
     Particle* _baryon={nullptr};
     Particle* _meson={nullptr};
     LorentzVector* _photon={nullptr};
     LorentzVector* _target={nullptr};//{0,0,0,escat::M_pr()};
-    LorentzVector* _ebeam={nullptr};//{0,0,0,escat::M_pr()};
+    const LorentzVector* _ebeam={nullptr};//{0,0,0,escat::M_pr()};
  
     mutable double _max={0};
     mutable double _s={0};
@@ -188,7 +191,8 @@ namespace elSpectro{
     double _Wmax={0};
  
     bool _useSDME={false};
-
+    bool _isElProd={true};
+    
     ClassDefOverride(elSpectro::DecayModelst,1); //class DecayModelst
     
   };//class DecayModelst

@@ -30,21 +30,17 @@ namespace elSpectro{
     double Generate(const LorentzVector& parent,
 		    const particle_ptrs& products)  final;
 
-    virtual double MyRandomCosTh() const noexcept{ return gRandom->Uniform(-1,1); }
     virtual double RandomCosTh() const noexcept{
-      if(_forIntegral==true)
-	//integration requires flat distribution
-	return gRandom->Uniform(-1,1);
-      return MyRandomCosTh();
+      return gRandom->Uniform(-1,1);
     }
+    
     double Probability() const{return 1./4/TMath::Pi();}
 
 
   protected :
 
     double W() const noexcept{return _W;}
-    // void RotateZaxisToCMDirection(const LorentzVector& parent);
-
+  
   private:
 
     LorentzVector _a;

@@ -7,14 +7,25 @@
 #include "amplitudes/amplitude_sum.hpp"
 #include "amplitudes/baryon_resonance.hpp"
 
+#include "FunctionsForGenvector.h"
 
 // ---------------------------------------------------------------------------
 // Diagnostic histograms
 // ---------------------------------------------------------------------------
 
 TH1F hQ2("Q2","Q2",1000,0,100);
-TH1D heE("eE","eE",1000,0,20);
+TH1D hgPhi("gPhi","gPhi",100,-180,180);
+TH1D heE("eE","eE",1000,0,50);
+TH2D heThPhi("eThPhi","eThPhi",50,-180,180,500,178,180);
 TH1D heTh("eTh","eTh",1000,0,180);
+TH1D hPTh("NTh","NTh",1000,0,180);
+TH2D hPThPhi("PThPhi","PThPhi",50,-180,180,50,0,90);
+TH2D hJeThPhi("JeThPhi","JEThPhi",50,-180,180,50,0,90);
+TH1D hPPhi("NPh","NPh",1000,-180,180);
+TH1D hePhi("ePh","ePh",90,-180,180);
+TH1D hZPhi("ZPh","ZPh",90,-180,180);
+TH1D hJPhi("JPh","JPh",90,-180,180);
+TH1D hJePhi("JePh","JePh",90,-180,180);
 TH1F hW("W","W",1000,0,100);
 TH1F ht("t","t",1000,0,10);
 TH1F hgE("gE","gE",1000,0,20);
@@ -27,6 +38,10 @@ TH2F hRecoilPVsEta("RecoilPVsEta","; #eta; p (GeV)",200,0,10,1000,0,275);
 TH2F hRecoilThetaVsP("RecoilThetaVsP","; p (GeV); #theta (mrad)",1000,0,275,200,0,200);
 TH1F hRecoilPt("RecoilPt","; p_{T} (GeV)",200,0,5.0);
 
+TH1F  hScatPhi("Phi_Y","#phi_{Y}",100,-180,180);
+TH1F  hVectorCosTh("CosThGJ","cos(#theta_{GJ})",100,-1,1);
+TH1F  hVectorPhi("PhiGJ","#phi_{GJ}",100,-180,180);
+TH2F  hVectorvScatPhi("PhiGJPhi_Y","#phi_{GJ} v #phi_{Y}",50,-180,180,50,-180,180);
 
 //Amplitude based on $JPACPHOTO/executables/XYZ_Plots/Z_low.cpp and Z_high.cpp
 
@@ -38,16 +53,21 @@ TH1F hRecoilPt("RecoilPt","; p_{T} (GeV)",200,0,5.0);
 // argument 0 and nLumi=number of events
 // 'EIC_JPAC_X3872.C("high",100,100,1E4)'
 
-void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 41, double nLumi=100, int nDays = 0) {
+void EIC_JPAC_nZc_Hists(double ebeamE = 10, double pbeamE = 100, double nLumi=1E33, int nDays = 100) {
 
-  LorentzVector elbeam(0,0,-1*ebeamE,escat::E_el(ebeamE));
-  LorentzVector prbeam(0,0,pbeamE,escat::E_pr(pbeamE));
+  Double_t crossingAngle=0; //30mrad
+  //define e- beam, pdg =11
+  auto elBeam = initial(11,ebeamE);
+  auto elBeamP4=elBeam->GetInteracting4Vector();
+  elBeam->SetAngleThetaPhi(TMath::Pi()-crossingAngle,0);
 
+  //define pr beam, pdg =2212
+  auto prBeam = initial(2212,pbeamE);
+  auto prBeamP4=prBeam->GetInteracting4Vector();
+  prBeam->SetAngleThetaPhi(crossingAngle,0);
+  
   // ---------------------------------------------------------------------------
   // AMPLITUDES
-  // ---------------------------------------------------------------------------
- // ---------------------------------------------------------------------------
-  // Preliminaries
   // ---------------------------------------------------------------------------
 
   double g_NN = sqrt(4. * M_PI * 13.81); // Nucleon coupling same for all
@@ -68,21 +88,24 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
   double alpha_0 =  - alpha_prime * M2_PION;
   auto alpha = linear_trajectory{signature, alpha_0, alpha_prime};
 
-  pseudoscalar_exchange* ampZc{nullptr};
   // ---------------------------------------------------------------------------
   // low => Fixed-spin amplitudes
   // ---------------------------------------------------------------------------
-  if(ampPar=="low") ampZc = new pseudoscalar_exchange{&kZc, M_PION, "#it{Z_{c}} (3900)^{+}"};
+  pseudoscalar_exchange ampZcLow{&kZc, M_PION, "#it{Z_{c}} (3900)^{+}"};
+  ampZcLow.set_params(Zc_couplings);
+  ampZcLow.set_formfactor(true, bPi);
  // ---------------------------------------------------------------------------
   // high => Reggeized amplitudes
   // ---------------------------------------------------------------------------
-  else if(ampPar=="high") ampZc = new pseudoscalar_exchange(&kZc, &alpha, "#it{Z_{c}}(3900)^{+}");
-  else {cerr<<"invalid amplitude parameterisation "<<ampPar<<endl; exit(0);}
+  pseudoscalar_exchange ampZcHigh(&kZc, &alpha, "#it{Z_{c}}(3900)^{+}");
+  
+  ampZcHigh.set_params(Zc_couplings);
+  ampZcHigh.set_formfactor(true, bPi);
 
-  ampZc->set_params(Zc_couplings);
-  ampZc->set_formfactor(true, bPi);
 
-
+  double low_s = 15*15.;//GeV
+  double high_s = 20*20.;//GeV
+  amplitude_blend ampZc{&kZc,&ampZcLow,low_s,&ampZcHigh,high_s, "#it{Z_{c}}(3900)^{+} blend"};
   // ---------------------------------------------------------------------------
   // elSpectro
   // ---------------------------------------------------------------------------
@@ -98,7 +121,7 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
   Z->SetPdgMass(M_ZC3900);
 
   //create eic electroproduction of X + proton
-  auto pGammaStarDecay = JpacModelst{ampZc, {Z},{2112} }; //photo-nucleon system
+  auto pGammaStarDecay = JpacModelst{&ampZc, {Z},{2112} }; //photo-nucleon system
   //auto pGammaStarDecay = DecayModelst{ {Z},{2212} }; //photo-nucleon system
   //Decay g*p state, provide s channel and t-channel "shapes"
   //Note the amplitude will provide the actual t-distribution, this approximation speeds up sampling
@@ -106,13 +129,13 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
   auto photoprod = DecayModelQ2W{0,&pGammaStarDecay,new TwoBody_stu{0., 1.0, 2.5}};
 
   //combine beam, target and reaction products
-  auto production=eic( ebeamE, pbeamE, &photoprod );
+  auto production=eic( elBeam,prBeam,&photoprod );
 
   // ---------------------------------------------------------------------------
   // Initialize HepMC3
   // ---------------------------------------------------------------------------
-  writer(new HepMC3Writer{Form("out/jpac_Zc3900_%s_%d_%d.txt",ampPar.data(),(int)ebeamE,(int)pbeamE)});
-  
+  writer(new EICSimpleWriter{Form("outCollision/jpac_Zc3900_%d_%d.txt",(int)ebeamE,(int)pbeamE)});
+  // exit(0);
   
   // ---------------------------------------------------------------------------
   //initilase the generator, may take some time for making distribution tables 
@@ -124,10 +147,12 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
   // ---------------------------------------------------------------------------
   production->SetCombinedBranchingFraction(0.06); //Just Jpsi->e+e-
   generator().SetNEvents_via_LuminosityTime(nLumi,24*60*60*nDays);
+  //  generator().SetNEvents(10000);
+  // auto fastIntegral=production->IntegrateCrossSectionFast();
+  //std::cout<<"       check fast cross section "<<fastIntegral<<std::endl;
 
-  auto fastIntegral=production->IntegrateCrossSectionFast();
-  std::cout<<"       check fast cross section "<<fastIntegral<<std::endl;
-
+  
+  // exit(0);
   // ---------------------------------------------------------------------------
   // Get event particles for filling histograms
   // ---------------------------------------------------------------------------
@@ -137,7 +162,7 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
 
   auto electron = photoprod.GetScatteredElectron();
   auto neutron = photoprod.GetDecayBaryon();
-
+  ROOT::Math::RotationZYX  rotateToZaxis(-elBeamP4->Phi(),-elBeamP4->Theta(),0);
   // ---------------------------------------------------------------------------
   // Generate events
   // ---------------------------------------------------------------------------
@@ -149,34 +174,63 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
     countGenEvent();
     if(generator().GetNDone()%1000==0) std::cout<<"event number "<<generator().GetNDone()<<std::endl;
 
-      auto photon = elbeam - electron->P4();
+    auto photon = *elBeamP4 - electron->P4();
    double Q2 = -photon.M2();
-   double W = (photon+prbeam).M();
-   double t = -1*(neutron->P4()-prbeam).M2();
+   double W = (photon+*prBeamP4).M();
+   double t = -1*(neutron->P4()- *prBeamP4).M2();
    hQ2.Fill(Q2);
    hW.Fill(W);
    ht.Fill(t);
    hgE.Fill(photon.E());
-   
-   //LorentzVector totalIn = elbeam + prbeam;
-   //LorentzVector totalOut = electron->P4() + neutron->P4() + eleJ->P4() + posJ->P4() + pionp->P4();
-   //cout<<totalIn.E()<<" "<<totalOut.E()<<endl;
 
+   auto forScPhi= electron->P4();
+   forScPhi=rotateToZaxis*forScPhi;
+   hgPhi.Fill(forScPhi.Phi()*TMath::RadToDeg());
+   
+   LorentzVector totalIn = *elBeamP4 + *prBeamP4;
+   LorentzVector totalOut = electron->P4() + neutron->P4() + eleJ->P4() + posJ->P4() + pionp->P4();
+   // cout<<"CHECK ENERGY CONSERVATION "<<totalIn.E()<<" "<<totalOut.E()<<endl;
+   //cout<<"CHECK Momentum CONSERVATION "<<totalIn.P()<<" "<<totalOut.P()<<endl;
+   
+   
    auto elec = electron->P4();
+   // heThPhi.Fill(elec.Phi() *TMath::RadToDeg(),elec.Theta() *TMath::RadToDeg());
+   heThPhi.Fill(forScPhi.Phi() *TMath::RadToDeg(),forScPhi.Theta() *TMath::RadToDeg());
    heTh.Fill(elec.Theta() *TMath::RadToDeg());
+   hePhi.Fill(elec.Phi() *TMath::RadToDeg());
    heE.Fill(elec.E());
    
    auto jpsiP4 = eleJ->P4() + posJ->P4();
    hJpsiM.Fill(jpsiP4.M());
    auto jpsi_pion=pionp->P4()+jpsiP4;
    hMesonM.Fill(jpsi_pion.M());
+   //ROOT::Math::RotationZYX _rotateToZaxis(poto);
+       //SDME related angles
+   MomentumVector elScatAngles;
+   auto gStarN=(photon+*prBeamP4);
+   kine::electroCMDecay(&gStarN,elBeamP4,&photon,&jpsi_pion,&elScatAngles);
+   hScatPhi.Fill(elScatAngles.Phi()*TMath::RadToDeg());
+   MomentumVector vectorAngles;
+   kine::mesonDecayGJ(&photon,&jpsi_pion,prBeamP4,&pionp->P4(),&vectorAngles);
+   hVectorCosTh.Fill(TMath::Cos(vectorAngles.Theta()));
+   hVectorPhi.Fill(vectorAngles.Phi()*TMath::RadToDeg());
+   hVectorvScatPhi.Fill(elScatAngles.Phi()*TMath::RadToDeg(),vectorAngles.Phi()*TMath::RadToDeg());
    
    hElePVsEta.Fill(eleJ->P4().Eta(), eleJ->P4().P());
    hPosPVsEta.Fill(posJ->P4().Eta(), posJ->P4().P());
    hPionPVsEta.Fill(pionp->P4().Eta(), pionp->P4().P());
    hRecoilPVsEta.Fill(neutron->P4().Eta(), neutron->P4().P());
    hRecoilThetaVsP.Fill(neutron->P4().P(), neutron->P4().Theta()*1000.);
-   hRecoilPt.Fill(neutron->P4().Pt());
+   hRecoilPt.Fill(ROOT::Math::VectorUtil::Perp(prBeamP4->Vect(),neutron->P4().Vect()));
+   
+   hJPhi.Fill((jpsiP4.Phi())*TMath::RadToDeg());
+   hJePhi.Fill((eleJ->P4().Phi())*TMath::RadToDeg());
+   hZPhi.Fill((jpsi_pion.Phi())*TMath::RadToDeg());
+   hJeThPhi.Fill(eleJ->P4().Phi()*TMath::RadToDeg(),eleJ->P4().Theta()*TMath::RadToDeg());
+  
+   hPTh.Fill(neutron->P4().Theta()*TMath::RadToDeg());
+   hPThPhi.Fill(neutron->P4().Phi()*TMath::RadToDeg(),neutron->P4().Theta()*TMath::RadToDeg());
+   hPPhi.Fill(neutron->P4().Phi()*TMath::RadToDeg());
 
 
   }
@@ -190,19 +244,24 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
   
   generator().Summary();
 
-  delete ampZc;
+  // delete ampZc;
   
   // ---------------------------------------------------------------------------
   // Write diagnostic histograms
   // ---------------------------------------------------------------------------
-
-  TFile *fout = TFile::Open(Form("out/jpac_Zc3900_%s_%d_%d_diagnostic.root",ampPar.data(),(int)ebeamE,(int)pbeamE), "recreate");
+  TH1D *hWdist = (TH1D*)gDirectory->FindObject("Wdist");
+ 
+  TFile *fout = TFile::Open(Form("outCollision/jpac_Zc3900.root"), "recreate");
   // generated event distributions
   hQ2.Write();
   hW.Write();
   ht.Write();
   hgE.Write();
+  hgPhi.Write();
   heTh.Write();
+  hPTh.Write();
+  hPPhi.Write();
+  hePhi.Write();
   heE.Write();
   hJpsiM.Write();
   hMesonM.Write();
@@ -212,6 +271,9 @@ void EIC_JPAC_nZc_Hists(string ampPar="high",double ebeamE = 5, double pbeamE = 
   hRecoilPVsEta.Write();
   hRecoilThetaVsP.Write();
   hRecoilPt.Write();
+  hPThPhi.Write();
+  heThPhi.Write();
+  hWdist->Write();
   fout->Close();
-
+  
 }

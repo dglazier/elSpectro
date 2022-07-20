@@ -57,7 +57,8 @@ namespace elSpectro{
     }
 
     double getQ2() const noexcept{return -_gamma.M2();}
-    double getW() const noexcept{ return GetGammaN()->Mass();}
+    //double getW() const noexcept{ return GetGammaN()->Mass();}
+    double getW() const noexcept{ return _gstarNuc->Mass();}
     double getThreshold() const noexcept{return _threshold;}
     void setThreshold(double val) noexcept{
       if(val<_threshold) return;
@@ -65,7 +66,7 @@ namespace elSpectro{
     }
     
     void FindExcitationSpectra();
-    
+    DistTH1* GetApproxWDist() const {return _Wrealphoto_Dist.get();}
     //Q2 dependence from The H1 Collaboration: Elastic electroproduction of ρ mesons at HERA eqn 49 https://link.springer.com/content/pdf/10.1007/s100520000150.pdf
     constexpr double Q2H1RhoAt0() const  noexcept {return 3.0610097;}//1./TMath::Power((0.77549000*0.77549000),2.2); 
     double Q2H1Rho() const noexcept {return 1./TMath::Power((getQ2() + 0.77549000*0.77549000),2.2)/Q2H1RhoAt0(); }

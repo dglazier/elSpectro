@@ -25,7 +25,6 @@ namespace elSpectro{
   void LundWriter::Init(){
 
     Writer::Init();
-    
     //need to find e- and baryon
     if(TDatabasePDG::Instance()->GetParticle(_initialParticles[0]->Pdg())->ParticleClass()==TString("Baryon") ){
       _inTarget=_initialParticles[0];
@@ -58,19 +57,20 @@ namespace elSpectro{
   /////////////////////////////////////////////////////////////
   //write all the info required for this event
   void LundWriter::FillAnEvent(){
-
-    
+     
     ////fill _stream
     StreamEventInfo();
  
     _id=1;//reset particle ID counter
  
-    
+   
     //final particles
     int final_status=1;
     for(const auto* p:_finalParticles){
+     
       StreamParticle(p,final_status);
-    }
+  
+     }
       
     _nEvent++;
     

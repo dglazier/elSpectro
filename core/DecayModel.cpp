@@ -20,8 +20,9 @@ namespace elSpectro{
     //store list of unstable particles which decay
     for(auto prod: _products){ 
       auto dp=dynamic_cast<DecayingParticle*>(prod);
-      if(dp!=nullptr)
+      if(dp!=nullptr){
 	_unstables.push_back(dp);
+      }
       else
 	_stables.push_back(prod);
     }
@@ -46,10 +47,23 @@ namespace elSpectro{
   
   void DecayModel::PostInit(ReactionInfo* info){
     if(_unstables.empty()) return;
+    std::vector<double> prodmasses;
     for(auto& p:_unstables){
         p->PostInit(info);
+	prodmasses.push_back(p->MinimumMassPossible());
     }
-  };
+
+    for(uint i=0;i<_unstables.size();++i){ //for each product
+      //calculate mass reserved for subsequent unstable products
+      float reserve=0;
+      for(uint j=i+1;j<_unstables.size();++j)
+	reserve+=prodmasses[j];
+      
+      _unstableReservedMass.push_back(reserve);
+    }
+
+  }
+ 
 
   void  DecayModel::GetStableMasses( std::vector<double >& masses) const{
 
@@ -71,33 +85,47 @@ namespace elSpectro{
  
   }
   double DecayModel::PhaseSpaceWeightSq(double W){
-    //if(Parent()->Pdg()==-2211)std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq start "<<MinimumMassPossible()<<" "<<W<<std::endl;
+    // if(Parent()->Pdg()==-2211)std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq start "<<MinimumMassPossible()<<" "<<W<<std::endl;
+    //  std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq start "<<MinimumMassPossible()<<" "<<W<<" "<<_unstables.size()<<" "<<_stables.size()<<std::endl;
     //Note use weight squared to reduce sqrt calls
-
+    
     if(_products.size()!=2){
       std::cerr<<"DecayModel::PhaseSpaceWeightSq must be 2-body decay"<<std::endl;
       exit(0);
     }
     double result=1;
-    
     double TCM=W;
-    for(auto* p:_stables){
-      TCM-=p->Mass();
+ 
+   for(auto* p:_stables){
+       TCM-=p->Mass();    
     }
 
+    uint iu=0; //synch reserved mass vector
     for(auto* p:_unstables){
       //This should be the only call to DetermineDynamicMass in the code.
       //Unless somewhere else uses LockMass in which case
       //this call to DetermineDynamicMass will not change its value
-      p->DetermineDynamicMass(-1,TCM);
+
+      //Note in case there are additional unstable particle we
+      //must subtract off their minimum masses
+      p->DetermineDynamicMass(-1,TCM-_unstableReservedMass[iu++]);
       TCM-=p->Mass();
-      if(TCM<0){ std::cout<<Parent()->Pdg()<<" "<<GetName()<<" "<< MinimumMassPossible()<<" W "<<W<<" T "<<TCM<<" "<<p->Mass()<<" "<<std::endl;return 0;}//below threshold, start again
+      if(TCM<0){
+		std::cout<<"DecayModel::PhaseSpaceWeightSq "<<Parent()->Pdg()<<" "<<GetName()<<" "<< MinimumMassPossible()<<" W "<<W<<" T "<<TCM<<" "<<p->Mass()<<" "<<std::endl;
+	return 0;
+      }//below threshold, start again
     }
-    //std::cout<<std::endl;
-  
-      if(TCM<0){  std::cout<<Parent()->Pdg()<<" "<<GetName()<<" "<< MinimumMassPossible()<<" W "<<W<<" T "<<TCM<<" after stables "<<std::endl; return 0;}//below threshold, start again
-      result  *= kine::PDK2(W,_products[0]->Mass(),_products[1]->Mass());
-    
+
+    //Allow for rounding errors in check
+    if(TCM<0){
+      if(TCM<-1E-5){
+	std::cout<<"DecayModel::PhaseSpaceWeightSq "<<Parent()->Pdg()<<" "<<GetName()<<" "<< MinimumMassPossible()<<" W "<<W<<" T "<<TCM<<" after stables "<<std::endl;}
+      return 0;
+    }//below threshold (probably precission issue), start again
+      
+ 
+    result  *= kine::PDK2(W,_products[0]->Mass(),_products[1]->Mass());
+ 
     for(auto* p:_unstables)
       result*=p->PhaseSpaceWeightSq();
     

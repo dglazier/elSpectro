@@ -18,7 +18,9 @@ namespace elSpectro{
 
     virtual ~ReactionInfo()=default;
 
-    
+    double _Wmax=0;
+    double _Wmin=0;
+
   };
 
   class ReactionPhotoProd : public ReactionInfo {
@@ -32,11 +34,11 @@ namespace elSpectro{
     LorentzVector* _photoN{nullptr};   
     LorentzVector* _meson={nullptr};   
     LorentzVector* _baryon={nullptr};
+    const LorentzVector* _ebeam={nullptr}; //beam electron   
 
     PhotonPolarisationVector* _photonPol={nullptr};
     
     mutable double _sWeight = {1}; //s=W^2 excitation function weight
-    
   };
 
   class ReactionElectroProd : public ReactionPhotoProd {
@@ -46,8 +48,7 @@ namespace elSpectro{
     virtual ~ReactionElectroProd()=default;
 
     LorentzVector* _scattered={nullptr}; //scattered electron   
-    LorentzVector* _ebeam={nullptr}; //beam electron   
-    
+    //Distribution* _Wdist={nullptr}; //W photoproduction
   };
 
 

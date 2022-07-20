@@ -15,7 +15,7 @@ void ComparePhaseSpaceto5RhoPhi() {
 
    TH1F* h1rho = new TH1F("hrho","hrho", 100,0,1.5);
    TH1F* h1phi = new TH1F("hphi","hphi", 100,0.9,1.5);
-   TH1F* h1X = new TH1F("hX","hrho", 100,0,50);
+   TH1F* h1X = new TH1F("hX","hX", 100,0,5);
   
    
    auto bwRho = TF1("hh","TMath::BreitWigner(x,0.78,0.1)",0.3,3.5);
@@ -76,7 +76,7 @@ void ComparePhaseSpaceto5RhoPhi() {
    h1rho_el->SetLineColor(2);
    TH1F* h1phi_el = new TH1F("hphi_el","hphi", 100,0.9,1.5);
    h1phi_el->SetLineColor(2);
-   TH1F* h1X_el = new TH1F("hX_el","hX", 100,0,50);
+   TH1F* h1X_el = new TH1F("hX_el","hX", 100,0,5);
    h1X_el->SetLineColor(2);
  
    mass_distribution(113,new DistTF1{TF1("Mrho","TMath::BreitWigner(x,0.78,0.1)",0.2,3.5)});
@@ -93,15 +93,15 @@ void ComparePhaseSpaceto5RhoPhi() {
    
    pX->SetXYZT(W.X(),W.Y(),W.Z(),W.T());
 
-   // pX->Print();
    
-   auto pionp = rho->Model()->Products()[0];
-   auto pionm = rho->Model()->Products()[1];
-   auto Kp = phi->Model()->Products()[0];
-   auto Km = phi->Model()->Products()[1];
+   auto pionp = rho->Model()->Product(0);
+   auto pionm = rho->Model()->Product(1);
+   auto Kp = phi->Model()->Product(0);
+   auto Km = phi->Model()->Product(1);
   
    auto proton = pX->Model()->Products()[1];
 
+   pX->PostInit(nullptr);
    
    gBenchmark->Start("elspectro");
    int extra=1000;

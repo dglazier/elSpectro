@@ -22,8 +22,9 @@ namespace elSpectro{
   public:
     
      static Manager& Instance() { static Manager instance; return instance; }
+    static void Reset(){Instance() = Manager();}
 
-     ParticleManager& Particles() noexcept{return _particles;}
+    ParticleManager& Particles() noexcept{return _particles;}
      DecayManager& Decays() noexcept{return _decays;}
      
      void SetWriter(Writer* wr){
@@ -59,17 +60,30 @@ namespace elSpectro{
        std::cout<<"Manager::SetNEvents_via_LuminosityTime , going to generate "<<_nEventsToGen<<" events"<<std::endl;
        std::cout<<"\t based on an integrated cross section of "<<_integralXSection<<"; luminosity = "<<n_or_lum<<"; and beamtime of "<<beamtime <<" s "<<std::endl;
      }
+     void SetNEvents_via_LuminosityTimeFast(double n_or_lum, double beamtime){
+       if(beamtime==0){
+	 SetNEvents(n_or_lum);
+	 return;
+       }
+       _integralXSection=Reaction()->IntegrateCrossSectionFast();
+       _nEventsToGen=n_or_lum*1E-33*beamtime*_integralXSection*Reaction()->BranchingFraction();//1E-33(cm2tonb)
+       std::cout<<"Manager::SetNEvents_via_LuminosityTimeFast , going to generate "<<_nEventsToGen<<" events"<<std::endl;
+       std::cout<<"\t based on an integrated cross section of "<<_integralXSection<<"; luminosity = "<<n_or_lum<<"; and beamtime of "<<beamtime <<" s "<<std::endl;
+     }
      
      void Reaction(ProductionProcess* prod){
        _process.reset(prod);
      }
-     
-     ProductionProcess* Reaction(){return _process.get();}
+    void BoostToLab(LorentzVector& boostme){
+      _process->BoostToLab(boostme);
+    }
+    ProductionProcess* Reaction(){return _process.get();}
 
      void SetSeed(ULong_t seed = 0){gRandom->SetSeed(seed);}
 
 
      void SetModelForMassPhaseSpace(DecayModel* amodel){_massPhaseSpace.SetModel(amodel);}
+    void SuppressPhaseSpace(double val){_massPhaseSpace.SuppressPhaseSpace(val);}
      void  FindMassPhaseSpace(double parentM,const  DecayModel* amodel) {
        _massPhaseSpace.Find(parentM,amodel);
      }

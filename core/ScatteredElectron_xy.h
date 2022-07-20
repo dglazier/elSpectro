@@ -9,7 +9,7 @@
 #include "DecayVectors.h"
 #include "DistVirtPhotFlux_xy.h"
 #include <Math/VectorUtil.h> //for boosts etc.
-#include <Math/RotationY.h>
+#include <Math/RotationZYX.h>
 #include <TH1.h>
 #include <TH2.h>
 
@@ -38,9 +38,11 @@ namespace elSpectro{
 
     double Probability() const final{return _random_xy.Probability();}
 
+    void PostInit(ReactionInfo* info) final;
+    
   protected:
 
-    void RotateZaxisToCMDirection(const LorentzVector& parent);
+    void RotateZaxisToCMDirection(const LorentzVector& parent, LorentzVector& child);
     double CompleteGivenXandY(const LorentzVector& parent, const particle_ptrs& products,double xx, double yy);
 
   private:
@@ -51,10 +53,11 @@ namespace elSpectro{
  
     LorentzVector _scattered;
     LorentzVector _gamma_ion; //residual gamma* + ion system
-
+    LorentzVector _parent_in_elFrame;
     
-    ROOT::Math::RotationY _rotateToZaxis;
-    LorentzVector _cachedParent;
+    ROOT::Math::RotationZYX _sc_rotateToZaxis;
+    ROOT::Math::RotationZ _sc_rotateAroundZaxis;//save memory allocation
+   LorentzVector _cachedParent;
     
     // TH1D *hist, *histW;
     TH1D histy={"ydist","ydist",1000,0,1};
@@ -68,12 +71,17 @@ namespace elSpectro{
 
   };
 
-  inline void ScatteredElectron_xy::RotateZaxisToCMDirection(const LorentzVector& parent){
+  inline void ScatteredElectron_xy::RotateZaxisToCMDirection(const LorentzVector& parent, LorentzVector& child){
     if(_cachedParent!=parent){ //SetAngle is expensive (sin,cos calls) only call if necessary
       _cachedParent = parent;
-      _rotateToZaxis.SetAngle(_cachedParent.Theta());
+      //_rotateToZaxis.SetAngle(_cachedParent.Theta());
+      _sc_rotateToZaxis.SetComponents(_cachedParent.Phi(),_cachedParent.Theta(),0);
+      _sc_rotateAroundZaxis.SetAngle(_cachedParent.Phi());
+      // _sc_rotateToZaxis.SetComponents(0,-_cachedParent.Theta(),0);
      }
-    _scattered=_rotateToZaxis*_scattered;
+    child=_sc_rotateToZaxis*child;
+    child =_sc_rotateAroundZaxis*child; 
+
   }
   
 }

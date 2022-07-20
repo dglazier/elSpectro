@@ -7,15 +7,12 @@
 
 #pragma once
 
-#include "DecayModel.h"
-#include "DecayingParticle.h"
-#include "SDME.h"
-#include "PhotonPolarisationVector.h"
+#include "SDMEDecay.h"
 
 namespace elSpectro{
 
  
-  class VectorSDMEDecay : public DecayModel {
+  class VectorSDMEDecay : public SDMEDecay {
 
   public:
     
@@ -28,25 +25,13 @@ namespace elSpectro{
     // Each model must define its intensity
     double Intensity() const final;
     
-    //Keep trying with new DecayVectors until pass
-    bool RegenerateOnFail() const  noexcept final {return false;}
-
-    void PostInit(ReactionInfo* info) final;
+    //void PostInit(ReactionInfo* info) final;
     
-    bool CanUseSDME()const noexcept final{return true;}
+    short Spin() const final{ return 1;}
 
   private:
  
-    const SDME* _rho ={nullptr};
-
-    LorentzVector* _photon={nullptr};
-    LorentzVector* _meson={nullptr};
-    LorentzVector* _baryon={nullptr};
-    LorentzVector* _child1={nullptr};
-    PhotonPolarisationVector* _photonPol={nullptr};
-    
-    
-    ClassDefOverride(elSpectro::VectorSDMEDecay,1); //class VectorSDMEDecay
+   ClassDefOverride(elSpectro::VectorSDMEDecay,1); //class VectorSDMEDecay
     
   };//class VectorSDMEDecay
 

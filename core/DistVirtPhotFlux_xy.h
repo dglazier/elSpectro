@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Distribution.h"
+#include "DistTH1.h"
 #include "FunctionsForElectronScattering.h"
 #include <TMath.h>
 #include <RooRealVar.h>
@@ -19,7 +20,6 @@ namespace elSpectro{
     
   public :
 
-    //DistVirtPhotFlux_xy(double ebeam,float xmin,float xmax,float ymin,float ymax);
     DistVirtPhotFlux_xy(double eb, double mion, double Wmin);
  
     double SampleSingle()   noexcept final {
@@ -27,7 +27,7 @@ namespace elSpectro{
     }
     
     dist_pair SamplePair()   noexcept final {
-      _forIntegral==false ? FindWithAcceptReject() : FindFlat();
+      FindWithAcceptReject();
       return _xy;
     }
 
@@ -44,8 +44,9 @@ namespace elSpectro{
     double GetMinX() const noexcept final{return 0;}
     double GetMaxX() const noexcept final{return 1;}
 
+    double GetWMin() const noexcept {return TMath::Sqrt(_Wthresh2);}
+
     void FindWithAcceptReject();
-    void FindFlat();
     
     void SetElecE(double ee){_ebeam=ee;}
     void SetM(double m){_mTar=m;}
@@ -69,8 +70,32 @@ namespace elSpectro{
     double Probability() const{return _val/_integral;}
 
     double Integral() const noexcept{return _integral;}
-
     
+    double GetValueFor(double valX,double valY) final{
+      Double_t arr[]={valX,valY};
+      return Eval(arr);
+    }
+ 
+    void FindMaxVal();
+
+    /*
+//tested but not used, apply W weighting from cross section
+//at this stage, slightly faster or slower in different cases 
+//tends to be faster at high W
+//Note if we use this we also need to multuply max val by WeightForW
+//And Set weight = 1 in DecayModelQ2W
+    void SetApproxWDist(DistTH1* dist){
+      if(dist==nullptr) return;
+      TH1D hist = *dynamic_cast<const TH1D*>(&dist->GetTH1());//copy W depednent hist
+      hist.SetName("ApproxWDist");
+      //create new distribution
+      _approxWDist.reset(new DistTH1(hist));
+      FindMaxVal();
+    }
+    double WeightForW(double valX,double valY){
+      return _approxWDist->GetWeightFor(escat::W_EMyx(_ebeam,_mTar,valX,valY));
+    }
+    */
   protected:
     double XMin(double y) const;
     double XMax(double y) const;
@@ -108,13 +133,15 @@ namespace elSpectro{
     double _integral=1;
 
     bool _forIntegral=false;
+
+    //  std::unique_ptr<DistTH1> _approxWDist;
     
     ClassDef(elSpectro::DistVirtPhotFlux_xy,1); //class DistVirtPhotFlux_xy
  
 
   };
 
-  /* //evaluate photon flux as function of lnx and lny
+   //evaluate photon flux as function of lnx and lny
   inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
 
     double lnx=x[0];
@@ -136,7 +163,8 @@ namespace elSpectro{
     if(currx<avail_xmin){ return 0; }
     
     return escat::flux_dlnxdlny(_ebeam,lnx,lny);
-    }*/
+    }
+  /*
   inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
     //given x and y evaluate photon flux
 
@@ -159,7 +187,7 @@ namespace elSpectro{
     if(currx<avail_xmin){ return 0; }
     
     return escat::flux_dxdy(_ebeam,currx,y);
-  }
+    }*/
 
   inline  double DistVirtPhotFlux_xy::XMin(double y) const{
       double r = 2*_mTar*_ebeam*y;

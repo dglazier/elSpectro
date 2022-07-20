@@ -12,20 +12,22 @@
 #include "DecayModel.h"
 #include "ParticleManager.h"
 #include "DecayingParticle.h"
+#include "CollidingParticle.h"
 #include "Distribution.h"
 #include "DistConst.h"
 
 namespace elSpectro{
-  
+
   
   class ProductionProcess : public DecayingParticle {
 
      
   public:
-    //virtual ~ProductionProcess()=default;
-
+ 
+    // ProductionProcess()=delete;
     //only construct via and take ownership of model 
     ProductionProcess(DecayModel* model);
+    ProductionProcess(CollidingParticle* p1,CollidingParticle* p2,DecayModel* model);
     ProductionProcess(int pdg, DecayVectors* decayer, DecayModel* model);
 
     virtual ~ProductionProcess()=default;
@@ -37,7 +39,9 @@ namespace elSpectro{
  
     
     virtual void InitGen() =0;
-
+    
+    void PostInit(ReactionInfo* info) override;
+    void Init();
    
     virtual double IntegrateCrossSection() = 0;
     virtual double IntegrateCrossSectionFast() = 0;
@@ -66,13 +70,21 @@ namespace elSpectro{
     void GiveZVertexDist(Distribution* dist){_zvertexDist.reset(dist);}
     void GiveTVertexDist(Distribution* dist){_tvertexDist.reset(dist);}
 
-    
+    CollidingParticle* Incident1() const {return _in1;}
+    CollidingParticle* Incident2() const {return _in2;}
+
+    void BoostToLab(LorentzVector& boostme) const{
+      boostme=ROOT::Math::VectorUtil::boost(boostme,_boostToLab);
+    }
+    void SetBoostToLab(const elSpectro::BetaVector& boostv){
+      _boostToLab=boostv;
+    }
   protected:
 
    
     
   private:
-    ProductionProcess()=default;
+    ProductionProcess()=delete;
     particle_constptrs _initialParticles;
     
     dist_uptr _xvertexDist=dist_uptr{new DistConst{0}};
@@ -81,6 +93,11 @@ namespace elSpectro{
     dist_uptr _tvertexDist=dist_uptr{new DistConst{0}};
     
     double _branchFrac={1};
+
+    CollidingParticle* _in1={nullptr};
+    CollidingParticle* _in2={nullptr};
+    
+    elSpectro::BetaVector _boostToLab;
 
   };
 

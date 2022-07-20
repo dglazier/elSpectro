@@ -39,12 +39,13 @@ namespace elSpectro{
 
     double GetX() const noexcept { return _x;}
     
-    double GetMinX() const noexcept final{return _tf1.GetXmin();}
-    double GetMaxX() const noexcept final{return _tf1.GetXmax();}
+    double GetMinX() const noexcept final;
+    double GetMaxX() const noexcept final;
 
     double GetWeightFor(double valX) const {return _tf1.Eval(valX)/_max_val;}
+    double GetValueFor(double valX,double valY=0) final {return _tf1.Eval(valX);}
     
-    const TF1& GetTF1() const noexcept {return _tf1;}
+    TF1& GetTF1()  noexcept {return _tf1;}
     
   private:
     //no one should use default constructor

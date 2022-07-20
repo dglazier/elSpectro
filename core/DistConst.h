@@ -36,7 +36,8 @@ namespace elSpectro{
     double GetMaxX() const noexcept final{return _var1;}
 
  
-     double GetWeightFor(double valX)  {return 1;}
+    double GetWeightFor(double valX)  {return 1;}
+    double GetValueFor(double valX,double valY=0)final  {return _val;}
     
   private:
     //no one should use default constructor

@@ -25,6 +25,8 @@ namespace elSpectro{
     constexpr double M2_el(){return M_el()*M_el();}
     constexpr double M_pr(){return 0.93827208816;}
     constexpr double M2_pr(){return M_pr()*M_pr();}
+    constexpr double M_d(){return 1.875612;}
+    constexpr double M2_d(){return M_pr()*M_pr();}
     
     constexpr double Alpha_by2Pi(){return 1./(137*2*TMath::Pi());}
     
@@ -143,6 +145,10 @@ namespace elSpectro{
       K/=2;
       return K<0 ? 0 : K; //protect -ve
     }
+    inline double W_EMyx(double e_in,double m_in,double xx, double yy){
+      return TMath::Sqrt(K_xy(e_in,xx,yy)*2*m_in + m_in*m_in);
+    }
+    
     /*
       inline double KLbyE_Q2y(double e_in,double Q2, double yy){
       //      double y = (W2 - M2_pr() + Q2)/2/M_pr()/e_in;

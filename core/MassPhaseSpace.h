@@ -23,7 +23,7 @@ namespace elSpectro{
     void Print(){
       std::cout<<"MassPhaseSpace number calcs= "<<_weightCalcN<<" number of successes = "<<_successN<<" ratio  ="<< double(_successN)/_weightCalcN <<std::endl;
     }
-    
+    void SuppressPhaseSpace(double val){_suppressPhaseSpace=val;}
   private:
     
     friend Manager; //only Manager can construct and use a MassPhaseSpace
@@ -45,21 +45,33 @@ namespace elSpectro{
       // double max= kine::PhaseSpaceWeightMax(parentM,_masses);//TGenPhaseSpace max . Note this is too high an estimate
 
       //Note PhaseSpaceWeightMaxFromEquDist does not quite get to max, so increase by 10% to be safe....will give warning if event weight is above this....
-      double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses)*1.05;
+      double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses)*1.2;
       //double max= kine::PhaseSpaceWeightMaxFromEquDist(parentM,_masses);
       //accept or reject mass combinations until got one
       //as W dependence accounted for elsewere
       //PhaseSpaceWeight will try alternative masses
       double wee=0;
-      while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max ){
+    
+      while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max*_suppressPhaseSpace )
+	{
+	  
+
+	  // if(wee>max){
+	  // _sampledMax=wee;
+	  //  std::cout<<" weight >  max "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
+	  // }
 	//reject this combintation
-	if(wee==0)	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
+	  //	if(wee==0)	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
       }
-      if(wee>_sampledMax){
-	_sampledMax = wee;
-	if(_sampledMax>max )
-	  std::cerr<<"MassPhaseSpace weight > max "<<std::endl;
+      if(wee>max){
+	// _sampledMax=wee;
+	std::cerr<<"MassPhaseSpace check weight >  max,  W "<<parentM<<" this "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
+	std::cout<<" parent "<<parentM<<" ";
+	for(auto& m:_masses)
+	  std::cout<<m<<" ";
+	std::cout<<std::endl;
       }
+
       _successN++;
     }
     bool AcceptPhaseSpace(double parentM){
@@ -90,6 +102,7 @@ namespace elSpectro{
     double _sampledMax = 0;
     mutable long _weightCalcN=0;
     mutable long _successN=0;
+    double _suppressPhaseSpace=1;
     
     ClassDef(elSpectro::MassPhaseSpace,1); //class MassPhaseSpace
   };
