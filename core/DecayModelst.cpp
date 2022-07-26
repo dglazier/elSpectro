@@ -17,6 +17,9 @@ namespace elSpectro{
   {
     _name={"DecayModelst"};
 
+    if(Products().size()!=2){
+      Fatal("DecayModelst","Can only have two decay particles");
+    }
     //need to find meson and baryon
     if(TDatabasePDG::Instance()->GetParticle(Products()[0]->Pdg())->ParticleClass()==TString("Baryon") ){
       _baryon=Products()[0];
@@ -153,6 +156,7 @@ namespace elSpectro{
 	auto dt=4* TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,M3,M4 );
 
 	double val = DifferentialXSect()*dt;
+	std::cout<<"DecayModelDnpee::FindMaxOfIntensity() "<<val<<" at W = "<<_W<<std::endl;
 	if( TMath::IsNaN(val) ) return 0.;
 	return -(val); //using a minimiser!
       };

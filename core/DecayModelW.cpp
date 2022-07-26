@@ -1,6 +1,7 @@
 #include "DecayModelW.h"
 #include "DecayingParticle.h"
 #include "FunctionsForElectronScattering.h"
+#include "DistConst.h"
 #include <TDatabasePDG.h>
 #include "TFile.h"
 
@@ -62,9 +63,12 @@ namespace elSpectro{
       std::cout<<"DecayModelW::PostInit with W threshold = "<<getThreshold()<<std::endl;
       DecayModel::PostInit(_prodInfo);
       
- 
-      FindExcitationSpectra();
-  
+      if( dynamic_cast<DecayModelst*>(GetGammaN()->Model()) == nullptr){
+	_Wrealphoto_Dist.reset( new DistConst(1) );
+      }
+      else{	
+	FindExcitationSpectra();
+      }
   }
   
   ////////////////////////////////////////////////////////
@@ -80,17 +84,9 @@ namespace elSpectro{
     if(W  < _threshold ) return 0.;
  
   
-    //   auto epsilon = escat::virtualPhotonPolarisation(p4beam,p4tar,p4scat);
-    //auto delta = 2*escat::M2_el()/getQ2()*(1-epsilon);
-        
-    // _photonPol.SetEpsilon(epsilon);
-    // _photonPol.SetDelta(delta);
- 
     //Get envelope weight from integrated cross section
     double weight=_Wrealphoto_Dist->GetWeightFor( W  );
-        
- 
-   
+         
 
     _prodInfo->_sWeight=weight; //might be used in s and t
    

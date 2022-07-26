@@ -38,9 +38,9 @@ namespace elSpectro{
     }
     else _decayType=DecayType::Attached;
    
-   
     //decay vertex position
     auto& products=_decay->Products();
+    //  std::cout<<" DecayingParticle::PostInit "<<Pdg()<<" "<<products.size()<<std::endl;
     //    if(IsDecay()==DecayType::Detached||IsDecay()==DecayType::Production){
     if(IsDecay()==DecayType::Detached){
       //create a new detached vertex
@@ -55,6 +55,9 @@ namespace elSpectro{
       }
     }
 
+      if(_decay)_decay->PostInit(info);
+  if(_decayer)_decayer->PostInit(info);
+
     if(Pdg()!=0&&Pdg()!=-2211){//for real particles
       Double_t productMasses = 0.0;
       for(auto* prod: products){
@@ -62,16 +65,17 @@ namespace elSpectro{
       }
       auto mmp=MaximumMassPossible();
       if(mmp<productMasses){
-	std::cerr<<"DecayingParticle::PostInit  insufficient mass to decay to its products, max mass = "<<mmp<<" while product masses "<<productMasses<<std::endl;
+	std::cerr<<"DecayingParticle::PostInit  insufficient mass to decay to its products, max mass = "<<mmp<<" while product masses "<<productMasses<<" for "<<Pdg()<<std::endl;
 	Print();
+	std::cerr<<"DecayingParticle::PostInit  EXITING "<<std::endl;
 	exit(0);
       }
     }
-    
-    if(_decay)_decay->PostInit(info);
-    if(_decayer)_decayer->PostInit(info);
+
  
-    //std::cout<<"DecayingParticle::PostInit pdg "<<Pdg()<<" vertexID "<<_decayVertexID<<std::endl;
+    
+
+     //std::cout<<"DecayingParticle::PostInit pdg "<<Pdg()<<" vertexID "<<_decayVertexID<<std::endl;
     // std::cout<<"DecayingParticle::PostInit  min mass "<<MinimumMassPossible()<<std::endl;
   };
   //////////////////////////////////////////////////////////////////////
@@ -85,24 +89,25 @@ namespace elSpectro{
 
     double _maxWeight=1;
   
-    //std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<_decay->Products().size()<<" "<<" "<<_decay->Products()[0]->Pdg()<<" "<<_decay->Products()[1]->Pdg()<<std::endl;
+    // std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<_decay->Products().size()<<" "<<" "<<_decay->Products()[0]->Pdg()<<" "<<_decay->UnstableProducts().size()<<" "<<_decay->StableProducts().size()<<" "<<std::endl;
     //if in charge of phase space calculate masses for full decay chain
     Manager::Instance().FindMassPhaseSpace(Mass(),Model());
   
     //generate decay product vectors
     //samplingWeight = 1 for phase space decay
     //for others it allows to weigth phase space back in 
+
     auto samplingWeight= Decay();
 
     if(Model()->HasAngularDistribution()==false)samplingWeight=1; //Model has no angular distribution
-    
+     
     //samplingWeight ==0 => not physical (below threshold)
     if(samplingWeight==0) return DecayStatus::ReGenerate;
   
     //evaluate the model intensity for the product vectors
     double weight = 1;
     if(Model()!=nullptr)  weight = Model()->Intensity();
-    // std::cout<<"DecayingParticle::GenerateProducts "<<samplingWeight<<" "<<weight<<std::endl;
+ 
     if(weight==0)  return DecayStatus::ReGenerate;
     if(samplingWeight - weight < -1E-4 ){//tolerance 0.0001
       std::cout<<"DecayingParticle::GenerateProducts model weight is greater than envelope " <<Mass()<<" "<<Model()->GetName()<<" "<<Class_Name()<<" weights "<<samplingWeight <<" "<<weight<<" masses "<<Model()->Products()[0]->Mass()<<" "<<Model()->Products()[1]->Mass()<<" difference in weights "<<samplingWeight-weight <<std::endl;
@@ -116,7 +121,7 @@ namespace elSpectro{
     //accept/reject this decay
     //if decay depends on variable chosen by parent need to regenerate on fail
     //if decay indendent of parent variables can just try for another
-    // std::cout<<Pdg()<<" "<<weight <<" "<<_maxWeight<<" "<<samplingWeight<<std::endl;
+    //   std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" "<<weight <<" "<<_maxWeight<<" "<<samplingWeight<<std::endl;
     decayed = weight > gRandom->Uniform()*_maxWeight ;
     if (decayed == false && (Model()->RegenerateOnFail()==false) )
       return DecayStatus::TryAnother;
@@ -129,24 +134,19 @@ namespace elSpectro{
     GenerateVertexPosition();
 
  
-    // std::cout<<"+++++++++++++++++DecayingParticle "<<decayed<<std::endl;
+    //std::cout<<"+++++++++++++++++DecayingParticle "<<decayed<<std::endl;
     auto& unproducts=_decay->UnstableProducts();
     for(auto* prod: unproducts){
       DecayStatus prodStatus=DecayStatus::ReGenerate;
+      // std::cout<<"+++++DecayingParticle start checking unstable "<<unproducts.size()<<" "<<_decay->StableProducts().size()<<" "<<_decay->Products().size()<<" "<<Pdg()<<std::endl;
+  
       while((prodStatus=prod->GenerateProducts()) != DecayStatus::Decayed){
+
 	if(prodStatus==DecayStatus::ReGenerate) return DecayStatus::ReGenerate;
       }
     }
 
-    /*
-    //stable products need a vertex too
-    auto& stproducts=_decay->StableProducts();
-    // std::cout<<"DecayingPArticle size "<<stproducts.size()<<" "<<Pdg()<<" "<<_decayVertexID<<" "<<Model()->GetName()<<std::endl;
-    for(auto* prod: stproducts){
-      prod->SetVertex(_decayVertexID,_decayVertex);
-    }
-    */
-    
+  
     return DecayStatus::Decayed;
     
   }
