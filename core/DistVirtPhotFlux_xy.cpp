@@ -63,15 +63,16 @@ namespace elSpectro{
     else
       _lnymax=TMath::Log(1.);
     
-    double xmin =XMin(ymin);						 
 
 
-    // FindMaxVal();
-    
+     
     //Seacrh for lowest possible x...
     _maxPossiblexRange=1;
     ymin = TMath::Exp(_lnymin);
     double ymax = TMath::Exp(_lnymax);
+    double xmin =XMin(ymin);						 
+
+
     for(int i=0;i<1E5;i++){
       //     double avail_xmin = XMin(static_cast<double>(i*(ymax-ymin) + ymin)/1E5);
       //Need xmin with no experiment based limits on Q2 or theta
@@ -80,7 +81,9 @@ namespace elSpectro{
        if(avail_xmin<_maxPossiblexRange)
 	_maxPossiblexRange=avail_xmin;
     }
-     
+
+    FindMaxVal(); //For sampling
+
     std::cout<<"DistVirtPhotFlux_xy::SetWThreshold new Wmin "<<GetWMin() <<" "<<TMath::Sqrt(2*_mTar*_ebeam*ymin+_mTar*_mTar)<<" "<<TMath::Sqrt(rmin + _mTar*_mTar)-_mTar*_mTar*ymin*ymin/(1-ymin)<<" "<<sqrt( _mTar*(_mTar + 2*ymin*_ebeam ) -  escat::Q2_xy( _ebeam,_maxPossiblexRange,ymin))<<" xmin "<<xmin<<" "<<XMin(ymin)<<" ymin "<<ymin<<std::endl;
     _Wthresh2 =_mTar*(_mTar + 2*ymin*_ebeam )-  escat::Q2_xy( _ebeam,_maxPossiblexRange,ymin);
   
@@ -163,8 +166,9 @@ namespace elSpectro{
 	lnx = gRandom->Uniform(TMath::Log(_maxPossiblexRange),TMath::Log(1));
       else 
  	lnx = gRandom->Uniform(TMath::Log(1E-50),TMath::Log(1));
-  
-      //check if we are within allowed x-range
+
+
+          //check if we are within allowed x-range
       //if not return and throw another y value
       auto currx=TMath::Exp(lnx);
       if(currx>avail_xmax){ lnx=1;return; }
@@ -172,7 +176,7 @@ namespace elSpectro{
     };
 
     getRandomXY();//intial sample
-
+    //  std::cout<<"DistVirtPhotFlux_xy::max "<<_max_val<<std::endl;
     while(  gRandom->Uniform()*_max_val >
 	    (_val=escat::flux_dlnxdlny(_ebeam,lnx,lny)) ) {
       if(_val>_max_val){
