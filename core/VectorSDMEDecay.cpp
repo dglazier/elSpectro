@@ -4,11 +4,17 @@
 
 namespace elSpectro{
 
-  VectorSDMEDecay::VectorSDMEDecay( particle_ptrs ps, const std::vector<int> pdgs):
-     SDMEDecay{ps,pdgs}
+  VectorSDMEDecay::VectorSDMEDecay( particle_ptrs ps, const std::vector<int> pdgs, int decayType):
+    SDMEDecay{ps,pdgs},_type{decayType}
   {
 
     _name={"VectorSDMEDecay"};
+    if(pdgs[0]==11||pdgs[0]==13||pdgs[1]==11||pdgs[1]==13){
+      if(_type!=1)
+	Fatal("VectorSDMEDecay"," using Spin 0 decay equations, but with leptons! If you want to continue to do this , change decaytype to 100, but better to change decay type to 1");
+      else if(_type==100) //lets use of spin 0 equations for leptons, Should not really be used
+	_type = 0;
+    }
 
   }
 
@@ -41,43 +47,34 @@ namespace elSpectro{
     std::array<double,8> W={0,0,0,0,0,0,0,0};
     //  eqn (31) Schilling,Seyboth and Wolf + factor const_3by4pi()* 
 
-
-    W[0] = (
-	       0.5 * (1 -_rho->Re(0,0,0) )
-	       + 0.5 * (3*_rho->Re(0,0,0) - 1) *cosSqTh
-	       - TMath::Sqrt2() * _rho->Re(0,1,0)*sin2Th*cosPh
-	       - _rho->Re(0,1,-1)*sinSqTh*cos2Ph);
-
-    W[1]=(
-	     _rho->Re(1,1,1) * sinSqTh
-	     + _rho->Re(1,0,0) * cosSqTh
-	     - TMath::Sqrt2() * _rho->Re(1,1,0)*sin2Th*cosPh
-	     - _rho->Re(1,1,-1)*sinSqTh*cos2Ph
-	     );
-    W[2]= (
-	      TMath::Sqrt2() * _rho->Im(2,1,0)*sin2Th*sinPh
-	      + _rho->Im(2,1,-1)*sinSqTh*sin2Ph
-	      );
-    
-    W[3]=  (
-	    TMath::Sqrt2() * _rho->Im(3,1,0)*sin2Th*sinPh
-	    + _rho->Im(3,1,-1)*sinSqTh*sin2Ph
-	    );
-    
+    if(_type==1){//decay to lepton e.g. e+ e-
+      W[0]= W0lepto(cosSqTh,sin2Th,cosPh,sinSqTh,cos2Ph);
+      W[1]= W1lepto(sinSqTh,cosSqTh,sin2Th,cosPh,cos2Ph);
+      W[2]= W2lepto(sin2Th, sinPh,sinSqTh, sin2Ph);
+      W[3]= W3lepto(sin2Th,sinPh,sinSqTh,sin2Ph);
+    }
+    else{ //decay to spin0 e.g. pi+ pi-
+      W[0]= W0spin0(cosSqTh,sin2Th,cosPh,sinSqTh,cos2Ph);
+      W[1]= W1spin0(sinSqTh,cosSqTh,sin2Th,cosPh,cos2Ph);
+      W[2]= W2spin0(sin2Th, sinPh,sinSqTh, sin2Ph);
+      W[3]= W3spin0(sin2Th,sinPh,sinSqTh,sin2Ph);
+ 
+    }
     //+ other elctroproduced see eqn(83-85) Schilling and Wolf
 
     //equation (82) Schilling and Wolf, cf eqn (29) Schilling Seyboth Wolf
     double result=0.;
     _photonPol->Calc(); //epsilon,delta and phi should all now be set
+
     for(uint alpha=0; alpha < 8; alpha++ ){
       result += ( W[alpha] * (*_photonPol)[alpha] ) ;
-     }
+    }
 
     //  std::cout<<(*_photonPol)[1]<<" "<<TMath::Cos(2*_photonPol->Phi())<<std::endl;
     // return 0.5+0.5*(*_photonPol)[1];
     
     //result/=2*W[0]; //Divide by max value to get weight
-    result/=1.05; //max seems to be slightly>1 should check this
+    result/=1.06; //max seems to be slightly>1 should check this
     //std::cout<<"      "<< W[0]<<" "<<(*_photonPol)[0]<<" "<<W[1]<<" "<<(*_photonPol)[1]<<" phi "<<TMath::RadToDeg()*_photonPol->Phi()<<" "<<0.5 + 0.5*TMath::Cos(2*_photonPol->Phi())<<std::endl;
     //std::cout<<"    Sigma  0 : "<<_rho->Re(0,1,1)<<" "<<_rho->Re(0,0,0)<<" "<<_rho->Re(0,1,-1)<<std::endl;
     //std::cout<<"    Sigma  1 :  "<<_rho->Re(1,1,1)<<" "<<_rho->Re(1,0,0)<<" "<<_rho->Re(1,1,-1)<<std::endl;
