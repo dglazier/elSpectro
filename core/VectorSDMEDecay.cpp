@@ -48,16 +48,16 @@ namespace elSpectro{
     //  eqn (31) Schilling,Seyboth and Wolf + factor const_3by4pi()* 
 
     if(_type==1){//decay to lepton e.g. e+ e-
-      W[0]= W0lepto(cosSqTh,sin2Th,cosPh,sinSqTh,cos2Ph);
-      W[1]= W1lepto(sinSqTh,cosSqTh,sin2Th,cosPh,cos2Ph);
-      W[2]= W2lepto(sin2Th, sinPh,sinSqTh, sin2Ph);
-      W[3]= W3lepto(sin2Th,sinPh,sinSqTh,sin2Ph);
+      W[0]= W0lepto(cosSqTh,sin2Th,cosPh,sinSqTh,cos2Ph)*3./8/TMath::Pi();
+      W[1]= W1lepto(sinSqTh,cosSqTh,sin2Th,cosPh,cos2Ph)*3./8/TMath::Pi();
+      W[2]= W2lepto(sin2Th, sinPh,sinSqTh, sin2Ph)*3./8/TMath::Pi();
+      W[3]= W3lepto(sin2Th,sinPh,sinSqTh,sin2Ph)*3./8/TMath::Pi();
     }
     else{ //decay to spin0 e.g. pi+ pi-
-      W[0]= W0spin0(cosSqTh,sin2Th,cosPh,sinSqTh,cos2Ph);
-      W[1]= W1spin0(sinSqTh,cosSqTh,sin2Th,cosPh,cos2Ph);
-      W[2]= W2spin0(sin2Th, sinPh,sinSqTh, sin2Ph);
-      W[3]= W3spin0(sin2Th,sinPh,sinSqTh,sin2Ph);
+      W[0]= W0spin0(cosSqTh,sin2Th,cosPh,sinSqTh,cos2Ph)*3./4/TMath::Pi();
+      W[1]= W1spin0(sinSqTh,cosSqTh,sin2Th,cosPh,cos2Ph)*3./4/TMath::Pi();
+      W[2]= W2spin0(sin2Th, sinPh,sinSqTh, sin2Ph)*3./4/TMath::Pi();
+      W[3]= W3spin0(sin2Th,sinPh,sinSqTh,sin2Ph)*3./4/TMath::Pi();
  
     }
     //+ other elctroproduced see eqn(83-85) Schilling and Wolf
@@ -74,11 +74,22 @@ namespace elSpectro{
     // return 0.5+0.5*(*_photonPol)[1];
     
     //result/=2*W[0]; //Divide by max value to get weight
-    result/=1.06; //max seems to be slightly>1 should check this
+    result/=1.1; //max seems to be slightly>1 should check this
     //std::cout<<"      "<< W[0]<<" "<<(*_photonPol)[0]<<" "<<W[1]<<" "<<(*_photonPol)[1]<<" phi "<<TMath::RadToDeg()*_photonPol->Phi()<<" "<<0.5 + 0.5*TMath::Cos(2*_photonPol->Phi())<<std::endl;
-    //std::cout<<"    Sigma  0 : "<<_rho->Re(0,1,1)<<" "<<_rho->Re(0,0,0)<<" "<<_rho->Re(0,1,-1)<<std::endl;
-    //std::cout<<"    Sigma  1 :  "<<_rho->Re(1,1,1)<<" "<<_rho->Re(1,0,0)<<" "<<_rho->Re(1,1,-1)<<std::endl;
-    
+    // std::cout<<"    Sigma  0 : "<<_rho->Re(0,1,1)<<" "<<_rho->Re(0,0,0)<<" "<<_rho->Re(0,1,-1)<<std::endl;
+    // std::cout<<"    Sigma  1 :  "<<_rho->Re(1,1,1)<<" "<<_rho->Re(1,0,0)<<" "<<_rho->Re(1,1,-1)<<std::endl;
+    // std::cout<<"    Sigma  2 :  "<<_rho->Im(2,1,1)<<" "<<_rho->Im(2,1,-1)<<std::endl;
+    // _countRho000+=_rho->Re(0,0,0);
+    // _countRho011+=_rho->Re(0,1,1);
+    // _countRho01m1+=_rho->Re(0,1,-1);
+    // _countRho100+=_rho->Re(1,0,0);
+    // _countRho111+=_rho->Re(1,1,1);
+    // _countRho11m1+=_rho->Re(1,1,-1);
+    // _countRho210+=_rho->Im(2,1,0);
+    // _countRho211+=_rho->Im(2,1,1);
+    // _countRho21m1+=_rho->Im(2,1,-1);
+    // ++_countN;
+    // std::cout<<"Mean SDMEs "<<" rho000 "<<_countRho000/_countN<<" rho011 "<<_countRho011/_countN<<" rho01m1 "<<_countRho01m1/_countN<<" rho100 "<<_countRho100/_countN<<" rho111 "<<_countRho111/_countN<<" rho11m1 "<<_countRho11m1/_countN<<" rho210 "<<_countRho210/_countN<<" rho211 "<<_countRho211/_countN<<" rho21m1 "<<_countRho21m1/_countN<<(*_photonPol)[1]<<" "<<(*_photonPol)[2]<<std::endl;
     //result = W[0] + 0.5*W[1]*TMath::Cos(2*_photonPol->Phi());
     //return result = 0.5 + 0.5*TMath::Cos(2*_photonPol->Phi());
     //std::cout<<"result "<<result<<" "<<W[0]<<" "<<W[1]<<" "<<W[2]<<" "<<W[3]<<" "<<W[4]<<" "<<W[5]<<std::endl;
@@ -90,7 +101,6 @@ namespace elSpectro{
 	result2 += ( W[alpha] * (*_photonPol)[alpha]) ;
 	std::cout<<result2<<std::endl;
       }
-      
       std::cout<<_rho->Re(0,0,0)<<" 010 "<<_rho->Re(0,1,0)<<" 01-1 "<<_rho->Re(0,1,-1)<<" 111 "<<_rho->Re(1,1,1)<<" 100 "<<_rho->Re(1,0,0)<<" 110 "<<_rho->Re(1,1,0)<<" 11-1 "<<_rho->Re(1,1,-1)<<" 210 "<<_rho->Re(2,1,0)<<" 21-1 "<<_rho->Re(2,1,-1)<<" "<<std::endl;
       std::cout<<"epsilon " <<_photonPol->Epsilon()<<" delta " <<_photonPol->Delta()<<" phi " <<_photonPol->Phi()*TMath::RadToDeg()<<std::endl;
       std::cout<<"CONDITION 1 "<<(_rho->Re(0,0,0)<=1) <<" "<< (_rho->Re(0,0,0)>=0) <<std::endl;

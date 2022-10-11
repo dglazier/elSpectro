@@ -44,7 +44,17 @@ namespace elSpectro{
   
   private:
     int _type=0;
-    
+    // mutable double _countRho000=0;
+    // mutable double _countRho011=0;
+    // mutable double _countRho01m1=0;
+    // mutable double _countRho100=0;
+    // mutable double _countRho111=0;
+    // mutable double _countRho11m1=0;
+    // mutable double _countRho210=0;
+    // mutable double _countRho211=0;
+    // mutable double _countRho21m1=0;
+    // mutable double _countN=0;
+
    ClassDefOverride(elSpectro::VectorSDMEDecay,1); //class VectorSDMEDecay
     
   };//class VectorSDMEDecay

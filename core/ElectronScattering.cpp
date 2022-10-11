@@ -65,7 +65,7 @@ namespace elSpectro{
     _beamElec.SetP4(*(_electronptr->GetInteracting4Vector()));
     
     _beamNucl.SetP4(*(_targetptr->GetInteracting4Vector()));
-    _massIon=_beamNucl.PdgMass();
+   _massIon=_beamNucl.PdgMass();
 
     /*  //not sure why this was there
     //For decaying

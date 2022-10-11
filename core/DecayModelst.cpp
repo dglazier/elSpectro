@@ -33,7 +33,7 @@ namespace elSpectro{
   }
   /////////////////////////////////////////////////////////////////
   void DecayModelst::PostInit(ReactionInfo* info){
-    std::cout<<"DecayModelst::PostInit  "<<std::endl;
+   
     if( dynamic_cast<DecayingParticle*>(_meson) ){
       if( dynamic_cast<DecayingParticle*>(_meson)->Model()->CanUseSDME() ){
 	auto sdmeModel=dynamic_cast<SDMEDecay*>(dynamic_cast<DecayingParticle*>(_meson)->Model());
@@ -42,10 +42,8 @@ namespace elSpectro{
 	//_sdmeBaryon = _baryon->InitSDME(3,9);
       }
     }
-      std::cout<<"DecayModelst::PostInit  "<<std::endl;
-  
+     
     DecayModel::PostInit(info);
-   std::cout<<"DecayModelst::PostInit  "<<std::endl;
  
     _isElProd=kTRUE;
     _prodInfo= dynamic_cast<ReactionElectroProd*> (info); //I need Reaction info
@@ -112,7 +110,7 @@ namespace elSpectro{
     
     //Correct for W weighting which has already been applied
     weight/=_prodInfo->_sWeight;
-    // std::cout<<" s weight "<<_prodInfo->_sWeight<<" weight "<<weight<<" "<<_W<<std::endl;
+    //std::cout<<" s weight "<<_prodInfo->_sWeight<<" weight "<<weight<<" "<<_W<<std::endl;
     if(weight>1){
       std::cout<<" s weight "<<_prodInfo->_sWeight<<" Q2 "<<-_photon->M2()<<" 2Mmu "<<2*_target->M()*_photon->E() <<" W "<<_W<<" t "<<_t<<" new weight "<<weight*_prodInfo->_sWeight<<" meson "<<_meson->Mass()<<std::endl;
       std::cout<<"DecayModelst::Intensity sWeight corrected weight too large "<<weight <<" "<<_prodInfo->_sWeight<<"  max "<<_max<<" val "<< weight*_prodInfo->_sWeight*_max<<std::endl;
@@ -135,8 +133,6 @@ namespace elSpectro{
     //    _Wmax = ( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
     _Wmax = _prodInfo->_Wmax;
     
-    std::cout<<" DecayModelst::FindMaxOfIntensity()  Wmin = "<<Wmin<<" Wmax = "<<_Wmax<<" meson mass = "<<M3<<" baryon mass = "<<M4<<" target mass = "<<M2<<std::endl;
-
     auto Fmax = [&M1,&M2,&M3,&M4,&Wmin,this](const double *x)
       {
 	_s = x[0]*x[0];
@@ -156,7 +152,6 @@ namespace elSpectro{
 	auto dt=4* TMath::Sqrt(PgammaCMsq())  * kine::PDK(_W,M3,M4 );
 
 	double val = DifferentialXSect()*dt;
-	std::cout<<"DecayModelDnpee::FindMaxOfIntensity() "<<val<<" at W = "<<_W<<std::endl;
 	if( TMath::IsNaN(val) ) return 0.;
 	return -(val); //using a minimiser!
       };
