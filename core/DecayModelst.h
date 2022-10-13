@@ -61,17 +61,7 @@ namespace elSpectro{
       return p1cm.P();
     }
     
-    /* double PgammaCMsq() const noexcept{
-      //in case no photon 4-vector yet
-      if(_photon->M()==0) return kine::PDK2(_W,0,_target->M());
-      //else PDK does not qork for virtual photons
-      auto cmBoost=Parent()->P4().BoostToCM();
-      auto p1cm=boost(*_photon,cmBoost);
-      
-      //     std::cout<<"PgammaCMsq M"<<_photon->M()<<" PLAB "<<_photon->P()<<" PCM "<<p1cm.P()<<" or "<<kine::PDK(_W,_photon->M(),_target->M())<<" or "<<kine::PDK(_W,_photon->M2(),_target->M())<<" or "<<kine::PDK(_W,0,_target->M())<<std::endl;
-      return p1cm.P()*p1cm.P();
-      }*/
-    
+   
     const ReactionPhotoProd* ProductionInfo() const { return _prodInfo; }
     //    const ReactionElectroProd* ProductionInfo() const { return _prodInfo; }
     

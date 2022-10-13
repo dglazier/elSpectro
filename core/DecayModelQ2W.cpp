@@ -136,7 +136,7 @@ namespace elSpectro{
     
     //Q2 dependence of cross section
      weight*=Q2H1Rho();
-     //std::cout<<" Q things "<<getQ2()<<"   "<<_prodInfo->_sWeight<<" "<<weight<<" "<<std::endl;
+     // std::cout<<" Q things "<<getQ2()<<"   "<<_prodInfo->_sWeight<<" "<<weight<<" "<<std::endl;
     return weight;
     
   }

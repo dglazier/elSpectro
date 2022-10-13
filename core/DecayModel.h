@@ -53,6 +53,8 @@ namespace elSpectro{
     const decaying_ptrs& UnstableProducts() const{ return _unstables;}
     const particle_ptrs& StableProducts() const{ return _stables;}
 
+
+    // void AddUnstableProducts(){std::copy(std::begin(ps), std::end(ps), std::back_inserter(_products));}
     void SwapProducts(int index1, int index2){//swap pointers to particles in vector
       std::iter_swap(_products.begin() + index1, _products.begin() + index2);
     }
@@ -92,7 +94,7 @@ namespace elSpectro{
 
     const std::string& GetName()const {return _name;}
 
-    double PhaseSpaceWeightSq(double W);
+    virtual double PhaseSpaceWeightSq(double W);
 
     void DetermineProductMasses();
     

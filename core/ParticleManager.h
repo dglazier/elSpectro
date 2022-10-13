@@ -65,7 +65,7 @@ namespace elSpectro{
     /*   _mass2Dist[pdg]=dist_uptr{dist}; */
     /* } */
     Distribution* GetMassDist(int pdg)const noexcept
-    {return _massDist.at(pdg).get();}
+    {return _massDist.count(pdg)!=0 ? _massDist.at(pdg).get():nullptr;}
 
     void BoostStable(const BetaVector& vboost ){
       std::for_each(_stables.begin(),_stables.end(),[&vboost](Particle* p){p->Boost(vboost);});

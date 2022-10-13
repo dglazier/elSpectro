@@ -60,6 +60,8 @@ namespace elSpectro{
     double GetBeamEnergy() const {return _ebeam;}
     double GetMinEnergy() const {return _ebeam*_bremDist->GetMinX();}
     double GetMaxEnergy() const {return _ebeam*_bremDist->GetMaxX();}
+    Distribution* GetPhotonEdist() const { return _bremDist.get();}
+    Double_t GetXSecForEnergy(Double_t k) const { return _bremDist->GetValueFor(k/_ebeam); }
     
     void PostInit(ReactionInfo* info);
 

@@ -39,7 +39,7 @@ namespace elSpectro{
     //Also add the random phi angle...
     // BoostToParentWithRandPhi(parent,_gamma);
     products[0]->SetP4( _photon );
- 
+    // products[1]->SetP4(parent - _photon); //electron
     return _weight; 
   }
 

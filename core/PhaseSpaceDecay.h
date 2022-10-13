@@ -30,15 +30,18 @@ namespace elSpectro{
 	return 0.;
     }
     bool RegenerateOnFail() const  noexcept final {return false;}
-    void SetParent(DecayingParticle* pa);
-    void PostInit(ReactionInfo* info);
+    void SetParent(DecayingParticle* pa) override;
+    void PostInit(ReactionInfo* info)  override;
     
-  private:
-    
+     
     void nBodyDecayer(DecayingParticle* parent,  const particle_ptrs stable,  const decaying_ptrs unstable );
-
+    void SetParentAndProducts(DecayingParticle* pa, const particle_ptrs stable,  const decaying_ptrs unstable);
  
-    ClassDef(elSpectro::PhaseSpaceDecay,1); //class PhaseSpaceDecay
+ private:
+
+    DistFlatMassMaster* _massMaster = nullptr;
+    
+    ClassDefOverride(elSpectro::PhaseSpaceDecay,1); //class PhaseSpaceDecay
     
   };//class PhaseSpaceDecay
 

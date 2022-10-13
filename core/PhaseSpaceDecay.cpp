@@ -14,6 +14,11 @@ namespace elSpectro{
 
   }
 
+  void PhaseSpaceDecay::SetParentAndProducts(DecayingParticle* pa, const particle_ptrs stable,  const decaying_ptrs unstable){
+    DecayModel::SetParent(pa);
+    nBodyDecayer(pa,stable,unstable);
+  }
+  
   void PhaseSpaceDecay::SetParent(DecayingParticle* pa){
     DecayModel::SetParent(pa);
     //now can make cascade of decays
@@ -22,7 +27,25 @@ namespace elSpectro{
  
   }
   void PhaseSpaceDecay::PostInit(ReactionInfo* info){
+    std::cout<<"PhaseSpaceDecay::PostInit " <<Parent()<<" "<<info<<" "<<Parent()->MaximumMassPossible()<<" pdg "<<Parent()->Pdg()<<std::endl;
+    auto maxmass=Parent()->MaximumMassPossible();
+    if(maxmass==0) maxmass = info->_Wmax; //if parent has no max just use reaction W
+    auto flatmass=dynamic_cast<DistFlatMass*>(Manager::Instance().Particles().GetMassDist(Parent()->Pdg()));
+    if(flatmass) flatmass->SetMaxX(maxmass);
+  
+    for(auto& product:Products()){
+      auto flatmass=dynamic_cast<DistFlatMass*>(Manager::Instance().Particles().GetMassDist(product->Pdg()));
+      SumAllProducts();
+      std::cout<<"              PhaseSpaceDecay::PostInit product " <<product->Pdg()<<" flat mass dist ? "<<dynamic_cast<DistFlatMass*>(Manager::Instance().Particles().GetMassDist(product->Pdg()))<<" "<<SumOfProductMasses()<<std::endl;
+      std::cout<<"              PhaseSpaceDecay::PostInit set mass to  " <<maxmass<<std::endl;
+       if(flatmass) flatmass->SetMaxX(maxmass);
+   }
+    
+    if(_massMaster!=nullptr)_massMaster->SetMaxX(maxmass);
+    std::cout<<"PhaseSpaceDecay::PostInit " <<Parent()<<" "<<info<<" "<<maxmass<<std::endl;
+ 
     DecayModel::PostInit(info);
+
     if(Parent()->MassDistribution()==nullptr){//production proces does not have mass distribution
       if(dynamic_cast<ProductionProcess*>(Parent())==nullptr&&Parent()->Pdg()!=-2211){
 	std::cerr<<"PhaseSpaceDecay::PostInit parent needs a mass distribution for pdg = "<<Parent()->Pdg();
@@ -33,6 +56,7 @@ namespace elSpectro{
 	//	exit(0);
       }
     }
+
   }
   
   void PhaseSpaceDecay::nBodyDecayer(DecayingParticle* parent, const particle_ptrs stable,  const decaying_ptrs unstable ) //take copies of particle vectors
@@ -58,10 +82,10 @@ namespace elSpectro{
     //Register our X-1 particle type
     //We will construct this particle at the end of the rest
     auto pdgXNm1=particleMan.RegisterNewPdgParticle(0,new DistFlatMassMaster(parent,ps));
-      std::cout<<"Particle* nBodyDecayer pdg "<< pdgXNm1 <<std::endl;
+    std::cout<<"Particle* nBodyDecayer pdg "<< pdgXNm1 <<std::endl;
  
-    auto massMaster  = static_cast<DistFlatMassMaster*>(particleMan.GetMassDist(pdgXNm1));
-    std::cout<<"Particle* nBodyDecayer pdg "<< massMaster <<std::endl;
+    _massMaster  = dynamic_cast<DistFlatMassMaster*>(particleMan.GetMassDist(pdgXNm1));
+    std::cout<<"Particle* nBodyDecayer pdg "<< _massMaster <<std::endl;
 
     //if(ps.size() < 3){//in case ony two particle just use 2 body decay
     // return ;
@@ -84,15 +108,18 @@ namespace elSpectro{
     auto N=ps.size();
     for(uint m=1;m<=N-3;++m){//leave 2 particles
       auto p = ps[m];
-      auto pdg=particleMan.RegisterNewPdgParticle(0,new DistFlatMass(massMaster));
+      auto pdg=particleMan.RegisterNewPdgParticle(0,new DistFlatMass(_massMaster));
+      std::cout<<"PhaseSpaceDecay:: create new two-body "<<pdg <<" from "<<p->Pdg()<<" and "<<XNminusM->Pdg()<<std::endl;
       XNminusM = particleMan.Take(new DecayingParticle{pdg,model(new PhaseSpaceDecay({XNminusM,p},{})),new TwoBodyFlat()});
     }
     //give master to the X(N-1) state
     auto p = ps[N-2]; //m=1
     //combine with the X(N-2) particle and give pdgXNm1 mass distribution
-    XNminusM = particleMan.Take(new DecayingParticle{pdgXNm1,model( new PhaseSpaceDecay{{XNminusM,p},{}} ), new TwoBodyFlat() } );
-
+   std::cout<<"PhaseSpaceDecay:: final  create new two-body "<<pdgXNm1 <<" from "<<p->Pdg()<<" and "<<XNminusM->Pdg()<<std::endl;
+   XNminusM = particleMan.Take(new DecayingParticle{pdgXNm1,model( new PhaseSpaceDecay{{XNminusM,p},{}} ), new TwoBodyFlat() } );
+  
     p = ps[N-1]; //i.e. pN 
+    std::cout<<"PhaseSpaceDecay:: and final particle products "<<XNminusM->Pdg()<<" "<<p->Pdg()<<std::endl;
     //make parent two-body
     ResetProducts({XNminusM,p});
   

@@ -64,7 +64,8 @@ namespace elSpectro{
     }
     
     void FindExcitationSpectra();
-    DistTH1* GetApproxWDist() const {return _Wrealphoto_Dist.get();}
+    //DistTH1* GetApproxWDist() const {return _Wrealphoto_Dist.get();}
+    Distribution* GetApproxWDist() const {return _Wrealphoto_Dist.get();}
  
     double dsigma() const override { return  dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->dsigma();}
 
@@ -93,7 +94,8 @@ namespace elSpectro{
     ReactionPhotoProd* _prodInfo={nullptr};
 
     TH1D _hWPhaseSpace;
-    std::unique_ptr<DistTH1> _Wrealphoto_Dist;
+    //  std::unique_ptr<DistTH1> _Wrealphoto_Dist;
+    std::unique_ptr<Distribution> _Wrealphoto_Dist;
 
     ClassDefOverride(elSpectro::DecayModelW,1); //class DecayModelW
     

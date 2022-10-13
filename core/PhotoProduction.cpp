@@ -6,6 +6,7 @@
 #include "DontDecay.h"
 #include "BremstrPhoton.h"
 #include "Bremsstrahlung.h"
+#include "Distribution.h"
 #include "ScatteredElectron_xy.h"
 #include <TDatabasePDG.h>
 #include <TH1F.h>
@@ -142,8 +143,49 @@ namespace elSpectro{
   //////////////////////////////////////////////////////////////////////////
   ///Use Frixione + sigma(W) to integrate cross section over x , y and t
   double PhotoProduction::IntegrateCrossSectionFast(){
-    std::cout<<"PhotoProduction::IntegrateCrossSectionFast() needs impmented "<<std::endl;
-    return 0.0;
+    std::cout<<"PhotoProduction::IntegrateCrossSectionFast() "<<std::endl;
+
+    gBenchmark->Start("IntegrateCrossSectionFast");
+    auto collision=MakeCollision();
+    
+    auto gammaNModel =dynamic_cast<DecayModelst*>(_gammaN->Model());
+    auto threshold=gammaNModel->GetMeson()->PdgMass()+gammaNModel->GetBaryon()->PdgMass();
+
+    
+    TH1D hWdist("sdisthigh","sdisthigh",100,threshold,collision.M());
+    gammaNModel->HistIntegratedXSection( hWdist);
+    TH1D hEdist("bremWdist","bremWdist",100,threshold,collision.M());
+    
+    auto bremPhot =dynamic_cast<const BremstrPhoton*>(_photonptr->Decayer());
+    std::cout<<"PhotoProduction::IntegrateCrossSectionFast() bremsstrahlung distribution:" <<std::endl;
+    //   DistTF1* Edist = bremPhot->GetPhotonEdist();
+    // auto  dsigdk = bremPhot->GetPhotonEdist();
+    // (Edist->GetTF1()).Print();
+    Double_t maxE = bremPhot->GetBeamEnergy();
+    std::cout<<"PhotoProduction::IntegrateCrossSectionFast() maxE = "<< maxE<<std::endl;
+    for(auto ibin = 1 ; ibin <=  hEdist.GetNbinsX(); ++ibin){
+      auto W = hEdist.GetXaxis()->GetBinCenter(ibin);
+      //now convert W to egamma(k) : W^2 = M^2 + 2Mk => k = (W^2-M^2)/2M
+      auto k = (W*W - _beamNucl.M2())/2/_beamNucl.Mass();
+      //Jacobian for changing variables k to W : dk = W/M dW
+      // so dsigma/dW = dsigma/(dk*M/W) = W/M * dsigma/dk    
+      hEdist.SetBinContent(ibin,bremPhot->GetXSecForEnergy(k)*W/_beamNucl.Mass());
+    }
+    hEdist.DrawCopy();
+    
+    double integrated_xsection = 0; // get sigma_ep from integral over W: f(W)*sigma_gp(W)
+    for(int i=1; i<=hWdist.GetNbinsX(); i++) {
+      double W = hWdist.GetXaxis()->GetBinCenter(i);
+      double WbinWidthScale = hWdist.GetBinWidth(i);
+      double W_xsection = hWdist.GetBinContent(i);
+      
+      double W_fluxWeight =  hEdist.GetBinContent(i);
+      integrated_xsection += W_xsection * W_fluxWeight* WbinWidthScale;
+    }
+    gBenchmark->Stop("IntegrateCrossSectionFast");
+    gBenchmark->Print("IntegrateCrossSectionFast");
+ 
+    return integrated_xsection;
    }
 
  
