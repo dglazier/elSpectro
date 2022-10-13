@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------
 #pragma once
 
-#include "amplitudes/amplitude.hpp"
+#include "core/amplitude.hpp"
 
 // ---------------------------------------------------------------------------
 // The amplitude_blend class can take a vector of the above amplitude objects
@@ -41,16 +41,24 @@ namespace jpacPhoto
     };
 
     //assume low amp allowedJP, 
-    inline std::vector<std::array<int,2>> allowedJP()
-    {
-        return _amp_low->allowedJP();
-    };
+    // inline std::vector<std::array<int,2>> allowedJP()
+    // {
+    //   //return _amp_low->allowedJP();
+    //     return _amp_low->allowed_meson_JP();
+    // };
 
+    //take low amp allowed JP
+    std::vector<std::array<int,2>> allowed_meson_JP() override{ return _amp_low->allowed_meson_JP();}
+    std::vector<std::array<int,2>> allowed_baryon_JP() override{
+          return _amp_low->allowed_baryon_JP();
+    }
+
+    helicity_channel helicity_CM_frame() override {return _amp_low->helicity_CM_frame();}
     // TODO: Add a set_params which timesi in one vector and allocates approriaten number of
     // params to each sub amplitude
 
     // Evaluate the sum for given set of helicites, energy, and cos
-    std::complex<double> helicity_amplitude(std::array<int, 4> helicities, double s, double t);
+    std::complex<double> helicity_amplitude(std::array<int, 4> helicities, double s, double t) override;
     
    };
 }

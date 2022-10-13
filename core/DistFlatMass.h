@@ -40,20 +40,23 @@ namespace elSpectro{
     double MinValue()  const noexcept final{return 1;}
 
     double GetMinX() const noexcept final{return 0;}
-    double GetMaxX() const noexcept final{return 1;}
+    double GetMaxX() const noexcept final{return _maxX;}
 
     double GetValueFor(double valX,double valY=0) override  {return 1.;}
 
+    void SetMaxX(double val){_maxX=val;}
+    
   protected :
     void SetIndex(uint index){_index=index;}
     uint Index() const noexcept {return _index;}
+    
   private:
     //no one should use default constructor
     DistFlatMass()=default;
     
     DistFlatMassMaster* _master={nullptr}; 
     uint _index = {0};
-
+    double _maxX=0;
       
     ClassDef(elSpectro::DistFlatMass,1); //class Distribution
  

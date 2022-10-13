@@ -32,6 +32,7 @@ namespace elSpectro{
     double PhaseSpaceWeight(double parentM) const noexcept{
       double result=TMath::Sqrt(_model->PhaseSpaceWeightSq(parentM));
       _weightCalcN++;
+     
       return result;
     }
 
@@ -39,7 +40,7 @@ namespace elSpectro{
       //sample all masses according to overall decay phase space
       if(_model==nullptr) return;
       if(_model!=amodel) return; //only 1 model controls phasespace
-
+      // std::cout<<"MassPhaseSpace Find"<<std::endl;
       //in case decay chain may change each event coulsd get the masses each time
 
       // double max= kine::PhaseSpaceWeightMax(parentM,_masses);//TGenPhaseSpace max . Note this is too high an estimate
@@ -55,10 +56,10 @@ namespace elSpectro{
       while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max*_suppressPhaseSpace )
 	{
 	  
-
+	 
 	  // if(wee>max){
 	  // _sampledMax=wee;
-	  //  std::cout<<" weight >  max "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
+	  //std::cout<<" weight >  max "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
 	  // }
 	//reject this combintation
 	  //	if(wee==0)	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
@@ -84,7 +85,7 @@ namespace elSpectro{
       double max= kine::PhaseSpaceWeightMax(parentM,_masses);
 
       auto weight = PhaseSpaceWeight(parentM);
-      std::cout<<"AcceptPhaseSpace "<<parentM<<" "<< weight<<" "<<max<<std::endl;
+      //  std::cout<<"AcceptPhaseSpace "<<parentM<<" "<< weight<<" "<<max<<std::endl;
       
       return ( weight > gRandom->Uniform()*max ) ?
 	true : false;  

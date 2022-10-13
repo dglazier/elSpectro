@@ -132,7 +132,7 @@ namespace elSpectro{
     return  generator().Reaction();
   }
 
-  inline PhotoProduction*  photoprod(CollidingParticle* el,CollidingParticle* pr,DecayModelW *totalXsec=nullptr){
+  inline PhotoProduction*  photoprod(CollidingParticle* el,CollidingParticle* pr,DecayModel *totalXsec=nullptr){
   
     if(totalXsec!=nullptr){
       model(totalXsec); //register ownership of model with manager

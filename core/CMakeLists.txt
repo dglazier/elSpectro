@@ -20,6 +20,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   DecayModelQ2W.h
   DecayModelst0.h
   DecayModelst.h
+  DecayModelDnpee.h
   JpacModelst.h
   GenericModelst.h
   DecayVectors.h
@@ -73,6 +74,7 @@ add_library(${ELSPECTRO} SHARED
   DecayModelst.cpp
   DecayModelst0.cpp
   JpacModelst.cpp
+  DecayModelDnpee.cpp
   GenericModelst.cpp
   DecayVectors.cpp
   DontDecay.cpp
