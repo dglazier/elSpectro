@@ -41,7 +41,7 @@ namespace jpacPhoto
     };
 
     //assume low amp allowedJP, 
-    inline std::vector<std::array<int,2>> allowedJP()
+    inline std::vector<std::array<int,2>> allowedJP() override
     {
       return _amp_low->allowedJP();
       //  return _amp_low->allowed_meson_JP();
