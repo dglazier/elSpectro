@@ -108,7 +108,7 @@ add_library(${ELSPECTRO} SHARED
   G__${ELSPECTRO}.cxx
   )
 
-target_link_libraries(${ELSPECTRO}   ROOT::Core ROOT::Rint ROOT::RIO ROOT::RooFit ROOT::MathMore ROOT::EG ROOT::GenVector )
+target_link_libraries(${ELSPECTRO}   -lRooFit -lMathMore -lEG -lGenVector )
 
 install(TARGETS ${ELSPECTRO} 
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
