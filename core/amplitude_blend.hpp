@@ -40,7 +40,7 @@ namespace jpacPhoto
       _isSum = true; //kind of. Actually for cache purposes.
     };
 
-    assume low amp allowedJP, 
+    //assume low amp allowedJP, 
     inline std::vector<std::array<int,2>> allowedJP()
     {
       return _amp_low->allowedJP();
