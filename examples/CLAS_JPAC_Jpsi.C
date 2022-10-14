@@ -7,11 +7,11 @@
 
 #include "reaction_kinematics.hpp"
 #include "regge_trajectory.hpp"
-#include "core/vector_exchange.hpp"
-#include "core/pseudoscalar_exchange.hpp"
-#include "core/pomeron_exchange.hpp"
-#include "core/amplitude_sum.hpp"
-#include "core/baryon_resonance.hpp"
+#include "amplitudes/vector_exchange.hpp"
+#include "amplitudes/pseudoscalar_exchange.hpp"
+#include "amplitudes/pomeron_exchange.hpp"
+#include "amplitudes/amplitude_sum.hpp"
+#include "amplitudes/baryon_resonance.hpp"
 
 #include <TBenchmark.h>
 #include <TH1.h>
@@ -66,8 +66,9 @@ void CLAS_JPAC_Jpsi(double ebeamE = 10.6, double nLumi=1E35, int nDays = 80) {
   // not last argument ==1 =>use lepton decay distributions 0=> use decay to spin 0  
   auto jpsi=particle(443,model(new VectorSDMEDecay({},{11,-11},1)));
   auto jpac_amp = Amplitude();
+  //auto pGammaStarDecay = new DecayModelst{ {jpsi},{2212} };
   auto pGammaStarDecay = new JpacModelst{&jpac_amp, {jpsi},{2212} };
-  auto photoprod = new DecayModelQ2W{0,pGammaStarDecay,new TwoBody_stu{1, .0, 1}};
+  auto photoprod = new DecayModelQ2W{0,pGammaStarDecay,new TwoBody_stu{1, 0., 1}};
   
   //combine beam, target and reaction products
   auto production=eic( elBeam,prBeam,photoprod );
@@ -91,8 +92,8 @@ void CLAS_JPAC_Jpsi(double ebeamE = 10.6, double nLumi=1E35, int nDays = 80) {
   //Set number of events via experimental luminosity and beamtime
   // ---------------------------------------------------------------------------
   production->SetCombinedBranchingFraction(0.06); //Just Jpsi->e+e-
-  generator().SetNEvents_via_LuminosityTime(nLumi,nDays*24*60*60);
-  //or can just do generator().SetNEvents(1E6);
+  if(nDays!=0)generator().SetNEvents_via_LuminosityTime(nLumi,nDays*24*60*60);
+  else generator().SetNEvents(nLumi);
   auto fastIntegral=production->IntegrateCrossSectionFast();
   std::cout<<" check fast cross section "<<fastIntegral<<std::endl;
 
@@ -105,7 +106,7 @@ void CLAS_JPAC_Jpsi(double ebeamE = 10.6, double nLumi=1E35, int nDays = 80) {
   while(finishedGenerator()==false){
     nextEvent();
     countGenEvent();
-    if(generator().GetNDone()%10000==0) std::cout<<"event number "<<generator().GetNDone()<<std::endl;
+    if(generator().GetNDone()%1000==0) std::cout<<"event number "<<generator().GetNDone()<<std::endl;
     
     auto photon = *elBeamP4 - electron->P4();
     double W = (photon+ *prBeamP4).M();
@@ -183,7 +184,7 @@ jpacPhoto::amplitude_sum Amplitude(){
   using namespace jpacPhoto;
 
   reaction_kinematics * ptr = new reaction_kinematics(3.0969160);//Jpsi mass
-  ptr->set_meson_JP(1, -1);
+  ptr->set_JP(1, -1);
   
   // ---------------------------------------------------------------------------
   // S - CHANNEL

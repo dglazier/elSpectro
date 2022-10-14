@@ -14,7 +14,7 @@
 #include "DecayModelst.h"
 #include "SDME.h"
 #include "FunctionsForElectronScattering.h"
-#include "core/amplitude.hpp"
+#include "amplitudes/amplitude.hpp"
 
 namespace elSpectro{
 
@@ -34,7 +34,7 @@ namespace elSpectro{
 
 
     double MatrixElementsSquared_T() const override {
-      _amp->_kinematics->set_meson_mass( GetMeson()->Mass() );
+      _amp->_kinematics->set_mX( GetMeson()->Mass() );
      // _amp->_kinematics->set_Q2( get_Q2() );
       //std::cout<<"me "<<GetMeson()->Mass()<<" Q2 "<< get_Q2()<<" t "<<get_t()<<" s "<<get_s()<<" W "<<get_W()<<" jpac "<<_amp->_kinematics->Wth()<<" VAL "<<_amp->probability_distribution(get_s(),get_t())/4<<std::endl;
       if(get_W()<_amp->_kinematics->Wth()) return 0;

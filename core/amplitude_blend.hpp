@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------
 #pragma once
 
-#include "core/amplitude.hpp"
+#include "amplitudes/amplitude.hpp"
 
 // ---------------------------------------------------------------------------
 // The amplitude_blend class can take a vector of the above amplitude objects
@@ -48,12 +48,12 @@ namespace jpacPhoto
     // };
 
     //take low amp allowed JP
-    std::vector<std::array<int,2>> allowed_meson_JP() override{ return _amp_low->allowed_meson_JP();}
-    std::vector<std::array<int,2>> allowed_baryon_JP() override{
-          return _amp_low->allowed_baryon_JP();
-    }
+    // std::vector<std::array<int,2>> allowed_meson_JP() override{ return _amp_low->allowed_meson_JP();}
+    //std::vector<std::array<int,2>> allowed_baryon_JP() override{
+    //     return _amp_low->allowed_baryon_JP();
+    //}
 
-    helicity_channel helicity_CM_frame() override {return _amp_low->helicity_CM_frame();}
+    //helicity_channel helicity_CM_frame() override {return _amp_low->helicity_CM_frame();}
     // TODO: Add a set_params which timesi in one vector and allocates approriaten number of
     // params to each sub amplitude
 
