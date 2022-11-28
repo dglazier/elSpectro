@@ -37,13 +37,20 @@ void MesonEx_p2pi(double ebeamE=10.4,int nEvents = 5e4) {
   elSpectro::Manager::Instance();
   
   //mass_distribution(9995,new DistTF1{TF1("hh","1",0.,4)});
-  elSpectro::LorentzVector elbeam(0,0,ebeamE,elSpectro::escat::E_el(ebeamE));
-  elSpectro::LorentzVector prbeam(0,0,0,elSpectro::escat::M_pr());
+   //define e- beam, pdg =11 momentum = _beamP
+  auto elBeam = initial(11,ebeamE);
+  auto elbeam=elBeam->GetInteracting4Vector();
+  //proton target at rest
+  auto prTarget= initial(2212,0);
+  auto prbeam=prTarget->GetInteracting4Vector();
+
+  //  elSpectro::LorentzVector elbeam(0,0,ebeamE,elSpectro::escat::E_el(ebeamE));
+  //  elSpectro::LorentzVector prbeam(0,0,0,elSpectro::escat::M_pr());
   
    //flat pure phase sapce distribution =1 for particle id 9995
   //mass_distribution(9995,new DistTF1{TF1("hh","1",0.,(elbeam+prbeam).M())});
   //add a Breit-Wigner resonance for particle id 9995
-  mass_distribution(9995,new DistTF1{TF1("hh","0.9*TMath::BreitWigner(x,0.78,0.149) + 0.1*TMath::BreitWigner(x,1.27,0.187)+0.1",0.,(elbeam+prbeam).M())});
+  mass_distribution(9995,new DistTF1{TF1("hh","0.9*TMath::BreitWigner(x,0.78,0.149) + 0.1*TMath::BreitWigner(x,1.27,0.187)",0.,(*elbeam+*prbeam).M())});
 
   //produced meson decaying to pi+ pi- with mass distribution 9995
   auto X=static_cast<DecayingParticle*>(particle(9995,model(new PhaseSpaceDecay{{},{211,-211}})) );
@@ -52,21 +59,24 @@ void MesonEx_p2pi(double ebeamE=10.4,int nEvents = 5e4) {
   //depends on s and t
   auto pGammaStarDecay = static_cast<DecayModelst*>(model(new DecayModelst{ {X},{2212} }));
   
+  mesonex( elBeam,prTarget ,  new DecayModelQ2W{0, pGammaStarDecay,new TwoBody_stu{0.1, 0.9, 4 , 0 , 0}} );
+
+
   // 
   //create mesonex electroproduction of X + proton
   //TwoBody_stu{0.1, 0.9, 3 ,0,0} //0.1 strength  s distribution (flat angular dist.),  0.9 strength t distribution with slope b = 3
-  mesonex( ebeamE ,  new DecayModelQ2W{0, pGammaStarDecay,new TwoBody_stu{0, 1, 5 , 0 , 0} });
+  // mesonex( ebeamE ,  new DecayModelQ2W{0, pGammaStarDecay,new TwoBody_stu{0, 1, 5 , 0 , 0} });
   // mesonex( ebeamE ,  new DecayModelQ2W{0, pGammaStarDecay,new TwoBody_stu{0.1, 0.9, 3 , 0 , 0} });
   auto production=dynamic_cast<ElectronScattering*>(generator().Reaction());
-  //production->SetLimitTarRest_eThmin(1.5*TMath::DegToRad());
-  //production->SetLimitTarRest_eThmax(5.5*TMath::DegToRad());
-  //production->SetLimitTarRest_ePmin(0.4);
-  //production->SetLimitTarRest_ePmax(6);
+  production->SetLimitTarRest_eThmin(2*TMath::DegToRad());
+  production->SetLimitTarRest_eThmax(5*TMath::DegToRad());
+  production->SetLimitTarRest_ePmin(0.5);
+  production->SetLimitTarRest_ePmax(6);
 
   
 
-  auto pip1 = static_cast<DecayingParticle*>(X)->Model()->Products()[1];
-  auto pim = static_cast<DecayingParticle*>(X)->Model()->Products()[0];
+  auto pip1 = static_cast<DecayingParticle*>(X)->Model()->Product(1);
+  auto pim = static_cast<DecayingParticle*>(X)->Model()->Product(0);
   
   auto proton = pGammaStarDecay->GetBaryon();
   auto electron = dynamic_cast<DecayModelQ2W*>(production->Model())->GetScatteredElectron();
@@ -90,8 +100,8 @@ void MesonEx_p2pi(double ebeamE=10.4,int nEvents = 5e4) {
     if(i%1000==0) std::cout<<"event number "<<i<<std::endl;
     nextEvent();
     
-    auto photon = elbeam - electron->P4();
-    double W = (photon+prbeam).M();
+    auto photon = *elbeam - electron->P4();
+    double W = (photon+*prbeam).M();
     
     //fill diagnostic histograms
     double Q2 = -photon.M2();
@@ -110,7 +120,7 @@ void MesonEx_p2pi(double ebeamE=10.4,int nEvents = 5e4) {
     hP1.Fill(pip1->P4().P());
     hPm.Fill(pim->P4().P());
 
-    double t = -1*(proton->P4()-prbeam).M2();// + kine::t0(W,0,prbeam.M(),Xrec.M(),prbeam.M());
+    double t = -1*(proton->P4()-*prbeam).M2();// + kine::t0(W,0,prbeam.M(),Xrec.M(),prbeam.M());
     ht.Fill(t);
 
   }
