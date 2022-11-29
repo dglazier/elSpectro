@@ -72,10 +72,11 @@ namespace elSpectro{
   
      }
       
-    _nEvent++;
     
-    if(_nEvent%_eventsPerFile==0)
+    if(_nEvent%_eventsPerFile==0&&_nEvent!=0)
       NewFile();
+    
+    _nEvent++;
   }
 
   /////////////////////////////////////////////////////////
