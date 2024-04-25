@@ -8,5 +8,5 @@ namespace elSpectro{
     _min_val = _th2.GetMinimum();
  
   }
- 
+
 }

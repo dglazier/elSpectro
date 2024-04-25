@@ -24,7 +24,7 @@ namespace elSpectro{
 
    public:
      LundWriter(const std::string& filename,long evPerFile=1E18);
-     ~LundWriter() final;
+     ~LundWriter() override;
      LundWriter(const LundWriter& other); //need the virtual destructor...so rule of 5
      LundWriter(LundWriter&&)=default;
      LundWriter& operator=(const LundWriter& other);
@@ -78,7 +78,7 @@ namespace elSpectro{
      const Particle* _inBeam={nullptr};
      const Particle* _inTarget={nullptr};
      
-     ClassDef(elSpectro::LundWriter,1); //class Writer
+     ClassDefOverride(elSpectro::LundWriter,1); //class Writer
    };
 
 

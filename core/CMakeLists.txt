@@ -20,13 +20,17 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   DecayModelQ2W.h
   DecayModelst0.h
   DecayModelst.h
+  TwoBodyProduction.h
   DecayModelDnpee.h
   JpacModelst.h
+  JpacTwoBody.h
+  JpacSemiInc.h
   GenericModelst.h
   DecayVectors.h
   DontDecay.h
   TwoBodyFlat.h
   TwoBody_stu.h
+  TwoBodyEnvelope.h
   ScatteredElectron_xy.h
   QuasiFreeNucleon.h
   BremstrPhoton.h
@@ -39,6 +43,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   DistUniform.h
   DistTH1.h
   DistTH2.h
+  DistTH2Slice.h
   DistFlatMass.h
   SDME.h
   PhotonPolarisationVector.h
@@ -72,14 +77,18 @@ add_library(${ELSPECTRO} SHARED
   DecayModelW.cpp
   DecayModelQ2W.cpp
   DecayModelst.cpp
+  TwoBodyProduction.cpp
   DecayModelst0.cpp
   JpacModelst.cpp
+  JpacSemiInc.cpp
+  JpacTwoBody.cpp
   DecayModelDnpee.cpp
   GenericModelst.cpp
   DecayVectors.cpp
   DontDecay.cpp
   TwoBodyFlat.cpp
   TwoBody_stu.cpp
+  TwoBodyEnvelope.cpp
   ScatteredElectron_xy.cpp
   QuasiFreeNucleon.cpp
   BremstrPhoton.cpp
@@ -90,6 +99,7 @@ add_library(${ELSPECTRO} SHARED
   DistTF1.cpp
   DistTH1.cpp
   DistTH2.cpp
+  DistTH2Slice.cpp
   DistFlatMass.cpp
   DistVirtPhotFlux_xy.cpp
   SDME.cpp

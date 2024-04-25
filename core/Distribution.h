@@ -8,6 +8,9 @@
 
 #include<utility> //for pair
 #include<memory> //for unique_ptr
+#include <Math/GSLIntegrator.h>
+#include <Math/IntegrationTypes.h>
+#include <Math/Functor.h>
 
 namespace elSpectro{
 
@@ -39,14 +42,16 @@ namespace elSpectro{
     double GetCurrentWeight() const noexcept { return CurrentValue()/MaxValue();}
     double GetWeightFor(double valX,double valY=0)  {return GetValueFor(valX,valY)/MaxValue();}
 
-    virtual double GetValueFor(double valX,double valY=0)= 0 ;
+    virtual double GetValueFor(double valX,double valY=0) const = 0 ;
+
+    virtual double Integrate1DX(double xlow=0,double xhigh=0) const;
     
   protected :
 
  
   private:
     
-    //   ClassDef(elSpectro::Distribution,1); //class Distribution
+    //ClassDef(elSpectro::Distribution,1); //class Distribution
  
   };
   

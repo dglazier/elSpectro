@@ -26,7 +26,7 @@ namespace elSpectro{
     constexpr double M_pr(){return 0.93827208816;}
     constexpr double M2_pr(){return M_pr()*M_pr();}
     constexpr double M_d(){return 1.875612;}
-    constexpr double M2_d(){return M_pr()*M_pr();}
+    constexpr double M2_d(){return M_d()*M_d();}
     
     constexpr double Alpha_by2Pi(){return 1./(137*2*TMath::Pi());}
     
@@ -109,8 +109,8 @@ namespace elSpectro{
     }
     //Virtual photon flux from x and y
     //egamma=e_sc = e_in * y
-    inline double Q2_xy(double e_in,double xx, double yy){
-      return 2 * escat::M_pr() * e_in * yy * xx;
+    inline double Q2_xy(double e_in,double xx, double yy,double mtar){
+      return 2 * mtar * e_in * yy * xx;
     }
     inline double Q2_cosThy(double e_in,double cosTh, double yy){
       double e_sc=e_in*(1-yy);
@@ -121,22 +121,22 @@ namespace elSpectro{
       double y = 1 - e_sc/e_in ;
       return y;
     }
-    inline double CosTh_xy(double e_in,double xx, double yy){
+    inline double CosTh_xy(double e_in,double xx, double yy,double mtar){
       double e_sc=e_in*(1-yy);     
-      return  (e_in*e_sc - 0.5*Q2_xy(e_in,xx,yy) - M2_el() )/P_el(e_in)/P_el(e_sc);
+      return  (e_in*e_sc - 0.5*Q2_xy(e_in,xx,yy,mtar) - M2_el() )/P_el(e_in)/P_el(e_sc);
     }
     inline double K_xy(double e_in,double xx, double yy){
       double K= (1-xx) * e_in*yy;
       return K<0 ? 0 : K; //protect -ve
     }
-    inline double L_xy(double e_in,double xx, double yy){
+    inline double L_xy(double e_in,double xx, double yy,double mtar){
       double m1y=1-yy;
-      double L= ( (1 + m1y*m1y) / yy)  - ( 2 * M2_el() * yy ) / Q2_xy(e_in,yy,xx);
+      double L= ( (1 + m1y*m1y) / yy)  - ( 2 * M2_el() * yy ) / Q2_xy(e_in,yy,xx,mtar);
        return L<0 ? 0 : L; //protect -ve
     }
-    inline double KLbyE_xy(double e_in,double xx, double yy){
+    inline double KLbyE_xy(double e_in,double xx, double yy,double mtar){
       double m1y=1-yy;
-      return (1 + m1y*m1y)  * (1-xx)  -  ( 2 * M2_el() * yy ) / Q2_xy(e_in,yy,xx) *yy; 
+      return (1 + m1y*m1y)  * (1-xx)  -  ( 2 * M2_el() * yy ) / Q2_xy(e_in,yy,xx,mtar) *yy; 
     }
     
     inline double K_W2(double W2){
@@ -160,16 +160,16 @@ namespace elSpectro{
 
       }
     */
-    inline double flux_dxdy(double e_in,double xx, double yy){
+    inline double flux_dxdy(double e_in,double xx, double yy,double mtar){
       //protect zero values on denominator
       //mimimum escatter = M_el
       auto m1y=(1-yy);
       // std::cout<<"Q2 "<< Q2_xy(e_in,xx, yy)<<" "<<M2_el()*yy*yy/m1y<<" "<< K_xy(e_in,xx,yy)<<" "<<L_xy(e_in,xx,yy)<< " "<<1./yy<<" "<<1./xx<<std::endl;
       return ((1-yy)*e_in>=M_el()) * xx  ==0 ? 0 :
-	Alpha_by2Pi() * K_xy(e_in,xx,yy) * L_xy(e_in,xx,yy) / e_in / yy / xx; 
+	Alpha_by2Pi() * K_xy(e_in,xx,yy) * L_xy(e_in,xx,yy,mtar) / e_in / yy / xx; 
     }
     
-    inline double flux_dlnxdlny(double e_in,double ln_xx, double ln_yy){
+    inline double flux_dlnxdlny(double e_in,double ln_xx, double ln_yy,double mtar){
       if(ln_xx>0||ln_yy>0) return 0;
       //Range of ln_xx [-infinity , 0 ]
       //protect zero values on denominator
@@ -179,7 +179,7 @@ namespace elSpectro{
       double yy = TMath::Exp(ln_yy);
       auto m1y=(1-yy);
       return ((1-yy)*e_in>=M_el()) * xx  ==0 ? 0 :
-	Alpha_by2Pi() * K_xy(e_in,xx,yy) * L_xy(e_in,xx,yy) / e_in ; 
+	Alpha_by2Pi() * K_xy(e_in,xx,yy) * L_xy(e_in,xx,yy,mtar) / e_in ; 
     }
     /*
       inline double flux_dlnQ2dlnrW(double e_in,double Q2, double yy){
@@ -197,13 +197,13 @@ namespace elSpectro{
       }
     */
   
-    inline double Frixione(double e0, double y){
+    inline double Frixione(double e0, double y, double massion=0.93827208816){
 
     
       double q2_max = -1 * M2_el()*y*y/(1 - y) ;
       //if(q2_max>-0.1)q2_max=-0.1 ;
       double eg=e0*y;
-      double q2_min = - 2*eg*M_pr();//add this
+      double q2_min = - 2*eg*massion;//add this
     
       auto flux = Alpha_by2Pi() * (2*M2_el()*y*(1/q2_max - 1/q2_min) + (1 + (1 - y)*(1-y))/y * log(q2_min/q2_max));
     

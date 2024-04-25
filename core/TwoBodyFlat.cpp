@@ -25,8 +25,10 @@ namespace elSpectro{
     // auto e_b = TMath::Sqrt(p_a*p_a + m2_b); // E for decay product b
 
     auto costh = RandomCosTh();
-    auto sinth=TMath::Sqrt(1-costh*costh);
+    if(_weight==0) return _weight; //faster not creating this branch point !!
     
+    auto sinth=TMath::Sqrt(1-costh*costh);
+    //  std::cout<<"TwoBodyFlat::Generate "<<costh<<" "<<sinth<<std::endl;
     //momentum components in CM frame
     //y applied in rotation function
     auto x_a = p_a* sinth;
@@ -43,7 +45,7 @@ namespace elSpectro{
     BoostToParentWithRandPhi(parent,_a);
     products[0]->SetP4(_a);
     products[1]->SetP4( parent - _a );
-    //   std::cout<<"TwoBody "<<products[0]->P4()<<" "<<products[0]->P4().M()<<" "<<products[1]->P4()<<" "<<products[1]->P4().M()<<std::endl;
+    // std::cout<<"TwoBodyFlat "<<_weight<<" "<<products[0]->P4()<<" "<<products[0]->P4().M()<<" "<<products[1]->P4()<<" "<<products[1]->P4().M()<<std::endl;
     return _weight; 
   }
 

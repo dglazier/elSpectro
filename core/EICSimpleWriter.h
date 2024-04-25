@@ -24,7 +24,7 @@ namespace elSpectro{
 
    public:
      EICSimpleWriter(const std::string& filename,long evPerFile=1E18);
-     ~EICSimpleWriter() final;
+     ~EICSimpleWriter() override;
      EICSimpleWriter(const EICSimpleWriter& other); //need the virtual destructor...so rule of 5
      EICSimpleWriter(EICSimpleWriter&&)=default;
      EICSimpleWriter& operator=(const EICSimpleWriter& other);
@@ -82,7 +82,7 @@ namespace elSpectro{
      const Particle* _inTarget={nullptr};
     Particle _photon={22}; //virtual photon pdg=22
     
-     ClassDef(elSpectro::EICSimpleWriter,1); //class Writer
+     ClassDefOverride(elSpectro::EICSimpleWriter,1); //class Writer
    };
 
 

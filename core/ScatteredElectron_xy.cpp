@@ -32,9 +32,9 @@ namespace elSpectro{
 
     double Egamma = Ee * yy;
  
-    double W = sqrt( Mion*(Mion + 2*Egamma ) -  escat::Q2_xy( Ee,xx,yy));
+    double W = sqrt( Mion*(Mion + 2*Egamma ) -  escat::Q2_xy( Ee,xx,yy,Mion));
     histy.Fill(yy);
-    histyQ2.Fill(escat::Q2_xy( Ee,xx,yy),yy);
+    histyQ2.Fill(escat::Q2_xy( Ee,xx,yy,Mion),yy);
     histyx.Fill(xx,yy);
     histW.Fill(W);
  
@@ -113,8 +113,7 @@ namespace elSpectro{
 
     
     double Ee = escat::E_el(_parent_in_elFrame.P()); //parent in rest frame of ion, momentum=e momentum
-    //    double Mion= _parent_in_elFrame.T()-Ee; // energy of parent = Mion + E(e-)
-
+    double Mion= _parent_in_elFrame.T()-Ee; // energy of parent = Mion + E(e-)
     double Egamma = Ee * yy;
  
     // double W = sqrt( Mion*(Mion + 2*Egamma ) -  escat::Q2_xy( Ee,xx,yy));
@@ -123,7 +122,7 @@ namespace elSpectro{
     // if(escat::Q2_xy( Ee,xx,yy)<0.3&&escat::Q2_xy( Ee,xx,yy)>0.01) histy.Fill(yy);
    
     //calculate cos(theta) from e,x,y (via Q2 and Mass proton)
-    double costh = escat::CosTh_xy(Ee,xx,yy);
+    double costh = escat::CosTh_xy(Ee,xx,yy,Mion);
     costh = costh>1 ? 1 : costh; //protect <=1
 
     // histyCosTh.Fill(costh,yy);

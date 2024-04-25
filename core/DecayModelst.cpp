@@ -230,7 +230,8 @@ namespace elSpectro{
 	//back to PDg mass if exists
 	if(_meson->PdgMass()>M3)
 	  M3=_meson->PdgMass();
-	  dynamic_cast<DecayingParticle*>(_meson)->TakePdgMass();
+	
+	dynamic_cast<DecayingParticle*>(_meson)->TakePdgMass();
 
       }
 
@@ -415,7 +416,7 @@ namespace elSpectro{
 	    if(val_at_t>max_at_W)
 	      max_at_W=val_at_t;
 	    
-	    _W=_W-hist.GetXaxis()->GetBinWidth(ih); //take left limit 
+	    _W=_W-hist.GetXaxis()->GetBinWidth(ih)/2; //take left limit 
 	    val_at_t = F(tval)*(tmin-tmax);
 	    if(val_at_t>max_at_W)
 	      max_at_W=val_at_t;

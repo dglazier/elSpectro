@@ -44,8 +44,8 @@ namespace elSpectro{
     double GetX() const noexcept { return _x;}
     double GetY() const noexcept { return _y;}
  
-    double GetWeightFor(double valX)  {return 1;}
-    double GetValueFor(double valX,double valY=0) final {return _val;}
+    double GetWeightFor(double valX)  const {return 1;}
+    double GetValueFor(double valX,double valY=0) const final {return _val;}
     
   private:
     //no one should use default constructor

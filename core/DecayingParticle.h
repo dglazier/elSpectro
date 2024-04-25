@@ -71,7 +71,17 @@ namespace elSpectro{
       //std::cout<<"min masss "<<Pdg()<<" "<<minmass<<std::endl;
       return minMass;
     }
-    
+
+    double IntegratedMass(double W, double M_other){
+      //need to call this in TwoBodyProduction when full mass range
+      //is not accessible due to low W high mass.
+      //should weight the cross section by the ratio of
+      //full integrated mass to this integrated mass
+      double maxMass = W-M_other; //total invariant mass - mass of other
+      //now need to integrate mass distribution from minimum to max
+     return  MassDistribution()->Integrate1DX(_minMass,maxMass);
+      
+    }
     void SetMinMass(double mass){_minMass=mass;}
     
     void TakeMinimumMass(){

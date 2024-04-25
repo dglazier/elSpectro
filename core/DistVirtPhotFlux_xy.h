@@ -71,7 +71,7 @@ namespace elSpectro{
 
     double Integral() const noexcept{return _integral;}
     
-    double GetValueFor(double valX,double valY) final{
+    double GetValueFor(double valX,double valY) const final{
       Double_t arr[]={valX,valY};
       return Eval(arr);
     }
@@ -163,7 +163,7 @@ namespace elSpectro{
     if(currx>avail_xmax){ return 0; }
     if(currx<avail_xmin){ return 0; }
   
-    return escat::flux_dlnxdlny(_ebeam,lnx,lny);
+    return escat::flux_dlnxdlny(_ebeam,lnx,lny,_mTar);
   }
   /*
   inline double DistVirtPhotFlux_xy::Eval(const double *x) const{
@@ -191,22 +191,23 @@ namespace elSpectro{
     }*/
 
   inline  double DistVirtPhotFlux_xy::XMin(double y) const{
-      double r = 2*_mTar*_ebeam*y;
-      double Q2min = escat::M2_el()*y*y/(1-y);
-      // double Q2max = r + _mTar*_mTar - _Wthresh2;
-      double avail_xmin =escat::M2_el()*y/(2*_mTar*_ebeam)/(1-y);
-       if( Q2min<_requestQ2min)
-	avail_xmin = _requestQ2min/r;
-       if(_requestThmin>0){
-	 auto Q2fromTh=escat::Q2_cosThy(_ebeam,_requestCosThmin,y);
-	 //if limit on P, thre will be a limit on Q2 for a given y
-	 if(Q2fromTh>Q2min)
-	   avail_xmin = Q2fromTh/r;
-       }
-      if(_requestXmin> avail_xmin) avail_xmin=_requestXmin;
-      return avail_xmin;
+    double r = 2*_mTar*_ebeam*y;
+    double Q2min = escat::M2_el()*y*y/(1-y);
+    double avail_xmin =escat::M2_el()*y/(2*_mTar*_ebeam)/(1-y);
+      
+    if( Q2min<_requestQ2min)
+      avail_xmin = _requestQ2min/r;
+    if(_requestThmin>0){
+      auto Q2fromTh=escat::Q2_cosThy(_ebeam,_requestCosThmin,y);
+      //if limit on P, thre will be a limit on Q2 for a given y
+      if(Q2fromTh>Q2min)
+	avail_xmin = Q2fromTh/r;
     }
-   inline  double DistVirtPhotFlux_xy::XMax(double y) const{
+    if(_requestXmin> avail_xmin) avail_xmin=_requestXmin;
+    return avail_xmin;
+  }
+  
+  inline  double DistVirtPhotFlux_xy::XMax(double y) const{
       double r = 2*_mTar*_ebeam*y;
       double Q2max = r + _mTar*_mTar - _Wthresh2;
       double avail_xmax = 1 + (_mTar*_mTar - _Wthresh2 )/r;

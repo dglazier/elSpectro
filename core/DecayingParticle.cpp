@@ -24,6 +24,7 @@ namespace elSpectro{
   
 //////////////////////////////////////////////////////////////////////
   void DecayingParticle::PostInit(ReactionInfo* info) {
+    std::cout<<" DecayingParticle::PostInit "<<Pdg()<<" "<<std::endl;
     //Decay type depends on Lifetime
     if(TDatabasePDG::Instance()->GetParticle(Pdg())){
       double lifetime=TDatabasePDG::Instance()->GetParticle(Pdg())->Lifetime();
@@ -55,8 +56,8 @@ namespace elSpectro{
       }
     }
 
-      if(_decay)_decay->PostInit(info);
-  if(_decayer)_decayer->PostInit(info);
+    if(_decay)_decay->PostInit(info);
+    if(_decayer)_decayer->PostInit(info);
 
     if(Pdg()!=0&&Pdg()!=-2211){//for real particles
       Double_t productMasses = 0.0;
@@ -98,9 +99,9 @@ namespace elSpectro{
     //for others it allows to weigth phase space back in 
 
     auto samplingWeight= Decay();
-
+    //std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" sample weight "<<samplingWeight<<std::endl;
     if(Model()->HasAngularDistribution()==false)samplingWeight=1; //Model has no angular distribution
-     
+ 
     //samplingWeight ==0 => not physical (below threshold)
     if(samplingWeight==0) return DecayStatus::ReGenerate;
   
@@ -110,19 +111,20 @@ namespace elSpectro{
  
     if(weight==0)  return DecayStatus::ReGenerate;
     if(samplingWeight - weight < -1E-4 ){//tolerance 0.0001
-      std::cout<<"DecayingParticle::GenerateProducts model weight is greater than envelope " <<Mass()<<" "<<Model()->GetName()<<" "<<Class_Name()<<" weights "<<samplingWeight <<" "<<weight<<" masses "<<Model()->Products()[0]->Mass()<<" "<<Model()->Products()[1]->Mass()<<" difference in weights "<<samplingWeight-weight <<std::endl;
+      std::cout<<"DecayingParticle::GenerateProducts model weight is greater than envelope W =" <<Mass()<<" "<<Model()->GetName()<<" "<<Class_Name()<<" sampling weight "<<samplingWeight <<" current weight "<<weight<<" masses meson "<<Model()->Products()[0]->Mass()<<" baryon "<<Model()->Products()[1]->Mass()<<" difference in weights "<<samplingWeight-weight <<std::endl;
+      auto twoBody = dynamic_cast<TwoBodyProduction*>(Model());
+      std::cout<<"W "<< twoBody->get_W()<<" t "<<twoBody->get_t()<<" th "<<twoBody->get_cosThCM()<<std::endl; 
       // exit(0);
     }
+    // if(Pdg()==-2211)std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" "<<weight <<" "<<_maxWeight<<" "<<samplingWeight<<" "<<Model()->RegenerateOnFail()<<" "<<weight/samplingWeight<<std::endl;
     //if event info use its weight, if not assume phse space model = 1.
     weight/=samplingWeight;
-  
-   
+        
  
     //accept/reject this decay
     //if decay depends on variable chosen by parent need to regenerate on fail
     //if decay indendent of parent variables can just try for another
-    //   std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" "<<weight <<" "<<_maxWeight<<" "<<samplingWeight<<std::endl;
-    decayed = weight > gRandom->Uniform()*_maxWeight ;
+    decayed = weight > gRandom->Uniform() ;
     if (decayed == false && (Model()->RegenerateOnFail()==false) )
       return DecayStatus::TryAnother;
     else if (decayed == false && (Model()->RegenerateOnFail()==true) )

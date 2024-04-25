@@ -62,7 +62,7 @@ namespace elSpectro{
 	  //std::cout<<" weight >  max "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
 	  // }
 	//reject this combintation
-	  //	if(wee==0)	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
+	//	if(wee==0)	std::cout<<"ps "<<wee <<" "<<max<<" W "<<parentM<<" sample max"<<_sampledMax<<std::endl;
       }
       if(wee>max){
 	// _sampledMax=wee;

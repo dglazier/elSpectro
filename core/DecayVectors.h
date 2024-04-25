@@ -42,6 +42,7 @@ namespace elSpectro{
 
     virtual double Probability() const {return 1;}
 
+    double Weight() const { return  _weight;}
 
 
    virtual void BoostToParentWithRandPhi(const LorentzVector& parent, LorentzVector& child){

@@ -158,6 +158,7 @@ namespace elSpectro{
       std::cout<<"Electron Scattering min mass "<<_gStarN->MinimumMassPossible()<<std::endl;
       minMass=_gStarN->MinimumMassPossible();
     }
+  
     if(auto Q2WModel=dynamic_cast<DecayModelQ2W*>(Model())){
       auto thresh=Q2WModel->getThreshold();
       if(minMass<thresh)minMass=thresh;
@@ -196,10 +197,19 @@ namespace elSpectro{
 	if(_Ymin!=0){
 	  if(y<_Ymin){
 	    y=_Ymin;
+	    // W^2 - M^2 + Q2 = 2M(Eg) = 2M*ebeam*y
+	    auto tempminMass=TMath::Sqrt(2*_massIon*_nuclRestElec.E()*y + _massIon*_massIon);
+	    if(tempminMass<minMass){ //ymin is below threshold, set to 0 to use threshold
+	      _Ymin=0;
+	      y=0;
+	    }
+	    else{
+	      minMass=tempminMass;
+	    }
+	    
 	    _ePmax=_nuclRestElec.E() - _nuclRestElec.E()*y;
 	  }
-	  // W^2 - M^2 + Q2 = 2M(Eg) = 2M*ebeam*y
-	  minMass=TMath::Sqrt(2*_massIon*_nuclRestElec.E()*y + _massIon*_massIon);
+
 	}
       	
 	std::cout<<" settting Ymin "<< y <<" "<<_Ymin<<" "<<_ePmax<<std::endl;
@@ -240,7 +250,7 @@ namespace elSpectro{
       _Wmin=minMass;
       if(dynamic_cast<DistVirtPhotFlux_xy*>(&(decayer->Dist())))_Wmin=dynamic_cast<DistVirtPhotFlux_xy*>((&decayer->Dist()))->GetWMin();//can be effected by angle limits etc
     }
-    
+  
     std::cout<<"ElectronScattering::InitGen() final minimum W "<<_Wmin<<std::endl;
     if(_gStarN!=nullptr){
       _gStarN->SetMinMass(_Wmin);
@@ -250,8 +260,9 @@ namespace elSpectro{
       generator().SetModelForMassPhaseSpace(_gStarN->Model());
     }
 
-    
+    //try here so chance to redefine minimum masses etc
     ProductionProcess::PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
+ 
  
    }
   //////////////////////////////////////////////////////////////////////////
@@ -263,8 +274,10 @@ namespace elSpectro{
     auto Q2WModel =dynamic_cast<DecayModelQ2W*>(Model());
     Q2WModel->ZeroPhoton();//need Q2=0 for P1CM
     
-    auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
+    //   auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
+    auto gStarModel =dynamic_cast<TwoBodyProduction*>(_gStarN->Model());
     auto threshold=gStarModel->GetMeson()->PdgMass()+gStarModel->GetBaryon()->PdgMass();
+    
     TH1D* hWdist=new  TH1D("sdisthigh","sdisthigh",100,threshold,collision.M());
     gStarModel->HistIntegratedXSection( *hWdist);
     
@@ -276,8 +289,13 @@ namespace elSpectro{
       double WbinWidthScale = hWdist->GetBinWidth(i+1);
       double W_xsection = hWdist->GetBinContent(i+1);
       
-      double y = (W*W-escat::M2_pr())/_nuclRestElec.E()/2/escat::M_pr();
-      double W_fluxWeight = escat::Frixione(_nuclRestElec.E(),y) * W /_nuclRestElec.E() /escat::M_pr();
+      // double y = (W*W-escat::M2_pr())/_nuclRestElec.E()/2/escat::M_pr();
+      // double W_fluxWeight = escat::Frixione(_nuclRestElec.E(),y) * W /_nuclRestElec.E() /escat::M_pr();
+      //change to ion mass 8.3.2023
+      double y = (W*W-_massIon)/_nuclRestElec.E()/2/_massIon;
+      double W_fluxWeight = escat::Frixione(_nuclRestElec.E(),y,_massIon) * W /_nuclRestElec.E() /_massIon;
+      std::cout<<"ElectronScattering::IntegrateCrossSectionFast() W = "<< W<<" photoXS = "<<W_xsection<<" photoFlux = "<<W_fluxWeight<<" xs "<<W_xsection * W_fluxWeight* WbinWidthScale<<std::endl;
+      //      gStarModel->sigma(W);
       integrated_xsection += W_xsection * W_fluxWeight* WbinWidthScale;
     }
     gBenchmark->Stop("IntegrateCrossSectionFast");
@@ -327,7 +345,9 @@ namespace elSpectro{
     
      auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.99,-1,1,"");
     
-    auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
+     //DEBUG
+     // auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
+     auto gStarModel =dynamic_cast<TwoBodyProduction*>(_gStarN->Model());
     auto Q2WModel =dynamic_cast<DecayModelQ2W*>(Model());
     
     photonFlux->Dist().SetWThresholdVal(gStarModel->GetMeson()->PdgMass()+gStarModel->GetBaryon()->PdgMass());
@@ -348,8 +368,9 @@ namespace elSpectro{
 	//calculate virtual photon
 	Q2WModel->Intensity();
 	//get value of dsigma(s)/dcosth cross section at x,y,costh
-	Double_t dsigma_costh=gStarModel->dsigma_costh(x[2]);
-	val*=dsigma_costh;
+	//Double_t dsigma_dcosth=gStarModel->dsigma_costh(x[2]);
+	Double_t dsigma_dcosth=gStarModel->dsigma_dcosth(gStarModel->get_W_FromParent(),x[2]);
+	val*=dsigma_dcosth;
 	//additional (not real photo) Q2dependence of cross section
 	if(TMath::IsNaN(val)) return 0.;
 	if(val<0) return 0.;

@@ -25,7 +25,7 @@ namespace elSpectro{
 
    public:
      HepMC3Writer(const std::string& filename);
-     ~HepMC3Writer() final;
+     ~HepMC3Writer() override;
      HepMC3Writer(const HepMC3Writer& other); //need the virtual destructor...so rule of 5
      HepMC3Writer(HepMC3Writer&&)=default;
      HepMC3Writer& operator=(const HepMC3Writer& other);
@@ -98,7 +98,7 @@ namespace elSpectro{
    
      int _id=1;
      
-     ClassDef(elSpectro::HepMC3Writer,1); //class Writer
+     ClassDefOverride(elSpectro::HepMC3Writer,1); //class Writer
    };
 
 

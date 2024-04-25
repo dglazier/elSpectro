@@ -25,7 +25,7 @@ namespace elSpectro{
 
    public:
      GlueXWriter(const std::string& filename,long evPerFile=1E18, int runnumber=72068);
-     ~GlueXWriter() final;
+     ~GlueXWriter() override;
      GlueXWriter(const GlueXWriter& other); //need the virtual destructor...so rule of 5
      GlueXWriter(GlueXWriter&&)=default;
      GlueXWriter& operator=(const GlueXWriter& other);
@@ -75,7 +75,7 @@ namespace elSpectro{
      const Particle* _inBeam={nullptr};
      const Particle* _inTarget={nullptr};
      
-     ClassDef(elSpectro::GlueXWriter,1); //class Writer
+     ClassDefOverride(elSpectro::GlueXWriter,1); //class Writer
    };
 
 

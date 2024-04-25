@@ -42,7 +42,7 @@ namespace elSpectro{
     double GetMinX() const noexcept final{return 0;}
     double GetMaxX() const noexcept final{return _maxX;}
 
-    double GetValueFor(double valX,double valY=0) override  {return 1.;}
+    double GetValueFor(double valX,double valY=0) const override  {return 1.;}
 
     void SetMaxX(double val){_maxX=val;}
     
@@ -76,7 +76,7 @@ namespace elSpectro{
 
     double SampleSingle()   noexcept final ;
     
-    double GetValueFor(double valX,double valY=0) final  {return 1.;}
+    double GetValueFor(double valX,double valY=0) const final  {return 1.;}
 
     uint AddClient(){
   

@@ -17,6 +17,7 @@
 #include "ReactionInfo.h"
 #include "PhotonPolarisationVector.h"
 #include "DistTH1.h"
+#include "TwoBodyProduction.h"
 #include "DecayModelst.h"
 #include <TH1D.h>
 
@@ -49,11 +50,17 @@ namespace elSpectro{
     const Particle*  GetScatteredElectron() const noexcept{return _electron; }
     const DecayingParticle* GetGammaN() const noexcept{return dynamic_cast<const DecayingParticle*>(_gstarNuc); }
 
+    // const Particle* GetDecayBaryon()  noexcept{
+    //   return dynamic_cast<const DecayModelst*>(GetGammaN()->Model())->GetBaryon();
+    // }
+    // const Particle* GetDecayMeson()  noexcept{
+    //   return dynamic_cast<const DecayModelst*>(GetGammaN()->Model())->GetMeson();
+    // }
     const Particle* GetDecayBaryon()  noexcept{
-      return dynamic_cast<const DecayModelst*>(GetGammaN()->Model())->GetBaryon();
+      return dynamic_cast<const TwoBodyProduction*>(GetGammaN()->Model())->GetBaryon();
     }
     const Particle* GetDecayMeson()  noexcept{
-      return dynamic_cast<const DecayModelst*>(GetGammaN()->Model())->GetMeson();
+      return dynamic_cast<const TwoBodyProduction*>(GetGammaN()->Model())->GetMeson();
     }
 
     double getQ2() const noexcept{return -_gamma.M2();}

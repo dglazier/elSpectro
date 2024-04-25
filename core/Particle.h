@@ -139,7 +139,7 @@ namespace elSpectro{
 	auto minRange = xmin==-1?minposs:xmin;
 	auto maxRange = xmax==-1?_massDist->GetMaxX():xmax;
  	if(minRange>maxRange){//unphysical
-	  //std::cout<<"Warning  Particle::DetermineDynamicMass min "<<minRange<<" greater than max "<<maxRange<<" for "<<_pdg<<std::endl;
+	  std::cout<<"Warning  Particle::DetermineDynamicMass min "<<minRange<<" greater than max "<<maxRange<<" for "<<_pdg<<std::endl;
 	  _dynamicMass=minRange;
 	  break;
 	}

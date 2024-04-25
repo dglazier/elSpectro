@@ -87,6 +87,7 @@ namespace elSpectro{
   double DecayModel::PhaseSpaceWeightSq(double W){
     //std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq "<<Parent()<<std::endl;
     // if(Parent()->Pdg()==-2211)std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq start "<<MinimumMassPossible()<<" "<<W<<std::endl;
+    
     //std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq start "<<MinimumMassPossible()<<" "<<W<<" "<<_unstables.size()<<" "<<_stables.size()<<std::endl;
     //Note use weight squared to reduce sqrt calls
     
@@ -109,9 +110,10 @@ namespace elSpectro{
 
       //Note in case there are additional unstable particle we
       //must subtract off their minimum masses
-      // std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq got Detemine dynamic mass "<<TCM<<" "<<p<<" "<<_unstableReservedMass[iu]<<std::endl;
+      //std::cout<<GetName()<<" DecayModel::PhaseSpaceWeightSq got Detemine dynamic mass "<<Parent()->Pdg()<<" "<<p->Pdg()<<" "<<TCM<<" "<<p->Mass()<<" "<<_unstableReservedMass[iu]<<std::endl;
        p->DetermineDynamicMass(-1,TCM-_unstableReservedMass[iu++]);
       TCM-=p->Mass();
+      //std::cout<<GetName()<<"2 DecayModel::PhaseSpaceWeightSq got Detemine dynamic mass "<<Parent()->Pdg()<<" "<<p->Pdg()<<" "<<TCM<<" "<<p->Mass()<<" "<<_unstableReservedMass[iu]<<std::endl;
 
       if(TCM<0){
 	

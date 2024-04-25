@@ -21,16 +21,16 @@ namespace elSpectro{
 
     TwoBodyFlat()=default;
     virtual ~TwoBodyFlat()=default;
-    TwoBodyFlat(const TwoBodyFlat& other); //need the virtual destructor...so rule of 5
+    TwoBodyFlat(const TwoBodyFlat& other)=default;; //need the virtual destructor...so rule of 5
     TwoBodyFlat(TwoBodyFlat&&)=default;
-    TwoBodyFlat& operator=(const TwoBodyFlat& other);
+    TwoBodyFlat& operator=(const TwoBodyFlat& other)=default;;
     TwoBodyFlat& operator=(TwoBodyFlat&& other) = default;
  
 
     double Generate(const LorentzVector& parent,
 		    const particle_ptrs& products)  final;
 
-    virtual double RandomCosTh() const noexcept{
+    virtual double RandomCosTh() noexcept{
       return gRandom->Uniform(-1,1);
     }
     

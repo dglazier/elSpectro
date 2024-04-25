@@ -47,8 +47,6 @@ namespace elSpectro{
       //Make sure meson is product 0 and baryon product 1
       dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->SwapProducts(0,1);
     }
- 
-    if(_threshold<MinimumMassPossible() )_threshold=MinimumMassPossible(); 
   }
 
   ////////////////////////////////////////////////////////
@@ -66,27 +64,23 @@ namespace elSpectro{
 	_prodInfo->_Wmax=( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
       }
       auto gNprods=dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->Products();
-      //std::cout<<"DecayModelQ2W::PostInit "<<_prodInfo<<" "<<gNprods[0]->Pdg()<<" "<<gNprods[1]->Pdg()<<std::endl;
-       _prodInfo->_baryon=gNprods[1]->P4ptr();
+
+      _prodInfo->_baryon=gNprods[1]->P4ptr();
       _prodInfo->_meson=gNprods[0]->P4ptr();
       
       
-      std::cout<<"DecayModelQ2W::PostInit with W threshold = "<<getThreshold()<<std::endl;
       DecayModel::PostInit(_prodInfo);
       
- 
-      FindExcitationSpectra();
-  
+      //upate in case minumim mass changed..
+      if(_threshold<MinimumMassPossible() )_threshold=MinimumMassPossible(); 
+      
+      // FindExcitationSpectra();
+      
   }
   
   ////////////////////////////////////////////////////////
   double  DecayModelQ2W::Intensity() const{
-    // std::cout<<"DecayModelQ2W::Intensity "<<MinimumMassPossible()<<" "<<ParentVector().M()<<" "<<getW()<<" > "<<_threshold<<" "<<GetGammaN()->P4().E() <<std::endl;
-
-    /*if(CheckThreshold()==false){
-      return 0.;
-      }*/
-
+    
     double W = getW();
     if(TMath::IsNaN(W)) return 0.0;
     if(W  < _threshold ) return 0.;
@@ -98,47 +92,23 @@ namespace elSpectro{
     const auto& p4scat=_electron->P4();
 
     _gamma = p4beam-p4scat;//can now use getQ2
-    // std::cout<<"DecayModelQ2W "<<Parent()->Pdg()<<" "<<Parent()->P4().Vect().Unit()<<" "<<_gamma.Vect().Unit()<<" "<<(p4scat + _gstarNuc->P4()).Vect().Unit()<<"initial "<<(p4beam+p4tar).Vect().Unit()<<std::endl;
-     //calculate photon polarisation
+
+    //calculate photon polarisation
     auto epsilon = escat::virtualPhotonPolarisation(p4beam,p4tar,p4scat);
     auto delta = 2*escat::M2_el()/getQ2()*(1-epsilon);
     
     _photonPol.SetEpsilon(epsilon);
     _photonPol.SetDelta(delta);
  
-    //Get envelope weight from integrated cross section
-    double weight=_Wrealphoto_Dist->GetWeightFor( W  );
-      
-    if(getQ2() > 2*p4tar.M()*_gamma.E()){
-      std::cout<<"Q2 above max how ? "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<std::endl;
-      exit(0);
-    }
+    //   Get envelope weight from integrated cross section
+     double weight=1.0;
+    // if(_Wrealphoto_Dist.get()){
+    //   weight = _Wrealphoto_Dist->GetWeightFor( W  );
+    // }
     
- 
-    //  std::cout<<" Q2 DEPENDENECE "<<PhaseSpaceFactorToQ2eq0(W,p4tar.M() )<<"      "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<"             PDKs     "<< kine::PDK(W, -getQ2(),p4tar.M())<<" "<< kine::PDK(W, getQ2(),p4tar.M())<<" "<< kine::PDK(W, 0 ,p4tar.M())<<" "<<std::endl;
-
-
-    _prodInfo->_sWeight=weight; //might be used in s and t
-   
-    if(weight>1){
-    auto cmBoost=_gstarNuc->P4().BoostToCM();
-    auto p1cm=boost(_gamma,cmBoost);
-      std::cout<<" Q2 DEPENDENECE "<<PhaseSpaceFactorToQ2eq0(W,p4tar.M() )<<"      "<<getQ2()<<" 2Mmu "<<2*p4tar.M()*_gamma.E() <<" W "<<W<<"             PDKs     "<< kine::PDK(W, -getQ2(),p4tar.M())<<" "<< kine::PDK(W, getQ2(),p4tar.M())<<" "<< kine::PDK(W, 0 ,p4tar.M())<<" "<< p1cm.P()<<std::endl;
-    }
-
- 
-    //now add Q2 depedence to get weighted here
-    
-    //Q2 dependence of phase space needed to effectively multiply st max value
-    //Here the Q2 dependence would multiply weight value and max ,thus cancelling
-    //i.e do not do weight*=PhaseSpaceFactorToQ2eq0(W,p4tar.M() );
-    //_prodInfo->_sWeight*=PhaseSpaceFactorToQ2eq0(W,p4tar.M() );
-    
-    //Q2 dependence of cross section
      weight*=Q2H1Rho();
-     // std::cout<<" Q things "<<getQ2()<<"   "<<_prodInfo->_sWeight<<" "<<weight<<" "<<std::endl;
-    return weight;
-    
+
+     return weight;
   }
   void DecayModelQ2W::FindExcitationSpectra(){
 
@@ -156,36 +126,23 @@ namespace elSpectro{
     //auto baryon = gNprods[1];
     auto meson=gNprods[0];
  
-    DecayModelst* mesonBaryon = nullptr;
-    TH1D histlow("Wdistlow","Wdistlow",400,_threshold,maxW);
-    TH1D histpeak("Wdisthigh","Wdisthigh",400,_threshold,maxW);
-    double minMesonMass=-1;
-    if( ( mesonBaryon=dynamic_cast<DecayModelst*>(GetGammaN()->Model())) != nullptr){
-      //check for low mass meson limits
-      if(dynamic_cast<DecayingParticle*>(meson)){ //meson
-	dynamic_cast<DecayingParticle*>(meson)->TakeMinimumMass();//to get threshold behaviour
-	minMesonMass=meson->Mass();
- 	mesonBaryon->HistMaxXSection(histlow);
-	//back to PDg mass if exists
-	if(meson->PdgMass()>minMesonMass)
-	  dynamic_cast<DecayingParticle*>(meson)->TakePdgMass();
+    //DecayModelst* mesonBaryon = nullptr;
+    TwoBodyProduction* mesonBaryon = nullptr;
+     TH1D histlow("Wdistlow","Wdistlow",400,_threshold,maxW);
+     TH1D histpeak("Wdisthigh","Wdisthigh",400,_threshold,maxW);
 
-      }
-      //now for PDG mass
-      //only needs to be done if meson does not decay
-      //or pdg mass is different from minMesonMass (possible if !=0)
-      if(meson->PdgMass()!=minMesonMass){
-	mesonBaryon->HistMaxXSection(histpeak);
-      }
-      auto hist = HistFromLargestBinContents(histpeak,histlow);
-      std::cout<<"DecayModelQ2W::FindExcitationSpectra()  result   "<<hist.GetMaximum()<<" "<<hist.GetBinCenter(hist.GetMaximumBin())<<" "<<hist.GetNbinsX()<<std::endl;
-      hist.SetName("Wdist");
+     if( ( mesonBaryon=dynamic_cast<TwoBodyProduction*>(GetGammaN()->Model())) != nullptr){
+      TH1D hWdist("Wintegrate","Wintegrate",100,_threshold,maxW);
+ 
+      //mesonBaryon->HistIntegratedXSection(hWdist);
+      mesonBaryon->HistMaxXSection(hWdist);
+      hWdist.SetName("Wdist");
 
         
-     _Wrealphoto_Dist.reset( new DistTH1(hist) );
+     _Wrealphoto_Dist.reset( new DistTH1(hWdist) );
     }
     else{
-      std::cerr<<"DecayModelQ2W::FindExcitationSpectra()Need a DecayModelst"<<std::endl;
+      std::cerr<<"DecayModelQ2W::FindExcitationSpectra()Need a TwoBodyProduction"<<std::endl;
       exit(0);
     }
   }
@@ -205,14 +162,15 @@ namespace elSpectro{
 	//We want envelope to contain this so once we get to the max
 	//just stay there. Flux is low at high W so no big effect
 	//on efficiency from this
-	
+	hist.SetBinContent(ibin,val );
+	/*
 	if(val<max_so_far){
 	  hist.SetBinContent(ibin,max_so_far );
 	}
 	else{
 	  max_so_far = val + 0.05*maxVal;
 	  hist.SetBinContent(ibin,val + 0.05*maxVal);
-	}
+	  }*/
       }
       return hist;
    }

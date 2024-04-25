@@ -151,7 +151,7 @@ namespace elSpectro{
 
   private:
 
-    double DifferentialXSect() const{//dont let others call this as need _s, _W and _t set
+    virtual double DifferentialXSect() const{//dont let others call this as need _s, _W and _t set
       //Note if your derived model already gives differential cross section
       //you will need to divide by PhaseSpaceFactor to get MatrixElementSquared from it
       // std::cout<<" DifferentialXSect() "<<PhaseSpaceFactor()<<"  "<<" "<<PgammaCMsq()<<std::endl;

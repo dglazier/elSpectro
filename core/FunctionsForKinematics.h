@@ -20,6 +20,15 @@ namespace elSpectro {
       return (a-b-c)*(a+b+c)*(a-b+c)*(a+b-c)/(4*a*a);
     }
     
+    inline double Kallen(double x, double y, double z)
+    {
+      return x*x + y*y + z*z - 2. * (x*y + x*z + y*z);
+    };
+    inline double pFromKallen(double x, double y, double z)
+    {
+      return 0.5*sqrt(Kallen(x,y,z) / x);
+    };
+
     inline double PDK(double a, double b, double c){
       return TMath::Sqrt( kine::PDK2(a,b,c) );
     }
@@ -144,9 +153,10 @@ namespace elSpectro {
       double E3 = sqrt(M3*M3 + p3*p3);
 
   
-      return  M1*M1 + M3*M3  - 2 * ( E1*E3 -p1*p3*costh ); ;
+      return  M1*M1 + M3*M3  - 2 * ( E1*E3 -p1*p3*costh );
       
     }
+ 
     inline double tFromcosthWP1P3(double costh, double W,double p1,double p3,double M1,double M2,double M3,double M4){
       //if(M1!=0)exit(0);
       //with M1<0 PDK can sometimes not return finite number

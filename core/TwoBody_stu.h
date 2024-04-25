@@ -19,7 +19,7 @@ namespace elSpectro{
 
     TwoBody_stu(double s,double t,double t_slope,double u=0,double u_slope=0);
 
-    double RandomCosTh() const noexcept final{
+    double RandomCosTh() noexcept final{
       _weight=1;
       auto randChannel = gRandom->Uniform();
       //  std::cout<<" TwoBody_stu RandomCosTh() "<<randChannel<<std::endl;
@@ -33,6 +33,7 @@ namespace elSpectro{
 	costh= CosThFrom_u();
       
       _weight = CalcWeight();
+      
       return costh;
     }
    
@@ -69,7 +70,7 @@ namespace elSpectro{
       double tmax = tmin - 4*P1*P3 ;
       _t = tmax*2; //start off >tmax
       while( (_t=tmin - gRandom->Exp(1./_t_slope)) < tmax ){}; //tau=1/b0
-      
+      // std::cout<<"TwoBody_stu "<<_t<<" "<<M1<<" "<<M2<<" "<<M3<<" "<<M4<<" costh "<<(1 - (tmin - _t)/2/P1/P3)<<std::endl;
       return (1 - (tmin - _t)/2/P1/P3); //cos(theta) from t
       
     }
@@ -93,7 +94,9 @@ namespace elSpectro{
       double E1 = sqrt(M1*M1 + P1*P1);
       double E3 = sqrt(M3*M3 + P3*P3);
       double tmin =  M1*M1 + M3*M3  - 2 * ( E1*E3 -P1*P3 ); 
-      return TMath::Exp( (_t-tmin) * _t_slope) * _t_strength + _s_strength;
+      //std::cout<<"TwoBody_stu "<<_t<<" M1 "<<M1<<" M2 "<<M2<<" M3 "<<M3<<" M4 "<<M4<<" "<<tmin<<" "<<std::endl;
+     return TMath::Exp( (_t) * _t_slope) * _t_strength + _s_strength;
+     //     return TMath::Exp( (_t-tmin) * _t_slope) * _t_strength + _s_strength;
     }
     double CosThFrom_u() const noexcept {
        //Needs fixed to return correct cos theta and applu u distribution

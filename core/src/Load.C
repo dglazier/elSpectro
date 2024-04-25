@@ -23,10 +23,19 @@ void Load(){
   if(JPAC.Length()==0) JPAC = ELSPECTRO+"jpacPhoto";
   
   gInterpreter->AddIncludePath(JPAC+"/include/");
+  gInterpreter->AddIncludePath(JPAC+"/include/core");
+  gInterpreter->AddIncludePath(JPAC+"/include/inclusive");
+  gInterpreter->AddIncludePath(JPAC+"/include/box");
   //First try libraries installed with source code
   auto jlib=gSystem->Load(JPAC+"/lib/libjpacPhoto."+gSystem->GetSoExt());
+  gSystem->Load(JPAC+"/lib/libjpacBox."+gSystem->GetSoExt());
+  gSystem->Load(JPAC+"/lib/libjpacInclusive."+gSystem->GetSoExt());
   //If not, check LD_LIBRARY_PATH
-  if(jlib!=0) jlib=gSystem->Load(TString("libjpacPhoto.")+gSystem->GetSoExt());
+  if(jlib!=0){
+    jlib=gSystem->Load(TString("libjpacPhoto.")+gSystem->GetSoExt());
+    gSystem->Load(JPAC+"/lib/libjpacBox."+gSystem->GetSoExt());
+    gSystem->Load(JPAC+"/lib/libjpacInclusive."+gSystem->GetSoExt());
+  }
   if(jlib!=0) Warning("elSpectro::Load","libjpacPhoto not found");
   
   gInterpreter->AddIncludePath(ELSPECTRO+"/core");
