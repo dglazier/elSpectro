@@ -1,11 +1,11 @@
 //Just need jpacPhoto headers
 #include "reaction_kinematics.hpp"
 #include "regge_trajectory.hpp"
-#include "amplitudes/vector_exchange.hpp"
-#include "amplitudes/pseudoscalar_exchange.hpp"
-#include "amplitudes/pomeron_exchange.hpp"
-#include "amplitudes/amplitude_sum.hpp"
-#include "amplitudes/baryon_resonance.hpp"
+#include "core/vector_exchange.hpp"
+#include "core/pseudoscalar_exchange.hpp"
+#include "core/pomeron_exchange.hpp"
+#include "core/amplitude_sum.hpp"
+#include "core/baryon_resonance.hpp"
 
 #include "FunctionsForGenvector.h"
 
@@ -25,7 +25,7 @@ TH1D hePhi("ePh","ePh",90,-180,180);
 TH1F hW("W","W",1000,0,100);
 TH1F ht("t","t",1000,0,10);
 TH1F hgE("gE","gE",1000,0,20);
-TH1F hMesonM("MesonM","; J/#psi#pi Mass (GeV)",1000,3.5,4.3);
+TH1F hMesonM("MesonM","; J/#psi#pi Mass (GeV)",1000,3.5,5.5);
 TH1F h2PiM("M2Pi",";#pi+#pi- Mass (GeV)",1000,0,2);
 TH1F hJpsiM("JpsiM","; e+e- Mass (GeV)",1000,2.9,3.3);
 TH2F hElePVsEta("ElePVsEta","; #eta; p (GeV)",200,-5,5,500,0,50);
@@ -36,7 +36,7 @@ TH2F hRecoilThetaVsP("RecoilThetaVsP","; p (GeV); #theta (mrad)",1000,0,275,200,
 TH1F hRecoilPt("RecoilPt","; p_{T} (GeV)",200,0,5.0);
 
 
-void EIC_JPAC_Y_Hists(double ebeamE = 10, double pbeamE = 100, double nLumi=1E33, int nDays = 100) {
+void EIC_JPACTwoBody_Y_Hists(double ebeamE = 5, double pbeamE = 100, double nLumi=1E34, int nDays = 10) {
 
   Double_t crossingAngle=0.03; //30mrad
   //define e- beam, pdg =11
@@ -61,8 +61,9 @@ void EIC_JPAC_Y_Hists(double ebeamE = 10, double pbeamE = 100, double nLumi=1E33
 
   // Y(4260)
   auto kY=reaction_kinematics(M_Y4260);
-  kY.set_JP(1, -1);
-  double R_Y = 1.55;
+  kY.set_meson_JP(1, -1);
+  //  double R_Y = 1.55;//changed in JpacPhoto 11/10/2022
+  double R_Y = 0.84;
 
     
   // Same but high-energy
@@ -80,9 +81,11 @@ void EIC_JPAC_Y_Hists(double ebeamE = 10, double pbeamE = 100, double nLumi=1E33
   Y_Amp_low.set_params({A_LE * R_Y, b_LE});
     
   double low_s = 7*7.;//GeV
+  //double low_s = 5*5.;//GeV
+  //double high_s = 5*5.;//GeV
   double high_s = 20*20.;//GeV
   amplitude_blend jpac_amp{&kY,&Y_Amp_low,low_s,&Y_Amp_high,high_s, "#it{X} blend"};
-
+  //auto jpac_amp=Y_Amp_high;
  
   // -------------------------------------------------------------------
   // elSpectro
@@ -94,16 +97,18 @@ void EIC_JPAC_Y_Hists(double ebeamE = 10, double pbeamE = 100, double nLumi=1E33
   mass_distribution(9996,new DistTF1{TF1("hhsigma","1",0.25,4)});
   auto sigma=particle(9996,model(new PhaseSpaceDecay({},{211,-211})));
 
-  mass_distribution(9995,new DistTF1{TF1("hh","TMath::BreitWigner(x,4.22,0.05)",3.5,5)});
+  mass_distribution(9995,new DistTF1{TF1("hh","TMath::BreitWigner(x,4.22,0.05)",4,4.5)});
   auto Y=particle(9995,model(new PhaseSpaceDecay{{jpsi,sigma},{}}));
   Y->SetPdgMass(M_Y4260);
     
   //create eic electroproduction of X + proton
-  auto pGammaStarDecay = JpacModelst{&jpac_amp, {Y},{2212} }; //photo-nucleon system
+  auto pGammaStarDecay = JpacTwoBody{&jpac_amp, {Y},{2212} }; //photo-nucleon system
+  pGammaStarDecay.Use_WCosTh_Envelope();
+
   //Decay g*p state, provide s channel and t-channel "shapes"
   //Note the amplitude will provide the actual t-distribution, this approximation speeds up sampling
   //TwoBody_stu{0., 1.0, 2.5} => 0% s-schannel, 100% t channel with slope 2.5 
-  auto photoprod = DecayModelQ2W{0,&pGammaStarDecay,new TwoBody_stu{0., 1.0, 3}};
+  auto photoprod = DecayModelQ2W{0,&pGammaStarDecay};
   //combine beam, target and reaction products
   //auto production=eic( ebeamE, pbeamE, &photoprod );
   auto production=eic( elBeam,prBeam,&photoprod);
@@ -111,7 +116,7 @@ void EIC_JPAC_Y_Hists(double ebeamE = 10, double pbeamE = 100, double nLumi=1E33
   // ---------------------------------------------------------------------------
   // Initialize HepMC3
   // ---------------------------------------------------------------------------
-  writer(new HepMC3Writer{Form("outCollision/jpac_Y_%d_%d.txt",(int)ebeamE,(int)pbeamE)});
+  writer(new HepMC3Writer{Form("outTwoBody/jpac_Y_%d_%d.txt",(int)ebeamE,(int)pbeamE)});
   // exit(0);
   
   // ---------------------------------------------------------------------------
@@ -122,11 +127,11 @@ void EIC_JPAC_Y_Hists(double ebeamE = 10, double pbeamE = 100, double nLumi=1E33
   // ---------------------------------------------------------------------------
   //Set number of events via experimental luminosity and beamtime
   // ---------------------------------------------------------------------------
-  production->SetCombinedBranchingFraction(0.06*0.01); //Jpsi->e+e- and 1% Y
-  generator().SetNEvents_via_LuminosityTime(nLumi,24*60*60*nDays);
-  //generator().SetNEvents(10000);
-  // auto fastIntegral=production->IntegrateCrossSectionFast();
-  //std::cout<<"       check fast cross section "<<fastIntegral<<std::endl;
+  //production->SetCombinedBranchingFraction(0.06*0.01); //Jpsi->e+e- and 1% Y
+  //generator().SetNEvents_via_LuminosityTime(nLumi,24*60*60*nDays);
+  generator().SetNEvents(1000);
+  auto fastIntegral=production->IntegrateCrossSectionFast();
+  std::cout<<"       check fast cross section "<<fastIntegral<<std::endl;
 
   
   // exit(0);
@@ -208,7 +213,7 @@ void EIC_JPAC_Y_Hists(double ebeamE = 10, double pbeamE = 100, double nLumi=1E33
   TH1D *hWdist = (TH1D*)gDirectory->FindObject("Wdist");
   TH1D *hGenWdist = (TH1D*)gDirectory->FindObject("genWdist");
 
-  TFile *fout = TFile::Open(Form("outCollision/jpac_Y_blend11.root"), "recreate");
+  TFile *fout = TFile::Open(Form("outTwoBody/jpac2_y_%d_%d.root",(int)ebeamE,(int)pbeamE), "recreate");
   // generated event distributions
   hQ2.Write();
   hW.Write();
