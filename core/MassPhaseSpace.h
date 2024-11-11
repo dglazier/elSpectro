@@ -11,6 +11,7 @@
 
 #include "DecayModel.h"
 #include <TRandom.h>
+#include <TBenchmark.h>
 
 namespace elSpectro{
 
@@ -42,7 +43,7 @@ namespace elSpectro{
       if(_model!=amodel) return; //only 1 model controls phasespace
       // std::cout<<"MassPhaseSpace Find"<<std::endl;
       //in case decay chain may change each event coulsd get the masses each time
-
+  
       // double max= kine::PhaseSpaceWeightMax(parentM,_masses);//TGenPhaseSpace max . Note this is too high an estimate
 
       //Note PhaseSpaceWeightMaxFromEquDist does not quite get to max, so increase by 10% to be safe....will give warning if event weight is above this....
@@ -55,8 +56,8 @@ namespace elSpectro{
     
       while( (wee=PhaseSpaceWeight(parentM)) < gRandom->Uniform()*max*_suppressPhaseSpace )
 	{
-	  
-	 
+
+     
 	  // if(wee>max){
 	  // _sampledMax=wee;
 	  //std::cout<<" weight >  max "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
@@ -72,9 +73,9 @@ namespace elSpectro{
 	  std::cout<<m<<" ";
 	std::cout<<std::endl;
       }
-
+ 
       _successN++;
-    }
+     }
     bool AcceptPhaseSpace(double parentM){
       if(_model==nullptr) {
 	std::cerr<<"AcceptPhaseSpace  wrong model "<<std::endl;

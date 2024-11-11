@@ -14,10 +14,12 @@ namespace elSpectro{
 
     _weight=1;//reset weight
     
-    //sample mass of products in case they are from a distribution
+    //current mass of products in case they are from a distribution
     auto m2_a =products[0]->M2();
     auto m2_b =products[1]->M2();
-    
+    _a=products[0]->P4();
+    _b=products[1]->P4();
+
     
     if((_W - TMath::Sqrt(m2_a) - TMath::Sqrt(m2_b) ) < 0 ) return 0;//non physical
     auto e_a = (_W*_W + m2_a - m2_b)/(2.0*_W); // E decay product a
@@ -45,7 +47,7 @@ namespace elSpectro{
     BoostToParentWithRandPhi(parent,_a);
     products[0]->SetP4(_a);
     products[1]->SetP4( parent - _a );
-    // std::cout<<"TwoBodyFlat "<<_weight<<" "<<products[0]->P4()<<" "<<products[0]->P4().M()<<" "<<products[1]->P4()<<" "<<products[1]->P4().M()<<std::endl;
+    //  std::cout<<"TwoBodyFlat "<<_weight<<" p1 "<<products[0]->P4()<<" m "<<products[0]->P4().M()<<" p2 "<<products[1]->P4()<<" m "<<products[1]->P4().M()<<std::endl;
     return _weight; 
   }
 

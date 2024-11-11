@@ -40,11 +40,11 @@ namespace elSpectro{
   protected :
 
     double W() const noexcept{return _W;}
-  
-  private:
-
     LorentzVector _a;
     LorentzVector _b;
+
+  private:
+
     double _W={0};
  
  

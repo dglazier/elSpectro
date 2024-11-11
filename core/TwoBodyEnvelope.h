@@ -7,7 +7,7 @@
 #pragma once
 
 #include "TwoBodyFlat.h"
-#include "DistTH2Slice.h"
+#include "DistYGivenX.h"
 
 namespace elSpectro{
 
@@ -23,25 +23,28 @@ namespace elSpectro{
   //   TwoBodyEnvelope& operator=(TwoBodyEnvelope&& other) = default;
  
   TwoBodyEnvelope()=default;
-  TwoBodyEnvelope(const DistTH2Slice& dist);
+  TwoBodyEnvelope(const DistYGivenX& dist);
 
     double RandomCosTh() noexcept final{
       _dist.SetX(W());
       _dist.SampleSingle();
-      _weight =  _dist.GetCurrentWeight();
-      //  std::cout<<"TwoBodyEnvelopeRandomCosTh() "<<_dist.GetY()<<" weight = "<<_weight<<" xs "<<_dist.CurrentValue()<<" "<<_dist.MaxValue()<<" W "<<W()<<" cosTh "<<_dist.GetY()<<std::endl;
-      return _dist.GetY();
+      _weight = _dist.GetCurrentWeight();
+      auto y = _dist.GetY();
+      // std::cout<<"TwoBodyEnvelopeRandomCosTh() "<<_dist.GetY()<<" weight = "<<_weight<<" xs "<<_dist.CurrentValue()<<" "<<_dist.MaxValue()<<" W "<<W()<<" cosTh "<<_dist.GetY()<<" "<<(_dist.GetY()>1.0)<<" "<<((y/TMath::Abs(y))>1.0)<<std::endl;
+      //protect against rounding errors giving |y|>1
+      return TMath::Abs(y)>1.0 ? y/TMath::Abs(y) : y;
     }
    
    
     void PostInit(ReactionInfo* info) final {std::cout<<"TwoBodyEnvelope:: PostInit"<<std::endl; TwoBodyFlat::PostInit(info);};
 
-    const DistTH2Slice& GetDist() const {return _dist;}
-    void SetDist(const DistTH2Slice& dist){_dist = dist;}
+    const DistYGivenX& GetDist() const {return _dist;}
+    void SetDist(const DistYGivenX& dist){_dist = dist;}
     
   private:
 
-   DistTH2Slice _dist={TH2D()};
+    //DistYGivenX _dist={TH2D()};
+   DistYGivenX _dist;
      
    ClassDef(elSpectro::TwoBodyEnvelope,1); //class DecayVectors
  

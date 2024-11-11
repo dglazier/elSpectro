@@ -11,32 +11,37 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   CollidingParticle.h
   DecayModel.h
   PhaseSpaceDecay.h
-  NuclearBreakup.h
+  ProductionModel.h
+  ExcitationSpectra.h
+  Formation.h
+  FormationQ2W.h
+#  NuclearBreakup.h
   Bremsstrahlung.h
   SDMEDecay.h
-  TensorSDMEDecay.h
-  VectorSDMEDecay.h
-  DecayModelW.h
-  DecayModelQ2W.h
-  DecayModelst0.h
-  DecayModelst.h
+#  TensorSDMEDecay.h
+#  VectorSDMEDecay.h
+#  DecayModelW.h
+#  DecayModelQ2W.h
+##  DecayModelst0.h
+##  DecayModelst.h
   TwoBodyProduction.h
-  DecayModelDnpee.h
-  JpacModelst.h
+#  DecayModelDnpee.h
+##  JpacModelst.h
   JpacTwoBody.h
-  JpacSemiInc.h
-  GenericModelst.h
+#  JpacSemiInc.h
+#  GenericModelst.h
   DecayVectors.h
-  DontDecay.h
+#  DontDecay.h
   TwoBodyFlat.h
-  TwoBody_stu.h
+##  TwoBody_stu.h
   TwoBodyEnvelope.h
+  TwoBodytEnvelope.h
   ScatteredElectron_xy.h
-  QuasiFreeNucleon.h
-  BremstrPhoton.h
+#  QuasiFreeNucleon.h
+#  BremstrPhoton.h
   ProductionProcess.h
   ElectronScattering.h
-  PhotoProduction.h
+#  PhotoProduction.h
   Distribution.h
   DistTF1.h
   DistConst.h
@@ -44,22 +49,26 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   DistTH1.h
   DistTH2.h
   DistTH2Slice.h
+  DistYGivenX.h
   DistFlatMass.h
   SDME.h
   PhotonPolarisationVector.h
   DistVirtPhotFlux_xy.h
-  ParticleManager.h
-  DecayManager.h
-  MassPhaseSpace.h
+#  ParticleManager.h
+  ParticleFactory.h
+  ParticleData.h
+#  DecayManager.h
+#  MassPhaseSpace.h
   Writer.h
   HepMC3Writer.h
-  LundWriter.h
-  GlueXWriter.h
-  EICSimpleWriter.h
-  FunctionsForJpac.h
+#  LundWriter.h
+#  GlueXWriter.h
+#  EICSimpleWriter.h
+#  FunctionsForJpac.h
   Manager.h
   Interface.h
-  amplitude_blend.hpp
+  NBodyPhaseSpace.h
+#  amplitude_blend.hpp
   LINKDEF ElSpectroLinkDef.h
   )
 
@@ -69,52 +78,60 @@ add_library(${ELSPECTRO} SHARED
   CollidingParticle.cpp
   DecayModel.cpp
   PhaseSpaceDecay.cpp
-  NuclearBreakup.cpp
-  Bremsstrahlung.cpp
-  SDMEDecay.cpp
-  TensorSDMEDecay.cpp
-  VectorSDMEDecay.cpp
-  DecayModelW.cpp
-  DecayModelQ2W.cpp
-  DecayModelst.cpp
+#  NuclearBreakup.cpp
+#  Bremsstrahlung.cpp
+#  SDMEDecay.cpp
+#  TensorSDMEDecay.cpp
+#  VectorSDMEDecay.cpp
+#  DecayModelW.cpp
+#  DecayModelQ2W.cpp
+##  DecayModelst.cpp
+  Formation.cpp
+  FormationQ2W.cpp
   TwoBodyProduction.cpp
-  DecayModelst0.cpp
-  JpacModelst.cpp
-  JpacSemiInc.cpp
+  ExcitationSpectra.cpp
+##  DecayModelst0.cpp
+## JpacModelst.cpp
+#  JpacSemiInc.cpp
   JpacTwoBody.cpp
-  DecayModelDnpee.cpp
-  GenericModelst.cpp
-  DecayVectors.cpp
-  DontDecay.cpp
+#  DecayModelDnpee.cpp
+#  GenericModelst.cpp
+#  DecayVectors.cpp
+#  DontDecay.cpp
   TwoBodyFlat.cpp
-  TwoBody_stu.cpp
+##  TwoBody_stu.cpp
   TwoBodyEnvelope.cpp
+  TwoBodytEnvelope.cpp
   ScatteredElectron_xy.cpp
-  QuasiFreeNucleon.cpp
-  BremstrPhoton.cpp
+#  QuasiFreeNucleon.cpp
+#  BremstrPhoton.cpp
   ProductionProcess.cpp
   ElectronScattering.cpp
-  PhotoProduction.cpp
+#  PhotoProduction.cpp
   Distribution.cpp
   DistTF1.cpp
   DistTH1.cpp
   DistTH2.cpp
   DistTH2Slice.cpp
+  DistYGivenX.cpp
   DistFlatMass.cpp
   DistVirtPhotFlux_xy.cpp
   SDME.cpp
   PhotonPolarisationVector.cpp
-  ParticleManager.cpp
-  DecayManager.cpp
-  MassPhaseSpace.cpp
+#  ParticleManager.cpp
+  ParticleFactory.cpp
+  ParticleData.cpp
+#  DecayManager.cpp
+#  MassPhaseSpace.cpp
   Writer.cpp
   HepMC3Writer.cpp
-  LundWriter.cpp
-  GlueXWriter.cpp
-  EICSimpleWriter.cpp
+#  LundWriter.cpp
+#  GlueXWriter.cpp
+#  EICSimpleWriter.cpp
   Manager.cpp
-  FunctionsForJpac.cpp
-  amplitude_blend.cpp
+  NBodyPhaseSpace.cpp
+#  FunctionsForJpac.cpp
+#  amplitude_blend.cpp
   G__${ELSPECTRO}.cxx
   )
 

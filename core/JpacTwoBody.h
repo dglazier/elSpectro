@@ -14,11 +14,11 @@
 #include "TwoBodyProduction.h"
 #include "SDME.h"
 #include "FunctionsForElectronScattering.h"
-#include "core/amplitude.hpp"
+#include "src/amplitude.hpp"
 
 namespace elSpectro{
 
-  using jpacAmp_ptr = jpacPhoto::amplitude*;
+  using jpacAmp_ptr = std::shared_ptr<jpacPhoto::raw_amplitude>;
 
   class JpacTwoBody : public TwoBodyProduction {
 
@@ -27,20 +27,42 @@ namespace elSpectro{
     JpacTwoBody()=delete;
     //constructor giving jpac amplitude pointer (which we will now own)
     //and decay particles 
-    JpacTwoBody( jpacAmp_ptr amp, particle_ptrs parts,
-		  const std::vector<int> pdgs  );
+    JpacTwoBody(  jpacAmp_ptr amp ,const decaying_objs& decs, const particle_objs& stables);
     
     bool HasAngularDistribution() override{return true; } //I have an angular distribution
 
 
     double MatrixElementsSquared_T() const override {
 
-      //   std::cout<<"JpacTwoBody::MatrixElementsSquared_T "<< GetMeson() <<" "<<get_s()<<" "<<get_t()<<std::endl;
-      _amp->_kinematics->set_meson_mass( GetMeson()->Mass() );
-      if(get_W()<_amp->_kinematics->Wth()) return 0;
+      //std::cout<<"JpacTwoBody::MatrixElementsSquared_T "<< GetMeson()->Mass() <<" "<<get_s()<<" "<<get_t()<<" "<<get_cosThCM()<<" "<<get_W()<<std::endl;
+      // if(-get_t()<_amp->get_kinematics()->t_min(get_s())) return 0.;
+      //if(-get_t()<_amp->get_kinematics()->t_max(get_s())) return 0.;
+      
+      _amp->get_kinematics()->set_meson_mass( GetMeson()->PdgMass() );
+      // _amp->get_kinematics()->set_meson_mass( GetMeson()->Mass() );
+      //if(get_W()<_amp->get_kinematics()->Wth()) return 0;
+      // auto res = _amp->probability_distribution(get_s(),get_t())/4;
+      //std::cout<<"JpacTwoBody::MatrixElementsSquared_T "<< GetMeson()->Mass() <<" "<<get_s()<<" "<<get_t()<<" "<<get_cosThCM()<<" "<<get_W()<<" "<<std::endl;
+      //   auto res = _amp->probability_distribution(get_s(),get_t())/4;
+      // std::cout<<"JpacTwoBody::MatrixElementsSquared_T "<< GetMeson()->Mass() <<" "<<get_s()<<" "<<get_t()<<" "<<get_cosThCM()<<" "<<get_W()<<" "<<res<<std::endl;
+      // if(get_W()>2.32) exit(0);
+
       return _amp->probability_distribution(get_s(),get_t())/4;// Average over initial state helicites;
     }
-    
+    double MatrixElementsSquared_T_at_tmin() const override {
+
+      //std::cout<<"JpacTwoBody::MatrixElementsSquared_T "<< GetMeson()->Mass() <<" "<<get_s()<<" "<<get_t()<<" "<<get_cosThCM()<<" "<<get_W()<<std::endl;
+      // if(-get_t()<_amp->get_kinematics()->t_min(get_s())) return 0.;
+      //if(-get_t()<_amp->get_kinematics()->t_max(get_s())) return 0.;
+      
+      _amp->get_kinematics()->set_meson_mass( GetMeson()->PdgMass() );
+      //if(get_W()<_amp->get_kinematics()->Wth()) return 0;
+        return _amp->probability_distribution(get_s(),_amp->get_kinematics()->t_min(get_s()))/4;// Average over initial state helicites;
+    }
+
+    double IntegratedCrossSection(double W){
+      return _amp->integrated_xsection(W*W);
+    }
   private:
 
     jpacAmp_ptr _amp={nullptr}; //I am not the owner

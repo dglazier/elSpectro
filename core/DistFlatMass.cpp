@@ -18,8 +18,21 @@ namespace elSpectro{
     SetIndex(_invMass.size()-1);//last entry in invMass
     _size++;
   }
-  
-    double DistFlatMassMaster::SampleSingle()   noexcept{
+  void DistFlatMassMaster::SetParticlePtrs(particle_ptrs ps){
+    if(ps.size()!=_products.size()){
+      std::cerr<<"DistFlatMassMaster::SetParticlePtrs different size to original " <<ps.size()<<" to "<<_products.size()<<std::endl;
+    }
+    _products=ps;
+    std::cout<<"DistFlatMassMaster::SetParticlePtrs"<<_products.size()<<std::endl;
+    for(auto* p : _products ){
+      //make sure I am the master!
+      if( dynamic_cast<DistFlatMass*>( p->MassDistribution() )!=nullptr){
+	std::cout<<"DistFlatMassMaster::SetParticlePtrs set master "<<p->Pdg()<<std::endl;
+	dynamic_cast<DistFlatMass*>( p->MassDistribution() )->SetMaster(this);
+      }
+    }
+  }
+  double DistFlatMassMaster::SampleSingle()   noexcept{
       //might need a while loop to make sure TCM>0 when
       //sample product dymamic mass
       auto Tcm=_parent->Mass();

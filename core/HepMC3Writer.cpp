@@ -30,45 +30,52 @@ namespace elSpectro{
     _file.close();
 
   }
-  void HepMC3Writer::Init(){
-    Writer::Init();
-    //also
+  void HepMC3Writer::InitEvent(const particle_ptrs& iptrs,const particle_ptrs& sptrs,const std::vector<const LorentzVector*>& vers){
+    Writer::InitEvent(iptrs,sptrs,vers);
+
+    _vertexParticles.clear();
+
+    
+ 
     //need to find detached vertices
-    auto& unptrs=Manager::Instance().Particles().UnstableParticles();
-    for(const auto* p:unptrs){
-      //in case we have a detached vertex we need to write this particle
-      if(p->IsDecay()==DecayType::Detached)_vertexParticles.push_back(p);
-    }
+    // for(const auto* p:uptrs){
+    //   //in case we have a detached vertex we need to write this particle
+    //   if(p->IsDecay()==DecayType::Detached){
+    // 	_vertexParticles.push_back(p);
+    //   }
+    // }
 
   }
   /////////////////////////////////////////////////////////////
   //write all the info required for this event
   void HepMC3Writer::FillAnEvent(){
 
-    
-    
+  
+   
     ////fill _stream
     StreamEventInfo();
     StreamEventPosition();
     StreamUnits();
     StreamWeights();
-  
+
+   
     _id=1;//reset particle ID counter
     //initial particles
-    auto nVer = _vertices->size();//last stored vertice = primary
-    int initial_status=3;
+    auto nVer = _vertices.size();//last stored vertice = primary
+    int initial_status=4; //beam particle status code
     int initial_vertex_id=-1;
 
-     for(const auto* p:_initialParticles)
-      StreamParticle(p,initial_vertex_id,initial_status);
-  
+
+     for(const auto* p: _initialParticles){
+       StreamParticle(p,initial_vertex_id,initial_status);
+    }
+    
     //primary reaction vertex
     int primary_vertex_id=0;
     int primary_vertex_status=0;
     std::vector<int> primary_parent_ids={1,2};
     StreamVertex(primary_vertex_id,primary_vertex_status,primary_parent_ids);
-  
-    //final particles
+     //final particles
     int final_status=1;
     std::vector<std::pair<int,int>> writtenVertexParticles;
     for(auto iver=0;iver<nVer;++iver){
@@ -76,7 +83,7 @@ namespace elSpectro{
       int final_vertex_id=iver;//numbers from -1,-2,...
       int final_vertex_status=0;
 
-      //first stream vertex decaying particles
+     //first stream vertex decaying particles
       for(const auto* p:_vertexParticles){
 	if(p->VertexID()==iver){
 	  int decay_particle_status=3;
@@ -86,7 +93,7 @@ namespace elSpectro{
 	}
       }
       bool first = (final_vertex_id != 0) ;//true if not production vertex
-      for(const auto* p:_finalParticles){
+      for(const auto* p:(_finalParticles) ){
 	
 	if(p->VertexID()==iver){ //is this particle from this vertex?
 	  

@@ -6,7 +6,8 @@
 
 
 #pragma once
-#include "ParticleManager.h"
+
+#include "DecayModel.h"
 
 #include <TObject.h> //for ClassDef
 
@@ -26,7 +27,8 @@ namespace elSpectro{
 
     
     
-    virtual void Init();
+    virtual void Init(const particle_ptrs& iptrs);
+    virtual void InitEvent(const particle_ptrs& iptrs,const particle_ptrs& sptrs,const std::vector<const LorentzVector*>& vers);
     virtual void WriteHeader()=0;
     virtual void FillAnEvent()=0;
     virtual void Write()=0;
@@ -35,9 +37,9 @@ namespace elSpectro{
 
   protected :
     
-    particle_constptrs _initialParticles;
-    particle_constptrs _finalParticles;
-    std::vector<const LorentzVector*>* _vertices={nullptr};
+    particle_ptrs _initialParticles;
+    particle_ptrs _finalParticles;
+    std::vector<const LorentzVector*> _vertices;
      
     ClassDef(elSpectro::Writer,1); //class Writer
     

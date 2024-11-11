@@ -22,9 +22,9 @@ namespace elSpectro{
   }
   ///////////////////////////////////////////////////////////////
   ///Get beam and target, or e-/gamma and nucleus
-  void LundWriter::Init(){
+  void LundWriter::Init(const particle_ptrs& iptrs){
 
-    Writer::Init();
+    Writer::Init(iptrs);
     //need to find e- and baryon
     if(TDatabasePDG::Instance()->GetParticle(_initialParticles[0]->Pdg())->ParticleClass()==TString("Baryon") ){
       _inTarget=_initialParticles[0];

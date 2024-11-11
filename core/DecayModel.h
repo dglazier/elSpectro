@@ -12,6 +12,7 @@
 #pragma once
 
 #include "Particle.h"
+#include "NBodyPhaseSpace.h"
 #include "CurrentEventInfo.h"
 #include "FunctionsForKinematics.h"
 #include "ReactionInfo.h"
@@ -24,9 +25,13 @@
 namespace elSpectro{
 
   class DecayingParticle;
-  
+  class PhaseSpaceDecay;
+
   using particle_ptrs= std::vector<Particle*> ;
+  using particle_const_ptrs= std::vector<const Particle*> ;
   using decaying_ptrs= std::vector<DecayingParticle*> ;
+  using particle_objs= std::vector<Particle> ;
+  using decaying_objs= std::vector<DecayingParticle> ;
  
   class DecayModel {
 
@@ -34,25 +39,29 @@ namespace elSpectro{
     
     DecayModel()=default;
     virtual ~DecayModel()=default;
-    DecayModel(const DecayModel& other); //need the virtual destructor...so rule of 5
-    DecayModel(DecayModel&&)=default;
-    DecayModel& operator=(const DecayModel& other);
-    DecayModel& operator=(DecayModel&& other) = default;
+    DecayModel(const DecayModel& other);// = default; //need the virtual destructor...so rule of 5
+    DecayModel(DecayModel&& other);//=default;
+    DecayModel& operator=(const DecayModel& other);// = default;
+    DecayModel& operator=(DecayModel&& other);// = default;
 //only declaring default constructor
     //so other 5 constructors also defaulted(rule of 5)
-
+    void CopyOther(const DecayModel& other);
+    
     //constructor to decay into particles
-    DecayModel( particle_ptrs , const std::vector<int> pdgs );
+    //    DecayModel( particle_ptrs , const std::vector<int> pdgs );
+    DecayModel( const decaying_objs& decs, const particle_objs& stables);
     
     // Each model must define its intensity
     //    virtual double Intensity() const=0;
     virtual double  Intensity() const=0;
 
-    const particle_ptrs& Products() const{ return _products;}
-    const Particle*  Product(UInt_t i) const{ return _products[i];}
-    const decaying_ptrs& UnstableProducts() const{ return _unstables;}
-    const particle_ptrs& StableProducts() const{ return _stables;}
+    virtual const particle_ptrs& Products() const{ return _products;}
+    const Particle*  Product(UInt_t i) const{ return (Products()[i]);}
+    const LorentzVector&  ProductP4(UInt_t i) const{ return (Products()[i])->P4();}
+    const decaying_objs& UnstableProducts() const { return _unstables;}
+    const particle_objs& StableProducts() const { return _stables;}
 
+    void  EventParticles(particle_ptrs& parts);
 
     // void AddUnstableProducts(){std::copy(std::begin(ps), std::end(ps), std::back_inserter(_products));}
     void SwapProducts(int index1, int index2){//swap pointers to particles in vector
@@ -61,6 +70,13 @@ namespace elSpectro{
     
     virtual bool RegenerateOnFail() const noexcept =0;
     virtual bool HasAngularDistribution(){return true; }
+
+    //Any preliminaries required
+    virtual bool ReadyForDecay() {
+      return CheckThreshold();
+    }
+    
+    void ChooseDecay();
     
     bool CheckThreshold() const{
       SumAllProducts();
@@ -82,15 +98,11 @@ namespace elSpectro{
 
     double SumOfProductMasses()const {return _sumOfMasses;}
 
-    virtual double MinimumMassPossible() const {
-      double minmass=0;
-      for(auto* entry:_products)
-	minmass+=entry->MinimumMassPossible();
-      return minmass;
-    }
+    virtual double MinimumMassPossible() const;
+    
     void  GetStableMasses( std::vector<double >& masses) const;
     
-    void Print() const;
+    virtual void Print() const;
 
     const std::string& GetName()const {return _name;}
 
@@ -109,18 +121,27 @@ namespace elSpectro{
 
   protected:
 
+    friend DecayingParticle;
+    friend PhaseSpaceDecay;
+    
     std::string _name;
     
     void ResetProducts(particle_ptrs ps);
-
+    particle_ptrs& MutableProducts() { return _products;}
+    decaying_objs& MutableUnstableProducts() { return _unstables;}
+    particle_objs& MutableStableProducts()   { return _stables;}
+    Particle*  MutableProduct(UInt_t i)      { return _products[i];}
+ 
+    
   private:
 
     DecayingParticle* _parentPtr={nullptr};
     
     particle_ptrs _products;
-    particle_ptrs _stables; //products which are stable
-    decaying_ptrs _unstables; //products which decay
-    std::vector<double> _unstableReservedMass; //mass reseved for other unstable products
+    particle_objs _stables; //products which are stable
+    decaying_objs _unstables; //products which decay
+    
+    std::vector<double> _unstableReservedMass; //mass reserved for other unstable products
     
     mutable LorentzVector _parent;
     mutable double _sumOfMasses=0;

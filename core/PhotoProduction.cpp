@@ -233,9 +233,14 @@ namespace elSpectro{
     
      
     //Boost all stable particles back to lab
-    auto prBoost=_beamNucl.P4().BoostToCM();
-    Manager::Instance().Particles().BoostStable(-prBoost);
-   
+    auto prBoost=-_beamNucl.P4().BoostToCM();
+    // Manager::Instance().Particles().BoostStable(-prBoost);
+
+    particles_ptr final_state;
+    EventParticles(final_state);//collect all final state particles
+    kine::BoostStable(prBoost,final_state); //boost back to lab
+    SetFinalParticles(final_state); //assign to process
+
     return DecayStatus::Decayed;
   }
 

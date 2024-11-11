@@ -4,16 +4,16 @@
 ///Description:
 ///            Class to manage manangers!
 ///           1) Access ParticleManager via Manager::Instance()->Particles()
-///           2) Access DecayManager via Manager::Instance()->Decays()
+///          // 2) Access DecayManager via Manager::Instance()->Decays()
 ///           3) Access ProductionProcess via Manager::Instance()->Process()
 #pragma once
 
-#include "ParticleManager.h"
-#include "DecayManager.h"
+//#include "DecayManager.h"
 #include "ProductionProcess.h"
 #include "Writer.h"
 #include "MassPhaseSpace.h"
 #include <TRandom3.h>
+#include <TBenchmark.h>
 
 namespace elSpectro{
 
@@ -21,11 +21,12 @@ namespace elSpectro{
 
   public:
     
-     static Manager& Instance() { static Manager instance; return instance; }
-    static void Reset(){Instance() = Manager();}
+    //    static Manager& Instance() { static Manager instance; return instance; }
+    //static void Reset(){Instance() = Manager();}
 
-    ParticleManager& Particles() noexcept{return _particles;}
-     DecayManager& Decays() noexcept{return _decays;}
+    //ParticleManager& Particles() noexcept{return _particles;}
+    // DecayManager&#include <TRandom3.h>
+    // Decays() noexcept{return _decays;}
      
      void SetWriter(Writer* wr){
        _writer.reset(wr);
@@ -34,6 +35,7 @@ namespace elSpectro{
      
      void Write(){
        if(_writer.get()==nullptr)return;
+       _writer->InitEvent(_process->InitialParticles(),_process->FinalParticles(),_vertices);
        _writer->FillAnEvent();
        _writer->Write();
      }
@@ -73,6 +75,8 @@ namespace elSpectro{
      
      void Reaction(ProductionProcess* prod){
        _process.reset(prod);
+       _process->InitVertex(*this);
+       prod=nullptr;
      }
     void BoostToLab(LorentzVector& boostme){
       _process->BoostToLab(boostme);
@@ -82,18 +86,18 @@ namespace elSpectro{
      void SetSeed(ULong_t seed = 0){gRandom->SetSeed(seed);}
 
 
-     void SetModelForMassPhaseSpace(DecayModel* amodel){_massPhaseSpace.SetModel(amodel);}
-    void SuppressPhaseSpace(double val){_massPhaseSpace.SuppressPhaseSpace(val);}
-     void  FindMassPhaseSpace(double parentM,const  DecayModel* amodel) {
-       _massPhaseSpace.Find(parentM,amodel);
-     }
-     bool  AcceptPhaseSpace(double parentM) {
-       return _massPhaseSpace.AcceptPhaseSpace(parentM);
-     }
+    //void SetModelForMassPhaseSpace(DecayModel* amodel){_massPhaseSpace.SetModel(amodel);}
+    //void SuppressPhaseSpace(double val){_massPhaseSpace.SuppressPhaseSpace(val);}
+    // void  FindMassPhaseSpace(double parentM,const  DecayModel* amodel) {
+    //   _massPhaseSpace.Find(parentM,amodel);
+    // }
+    // bool  AcceptPhaseSpace(double parentM) {
+    //   return _massPhaseSpace.AcceptPhaseSpace(parentM);
+    // }
 
      void InitGeneration(){
        _process->InitGen();
-       if( _writer.get() )_writer->Init();
+       if( _writer.get() )_writer->Init(_process->InitialParticles());
      }
 
      int AddVertex(const LorentzVector* v){
@@ -108,20 +112,37 @@ namespace elSpectro{
 
      void Summary(){
        _process->Print();
-      _massPhaseSpace.Print();
+       //      _massPhaseSpace.Print();
       std::cout<<"Integrated Total Cross Section (nb) = "<<IntegratedXSection()<<std::endl;
       }
+
+    void nextEvent(){
+      Clear();
+      Reaction()->GenerateProducts(nullptr);
+      Write();
+    }
+    void processAll(){
+      gBenchmark->Start("generator");//timer  
+      while(Finished()==false){
+	nextEvent();
+	CountEvent();
+	if(GetNDone()%1000==0) std::cout<<"event number "<<GetNDone()<<std::endl;
+      }
+      gBenchmark->Stop("generator");//timer  
+      gBenchmark->Print("generator");//timer  
+    }
+      
   private:
 
-    ParticleManager _particles;
-    DecayManager _decays;
+    // ParticleManager _particles;
+    // DecayManager _decays;
 
     std::unique_ptr<ProductionProcess> _process;
     std::unique_ptr<Writer> _writer;
 
     std::vector<const LorentzVector*> _vertices;
     
-    MassPhaseSpace _massPhaseSpace;
+    //MassPhaseSpace _massPhaseSpace;
 
 
     double _integralXSection={0};

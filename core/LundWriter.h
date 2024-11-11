@@ -34,7 +34,8 @@ namespace elSpectro{
      void FillAnEvent() final;
      void Write() final;
      void End() final;
-     void Init() final;
+     void Init(const particle_ptrs& iptrs) final;
+     void InitEvent(const particle_ptrs& iptrs,const particle_ptrs& sptrs,const std::vector<const LorentzVector*>& vers) final;
      void NewFile();
      
    private:
@@ -46,7 +47,7 @@ namespace elSpectro{
        // Pol. of Target, Pol. of Electron,
        // BeamType, BeamEnergy,Target ID, ProcessID, Weight
   
-       _stream<< "\t "<<_finalParticles.size()<<" "<<1<<" "<<1
+       _stream<< "\t "<<_finalParticles->size()<<" "<<1<<" "<<1
 	      <<" "<<0.<<" "<<0.
 	      <<" "<<_beamPdg<<" "<<_inBeam->P4().E()<<" "<<_targetPdg<<" "<< _inTarget->P4().E() <<" "<<0.<<"\n";
      }

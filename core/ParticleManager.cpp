@@ -1,5 +1,4 @@
 #include "ParticleManager.h"
-#include <TDatabasePDG.h>
 #include <TSystem.h>
 
 namespace elSpectro{
@@ -44,6 +43,7 @@ namespace elSpectro{
     //make p useable again
     p =_particles.back().get();
     auto pdg=p->Pdg();
+    InsertPdg(pdg);
     //assign mass distribution if exists
     //note maybe this should be just for unstable
     if(_massDist.count(pdg)!=0){
@@ -71,12 +71,16 @@ namespace elSpectro{
     return p;
   }
   
-  void ParticleManager::AddToPdgTable(int pdg,double mass){
+  void ParticleManager::AddToPdgTable(int pdg,double mass,const TString& type){
     TDatabasePDG *pdgDB = TDatabasePDG::Instance();
     //Note make Baryons in case need to write as beam (see LundWriter)
+    if(pdgDB->GetParticle(pdg)!=nullptr){
+      std::cerr<<"ParticleManager::AddToPdgTable , particle with PDG code "<<pdg<<" already exists in table "<<std::endl;
+      return;
+    }
     pdgDB->AddParticle(Form("Particle%d",pdg),"resonance",
 		       mass, kFALSE,
-		       0, 0, "Baryon", pdg);
+		       0, 0, type.Data(), pdg);
   }
   Double_t ParticleManager::GetMassFor(int pdg){
     TDatabasePDG *pdgDB = TDatabasePDG::Instance();

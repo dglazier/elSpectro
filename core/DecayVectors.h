@@ -25,7 +25,7 @@ namespace elSpectro{
 
     DecayVectors()=default;
     virtual ~DecayVectors()=default;
-    DecayVectors(const DecayVectors& other); //need the virtual destructor...so rule of 5
+    DecayVectors(const DecayVectors& other)=default; //need the virtual destructor...so rule of 5
     DecayVectors(DecayVectors&&)=default;
     DecayVectors& operator=(const DecayVectors& other);
     DecayVectors& operator=(DecayVectors&& other) = default;

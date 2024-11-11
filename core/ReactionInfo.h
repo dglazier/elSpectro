@@ -10,6 +10,8 @@
 #include "PhotonPolarisationVector.h"
 
 namespace elSpectro{
+
+  class ProductionProcess;
   
   class ReactionInfo{
 
@@ -18,9 +20,10 @@ namespace elSpectro{
 
     virtual ~ReactionInfo()=default;
 
-    double _Wmax=0;
+    // double _Wmax=0;
     double _Wmin=0;
-
+    //  ProductionProcess* _process={nullptr};
+    virtual double Wmax() const {return 0;}
   };
 
   class ReactionPhotoProd : public ReactionInfo {
@@ -29,16 +32,18 @@ namespace elSpectro{
   public:
     virtual ~ReactionPhotoProd()=default;
 
-    LorentzVector* _photon={nullptr};   
-    LorentzVector* _target={nullptr};   
-    LorentzVector* _photoN{nullptr};   
-    LorentzVector* _meson={nullptr};   
-    LorentzVector* _baryon={nullptr};
-    const LorentzVector* _ebeam={nullptr}; //beam electron   
+    mutable LorentzVector _photon;   
+    mutable LorentzVector _target;   
+    // mutable LorentzVector _photoN;   
+    mutable LorentzVector _meson;   
+    mutable LorentzVector _baryon;
+    mutable LorentzVector _ebeam; //beam electron   
 
-    PhotonPolarisationVector* _photonPol={nullptr};
+    mutable PhotonPolarisationVector _photonPol;
     
     mutable double _sWeight = {1}; //s=W^2 excitation function weight
+
+    double Wmax() const override {return (_target + _ebeam).M();}
   };
 
   class ReactionElectroProd : public ReactionPhotoProd {
@@ -47,7 +52,7 @@ namespace elSpectro{
   public:
     virtual ~ReactionElectroProd()=default;
 
-    LorentzVector* _scattered={nullptr}; //scattered electron   
+    mutable LorentzVector _scattered; //scattered electron   
     //Distribution* _Wdist={nullptr}; //W photoproduction
   };
 

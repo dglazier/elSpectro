@@ -9,8 +9,8 @@
 #pragma once
 
 #include "Particle.h"
-#include "DecayModel.h"
-#include "DecayVectors.h"
+#include "DecayChannel.h"
+//#include "DecayVectors.h"
 
 namespace elSpectro{
   
@@ -23,9 +23,9 @@ namespace elSpectro{
     //cannot default construct at least need a 4-momentum
     CollidingParticle(int pdg,Double_t momentum);
     //or a model to generate a 4-momentum
-    CollidingParticle(int pdg,Double_t momentum,int parentpdg,DecayModel* model,DecayVectors* decayer);
+    CollidingParticle(int pdg,Double_t momentum,int parentpdg,decaymodel_ptr  model,decayer_ptr  decayer);
  
-    DecayModel*  Model()const {return _model;}
+    DecayModel*  Model()const {return _model.get();}
 
     double Generate(){
        if(_decayer.get()==nullptr) return 1.0;
@@ -51,8 +51,15 @@ namespace elSpectro{
 
     void PostInit(ReactionInfo* info) ;
     
-    const LorentzVector* GetInteracting4Vector() const {return _interactingParticle;}
-    const LorentzVector* GetNominal4Vector() const {return &_nominal;}
+    // const LorentzVector* GetInteracting4Vector() const {return _interactingParticle;}
+    // const LorentzVector* GetNominal4Vector() const {return &_nominal;}
+
+    //if decays return current decay P4, if not return my P4
+    const LorentzVector& GetInteracting4Vector() const {
+      return _idxInteract==-1 ? GetNominal4Vector() : _model->Product(_idxInteract)->P4();
+    }
+    //if decays return nominal decay p4, if not return my P4
+    const LorentzVector& GetNominal4Vector() const {return _nominal;}
     
     Int_t GetInteractingPdg()const {return _interactingPdg;}
     
@@ -69,12 +76,12 @@ namespace elSpectro{
 
   
   private:
-     
-    DecayModel* _model={nullptr}; //not owner
-    
-    std::unique_ptr<DecayVectors> _decayer={nullptr}; //owner
 
-    LorentzVector *_interactingParticle={nullptr}; //not owner;
+    decaymodel_ptr _model={nullptr}; //not owner
+    
+    decayer_ptr   _decayer={nullptr}; //owner
+
+    //  LorentzVector *_interactingParticle={nullptr}; //not owner;
     
     LorentzVector _nominal; //nominal beam 4-momentum
     // LorentzVector _productionVertex;
@@ -86,7 +93,8 @@ namespace elSpectro{
     Double_t _sizeVer={0};
     Double_t _divHor={0};
     Double_t _divVer={0};
- 
+
+    Int_t _idxInteract={-1}; //index of interacting particle in model, -1 if no model
     
     ClassDefOverride(elSpectro::CollidingParticle,1); //class CollidingParticle
     

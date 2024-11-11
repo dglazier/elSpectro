@@ -14,11 +14,12 @@ namespace elSpectro{
     LorentzVector lv(0,0,momentum,TMath::Sqrt(momentum*momentum+mass*mass));
     SetP4(lv);
     _nominal=P4();
-    _interactingParticle=P4ptr();
+    //_interactingParticle=P4ptr();
+    _idxInteract = -1;
   }
   /////////////////////////////////////////////////////////
   //or a model to generate a 4-momentum
-  CollidingParticle::CollidingParticle(int pdg,Double_t momentum,int parentpdg,DecayModel* model,DecayVectors* decayer):
+  CollidingParticle::CollidingParticle(int pdg,Double_t momentum,int parentpdg,decaymodel_ptr  model,decayer_ptr  decayer):
     Particle(parentpdg),_model{model},_decayer{decayer}
   {
     //Set interacting particle pdg
@@ -36,35 +37,29 @@ namespace elSpectro{
        
       if(p->Pdg()==pdg){
 	
-	if(_interactingParticle!=nullptr){
+	if(_idxInteract!=-1){
 	  std::cerr<<"CollidingParticle::CollidingParticle, multiple particles with pdg =  "<<pdg<<std::endl; exit(0);
 	}
 	else{	
-	  _interactingParticle=p->P4ptr();
+	  //  _interactingParticle=p->P4ptr();
+	  _idxInteract = position;
 	}
-	//Not a stable final state particle!
-	Manager::Instance().Particles().RemoveStable(p);
-	_model->SwapProducts(0,position); //make sure interacting particle is first in products vector, must be done after remove
-     }
-      else{ //not a beam particle but "spectator"
-	//remove from stable particle list
-	//as these will be boosted to lab
-	//whereas colliding particles and their
-	//products are already in lab frame
-	
-	Manager::Instance().Particles().MoveStableToLab(p);
-
       }
+      
       position++;
     }
-    //move interacting particle to start of products vector
     
-    //We need a "nominal" 4-momentum for our interacting particle
+   //We need a "nominal" 4-momentum for our interacting particle
+   //this is for integrations etc.
     //to do this we boost it from rest into lab frame of parent
    //Note theta= 0 from LorentzVector  lv(0,0,momentum,TMath::Sqrt(momentum*momentum+mass*mass));, so RandPhi does not matter
-    _decayer->BoostToParentWithRandPhi(P4(),(*_interactingParticle));
-
-    }
+   if(_idxInteract!=-1){
+     _nominal = GetInteracting4Vector();
+     _decayer->BoostToParentWithRandPhi(P4(),_nominal);
+     
+   }
+   
+  }
   /////////////////////////////////////////////////////////
   /// rotate beam angles
   void CollidingParticle::SetAngleThetaPhi(Double_t th,Double_t phi){

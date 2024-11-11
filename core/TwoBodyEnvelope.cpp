@@ -5,7 +5,7 @@
 
 namespace elSpectro{
 
-  TwoBodyEnvelope::TwoBodyEnvelope(const DistTH2Slice& dist):_dist{dist}
+  TwoBodyEnvelope::TwoBodyEnvelope(const DistYGivenX& dist):_dist{dist}
   {
       
   }

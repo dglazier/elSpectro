@@ -45,6 +45,10 @@ namespace elSpectro{
     double GetValueFor(double valX,double valY=0) const override  {return 1.;}
 
     void SetMaxX(double val){_maxX=val;}
+
+    void SetMaster(DistFlatMassMaster* m){
+      _master = m;
+    }
     
   protected :
     void SetIndex(uint index){_index=index;}
@@ -69,6 +73,8 @@ namespace elSpectro{
   public :
 
     DistFlatMassMaster(DecayingParticle* original, particle_ptrs ps);
+
+    void SetParticlePtrs(particle_ptrs ps);
 
     double GetMass(uint i)const noexcept{
       return _invMass[i];

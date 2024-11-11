@@ -8,48 +8,50 @@
 ///             
 #pragma once
 
-#include "DecayModel.h"
+#include "ProductionModel.h"
 #include "DecayingParticle.h"
 #include "FunctionsForElectronScattering.h"
-#include "TwoBodyEnvelope.h"
 #include "DistTH1.h"
+#include "DistYGivenX.h"
 #include <TH1D.h>
 #include <TH2D.h>
 
 namespace elSpectro{
 
- 
-  class TwoBodyProduction : public DecayModel {
+  
+  class TwoBodyProduction : public ProductionModel {
 
   public:
     
     TwoBodyProduction()=delete;
     //constructor giving jpac amplitude pointer (which we will now own)
     //and decay particles 
-    TwoBodyProduction(  particle_ptrs parts,const std::vector<int> pdgs  );
+    TwoBodyProduction( const decaying_objs& decs, const particle_objs& stables  );
     
- 
+  
+    
     double Intensity() const override;
     
     void PostInit(ReactionInfo* info) override;
 
-    bool RegenerateOnFail() const noexcept override {return true;};
+    bool RegenerateOnFail() const noexcept override {return false;};
     bool HasAngularDistribution() override{return false; }
 
-    const Particle* GetMeson() const noexcept{return _meson; }
-    const Particle* GetBaryon() const noexcept{return _baryon; }
-    const LorentzVector* GetTarget() const noexcept{return _target; }
-    const LorentzVector* GetPhoton() const noexcept{return _photon; }
-
-    virtual double FindMaxOfIntensity();
-    virtual void HistIntegratedXSection(TH1D& hist);
-    virtual void HistMaxXSection(TH1D& hist);
+    const LorentzVector& GetTarget() const noexcept{return _p4target; }
+    const LorentzVector& GetPhoton() const noexcept{return _p4photon; }
+     
+    //virtual double FindMaxOfIntensity();
+    TH1D  CrossSectionW(TH1D hist) override;
+    
+    //virtual void HistMaxXSection(TH1D& hist);
     //std::unique_ptr<TwoBodyEnvelope> Build_WCosTh_Envelope(const LorentzVector *target, const LorentzVector *ebeam) const;
-    void Use_WCosTh_Envelope();
+    void Use_WCosTh_Envelope(bool use);
     void Build_WCosTh_Envelope();
     
     virtual double dsigma_dcosth(double W,double cth) const;
     virtual double sigma(double W) const{ return 1.;}
+
+    void MakeMesonFirst();
 
     double GetUsedMassWeight() const {return _massWeight;}
     void SetMassWeight(double val) const{_massWeight=val;}
@@ -68,13 +70,28 @@ namespace elSpectro{
     void set_max(double val) const { _max=val; }
 
     double get_W_FromParent()const {return Parent()->P4().M();}
+
+    //Any preliminaries required
+    bool ReadyForDecay() override{
+      ChooseDecay();//Need full decay chain
+      SampleNBodyPhaseSpace(get_W_FromParent(),this);
+      //Need to check whether we should check threshold here
+      //The W has been established at this point
+      //so we should be above threshold anyway.
+      //And not need to regenerate
+      return true;
+      //return CheckThreshold();
+    }
+    double Q2PhaseSpaceCorrect() const;
+    double MassPhaseSpaceCorrect() const;
+    
   protected:
     
     virtual double PhaseSpaceFactor() const;
     virtual double MatrixElementsSquared_L() const {return 0; }
     virtual double MatrixElementsSquared_T() const {return 1; } //just real photon by default
+    virtual double MatrixElementsSquared_T_at_tmin() const {return 1; } //just real photon by default
 
-    double Q2PhaseSpaceCorrect() const;
     constexpr double  PhaseSpaceNorm() const;
     double PgammaCMsq() const noexcept;
     double PgammaCM()const noexcept;
@@ -85,6 +102,9 @@ namespace elSpectro{
     double CalcCosThCM() const;
     double kin_tFromWCosThatQ20(double W, double cosTh) const;
     
+    double DiffXS_at_tmin() const{//dont let others call this as need _s, _W and _t set
+      return PhaseSpaceFactor() * MatrixElementsSquared_T_at_tmin();
+    }
     double DiffXS() const{//dont let others call this as need _s, _W and _t set
       //dsigma/dcostheta
 
@@ -95,12 +115,14 @@ namespace elSpectro{
       //std::cout<<" DiffXS() "<<std::endl;
       //Note if your derived model already gives differential cross section
       //you will need to divide by PhaseSpaceFactor to get MatrixElementSquared from it
-      // std::cout<<"ps = "<<PhaseSpaceFactor() <<" mat = "<< MatrixElementsSquared_T()<<" mass "<<_meson->P4().M()<<std::endl;
-      return _photonPol==nullptr ?
+      //  std::cout<<"ps = "<<PhaseSpaceFactor() <<" mass "<<_meson->P4().M()<<" "<<MatrixElementsSquared_T()<<" eps "<<_photonPol->Epsilon()<<" delta "<<_photonPol->Delta()<<std::endl;
+      return PhaseSpaceFactor() * MatrixElementsSquared_T();
+      /* need to change to this when get MatrixElementsSquared_L set
+	return _photonPol==nullptr ?
 	PhaseSpaceFactor() * MatrixElementsSquared_T() :
 	PhaseSpaceFactor() * ( MatrixElementsSquared_T()
 	  + (_photonPol->Epsilon()+_photonPol->Delta())*MatrixElementsSquared_L());	
- 
+      */
 
 	// auto result = PhaseSpaceFactor() *
 	// ( MatrixElementsSquared_T()
@@ -111,7 +133,7 @@ namespace elSpectro{
       
     }
     virtual void CalcKine() const{
-      _W = Parent()->P4().M();
+      _W =_p4parent.M();
       _s=_W*_W;
       //calculate thetaCM for this event
       CalcCosThCM();
@@ -120,13 +142,15 @@ namespace elSpectro{
 
     bool IsSampling() const {return _isSampling;}
     
+    void Print() const override;
   protected:
-    Particle* _baryon={nullptr};
-    Particle* _meson={nullptr};
-    LorentzVector* _photon={nullptr};
-    LorentzVector* _target={nullptr};
-    const LorentzVector* _ebeam={nullptr};
-    PhotonPolarisationVector* _photonPol={nullptr};
+    mutable LorentzVector _p4baryon;
+    mutable LorentzVector _p4meson;
+    mutable LorentzVector _p4photon;
+    mutable LorentzVector _p4target;
+    mutable LorentzVector _p4parent;
+    //  const LorentzVector* _ebeam={nullptr};
+    //PhotonPDistTH1olarisationVector* _photonPol={nullptr};
     ReactionPhotoProd* _prodInfo={nullptr};
  
   private:
@@ -147,13 +171,16 @@ namespace elSpectro{
     mutable double _Ntries=0;
     mutable double _NhighWeight=0;
     mutable double _massWeight=1.;
+    mutable double _totalXS=0.;
     
     bool _isElProd={true};
     mutable bool _isSampling={false};
-    bool _createMyEnvelope={false};
+    bool _createMyEnvelope={true};
 
-    std::unique_ptr<DistTH1> _distHighXS;
-    std::unique_ptr<DistTH1>  _distMassFrac;
+    DistTH1 _distHighXS;
+    DistYGivenX _distEnvelope;
+    
+    //  std::unique_ptr<DistTH1>  _distMassFrac;
     ClassDefOverride(elSpectro::TwoBodyProduction,1); //class TwoBodyProduction
  
   };
@@ -161,7 +188,7 @@ namespace elSpectro{
 
   //Define inline functions
   inline double TwoBodyProduction::dsigma_dcosth(double W,double cth) const{
-      //Parent()->P4().M();
+ 
     set_cosThCM(cth);
     set_W(W);
     
@@ -172,79 +199,86 @@ namespace elSpectro{
   }
   //Kinematic factors
   inline double TwoBodyProduction::Q2PhaseSpaceCorrect() const {
-    return TMath::Sqrt(kine::PDK2(_W,0,_target->M())/PgammaCMsq());
+    return TMath::Sqrt(kine::PDK2(get_W(),0,_p4target.M())/PgammaCMsq());
+  }
+  inline double TwoBodyProduction::MassPhaseSpaceCorrect() const {
+    return TMath::Sqrt(kine::PDK2(get_W(),_p4meson.M(),_p4baryon.M())/kine::PDK2(get_W(),GetMeson()->PdgMass(),GetBaryon()->PdgMass()));
   }
 
   inline constexpr double  TwoBodyProduction::PhaseSpaceNorm() const {return 1./(2.56819E-6)/32/TMath::Pi();}// Convert from GeV^-2 -> nb
      
      
   inline double TwoBodyProduction::PgammaCMsq() const noexcept{
-    if(_photon->M()==0) return kine::PDK2(_W,0,_target->M());
+    if(_p4photon.M()==0) return kine::PDK2(_W,0,_p4target.M());
     auto  pgammaCM= PgammaCM();
-    return  pgammaCM* pgammaCM; //for dt phase space factor
+    return  pgammaCM * pgammaCM; //for dt phase space factor
   }
     
   inline double TwoBodyProduction::PgammaCM()const noexcept{
     //in case no photon 4-vector yet
-    if(_photon==nullptr) return kine::PDK(_W,0,_target->M());
-    if(_photon->M()==0) return kine::PDK(_W,0,_target->M());
-    //else PDK does not qork for virtual photons
-    auto cmBoost=Parent()->P4().BoostToCM();
-    auto p1cm=boost(*_photon,cmBoost);
-    //std::cout<<" TwoBodyProduction::PgammaCM() "<<1./p1cm.P()<<" "<< 1./kine::PDK(_W,0,_target->M())<<" Q2 "<<_photon->M2()<<std::endl;
+    if(_p4photon.E()==0) return kine::PDK(_W,0,_p4target.M());
+    //faster experession when Q2==0
+    if(_p4photon.M()==0) return kine::PDK(_W,0,_p4target.M());
+    //else PDK does not work for virtual photons
+    auto cmBoost=_p4parent.BoostToCM();
+    auto p1cm=boost(_p4photon,cmBoost);
+    // std::cout<<" TwoBodyProduction::PgammaCM() "<<1./p1cm.P()<<" "<< 1./kine::PDK(_W,0,_p4target->M())<<" Q2 "<<_p4photon->M2()<<std::endl;
     return p1cm.P();
   }
     
   inline double TwoBodyProduction::PhaseSpaceFactor_dCosTh() const noexcept {
     // p3/(p1*s)
+    //std::cout<<"TwoBodyProduction::PhaseSpaceFactor_dCosTh() "<<PhaseSpaceNorm()<<" CMP "<<kinCM_MesonP(_W)<<" s "<<_s<<" w "<<_W<<" pg "<<PgammaCM()<<" tm "<<_p4target->M()<<std::endl;
     return PhaseSpaceNorm()* kinCM_MesonP(_W)/_s/PgammaCM();
   }
    
   inline double TwoBodyProduction::kinCM_MesonP(double W) const {
-    //std::cout<<"kinCM_MesonP "<< kine::PDK(W,_meson->P4().M(),_baryon->P4().M()) <<" pdg mass "<<kine::PDK(W,_meson->PdgMass(),_baryon->P4().M())<<" ratio = "<< kine::PDK(W,_meson->P4().M(),_baryon->P4().M())/kine::PDK(W,_meson->PdgMass(),_baryon->P4().M())<<" meson mass diff "<<_meson->P4().M()-_meson->PdgMass()<<" baryon mass diff "<<_baryon->P4().M()<<" mass "<<_meson->PdgMass()<<std::endl;
-    return kine::PDK(W,_meson->P4().M(),_baryon->P4().M());
+    //std::cout<<"kinCM_MesonP "<< kine::PDK(W,_meson->P4().M(),_p4baryon->P4().M()) <<" pdg mass "<<kine::PDK(W,_meson->PdgMass(),_p4baryon->P4().M())<<" ratio = "<< kine::PDK(W,_meson->P4().M(),_p4baryon->P4().M())/kine::PDK(W,_meson->PdgMass(),_p4baryon->P4().M())<<" meson mass diff "<<_meson->P4().M()-_meson->PdgMass()<<" baryon mass diff "<<_p4baryon->P4().M()<<" mass "<<_meson->PdgMass()<<std::endl;
+    return kine::PDK(W,_p4meson.M(),_p4baryon.M());
 
   }
   inline double TwoBodyProduction::kinCM_MesonE(double W) const {
-    auto m2_a =_meson->P4().M2();
-    auto m2_b =_baryon->P4().M2();
+    auto m2_a =_p4meson.M2();
+    auto m2_b =_p4baryon.M2();
     // std::cout<<"kinCM_MesonE "<< (W*W + m2_a - m2_b)/(2.0*W)<<std::endl;
     return (W*W + m2_a - m2_b)/(2.0*W);
   }
   inline double TwoBodyProduction::kin_tFromWCosTh(double W, double cosTh) const{
-    if(Parent()->P4().P()==0){
+    if(_p4parent.P()==0){
       std::cerr<<"TwoBodyProduction::kin_tFromWCosTh, parent at rest, we require a valid parent particle to calculate the kinematics"<<std::endl;
       exit(0);
     }
-    if(Parent()->P4().M()!=W){
-      std::cerr<<"TwoBodyProduction::kin_tFromWCosTh, Parent mass "<<Parent()->P4().M()<<"  != W "<<W<<std::endl;
+    if(_p4parent.M()!=W){
+      std::cerr<<"TwoBodyProduction::kin_tFromWCosTh, Parent mass "<<_p4parent.M()<<"  != W "<<W<<std::endl;
       exit(0);
 	
     }
-    auto cmBoost=Parent()->P4().BoostToCM();
-    auto p1cm=boost(*_photon,cmBoost);
+    auto cmBoost=_p4parent.BoostToCM();
+    auto p1cm=boost(_p4photon,cmBoost);
     // std::cout<<"kin_tFromWCosTh "<<p1cm.M2() + _meson->M2() - 2 * (p1cm.E()* kinCM_MesonE(W)-p1cm.P()* kinCM_MesonP(W)*cosTh)<<std::endl;
 
-    return p1cm.M2() + _meson->M2() - 2 * (p1cm.E()* kinCM_MesonE(W)-p1cm.P()* kinCM_MesonP(W)*cosTh);
+    return p1cm.M2() + _p4meson.M2() - 2 * (p1cm.E()* kinCM_MesonE(W)-p1cm.P()* kinCM_MesonP(W)*cosTh);
   }
   
   inline double TwoBodyProduction::kin_tFromWCosThatQ20(double W, double cosTh) const{
-    return kine::tFromcosthW(cosTh,W,0.0,_target->M(),_meson->Mass(),_baryon->Mass());
+    // std::cout<<"kin_tFromWCosTh "<<W<<" "<<cosTh<<" "<<_p4meson.M()<<" "<<_p4baryon.M()<<" done ";
+    return kine::tFromcosthW(cosTh,W,0.0,_p4target.M(),_p4meson.M(),_p4baryon.M());
   }
 
   inline double TwoBodyProduction::CalcCosThCM() const{
-    auto cmBoost=Parent()->P4().BoostToCM();
-    auto pm_cm=boost(_meson->P4(),cmBoost); //meson in CM
-    auto pg_cm=boost(*_photon,cmBoost); //photon in CM
-    // std::cout<<" TwoBodyProduction::CalcCosThCM() "<<Parent()->P4()<<" "<<*_photon<<" "<<_meson->P4()<<std::endl;
+    auto cmBoost=_p4parent.BoostToCM();
+    auto pm_cm=boost(_p4meson,cmBoost); //meson in CM
+    auto pg_cm=boost(_p4photon,cmBoost); //photon in CM
+    //std::cout<<" TwoBodyProduction::CalcCosThCM() "<<_p4parent.M()<<" w "<<_W<<" ph "<<_p4photon.M()<<" mes "<<_p4meson.M()<<" bar "<<_p4baryon.M()<<" Q2 "<<-_p4photon.M2()<<" "<<kin_tFromWCosThatQ20(_W,0)<<std::endl;
     //std::cout<<" TwoBodyProduction::CalcCosThCM() "<<pg_cm<<" "<<pm_cm<<std::endl;
     _cosThCM=TMath::Cos(ROOT::Math::VectorUtil::Angle( pg_cm,pm_cm));
     // in case we need t make sure up-to-date
     _t = kin_tFromWCosTh(_W,_cosThCM);
-    //std::cout<<" TwoBodyProduction::CalcCosThCM() "<< _cosThCM<<" "<<_t<<std::endl;
+    //std::cout<<" TwoBodyProduction::CalcCosThCM() "<< _cosThCM<<" "<<_t<<" "<<(_p4meson-_p4photon).M2()<<" Q20 t "<< kine::tFromcosthW(_cosThCM,_W,0.0,_p4target.M(),_p4meson.M(),_p4baryon.M())<<" Q20 PDG t "<< kine::tFromcosthW(_cosThCM,_W,0.0,_p4target.M(),0.77526000,_p4baryon.M())<<" target "<<_p4target.M()<<" baryon "<<_p4baryon.M()<<std::endl;
     return  _cosThCM;
   }
   inline double TwoBodyProduction::PhaseSpaceFactor() const{
+    
     return PhaseSpaceFactor_dCosTh();
   }
 }

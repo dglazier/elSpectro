@@ -4,36 +4,50 @@
 #pragma once
 
 #include "Manager.h"
-#include "DecayModelQ2W.h"
-#include "DecayModelW.h"
-#include "Distribution.h"
-#include "DistVirtPhotFlux_xy.h"
-#include "ElectronScattering.h"
-#include "PhotoProduction.h"
-#include "ScatteredElectron_xy.h"
-#include "CollidingParticle.h"
-#include <TDatabasePDG.h>
+// #include "DecayModelQ2W.h"
+// #include "DecayModelW.h"
+// #include "Distribution.h"
+// #include "DistVirtPhotFlux_xy.h"
+// #include "ElectronScattering.h"
+// #include "PhotoProduction.h"
+// #include "ScatteredElectron_xy.h"
+// #include "CollidingParticle.h"
+// #include <TDatabasePDG.h>
+// #include <TBenchmark.h>
 
 //#include "ParticleManager.h"
 //#include "ParticleManager.h"
 
 namespace elSpectro{
   
-   //////////////////////////////////////////////////////////////
-  inline Manager& generator(){return Manager::Instance();}
+  //////////////////////////////////////////////////////////////
+  //inline Manager& generator(){return Manager::Instance();}
   
   //////////////////////////////////////////////////////////////
-  inline bool finishedGenerator(){ return generator().Finished();}
+  //inline bool finishedGenerator(){ return generator().Finished();}
   
   //////////////////////////////////////////////////////////////
-  inline void countGenEvent(){generator().CountEvent();}
+  //inline void countGenEvent(){generator().CountEvent();}
   
   //////////////////////////////////////////////////////////////
-  inline void nextEvent(){
-    generator().Clear();
-    generator().Reaction()->GenerateProducts();
-    generator().Write();
-  }
+  // inline void nextEvent(){
+  //   generator().Clear();
+  //   generator().Reaction()->GenerateProducts();
+  //   generator().Write();
+  // }
+  // inline void processAll(){
+  //   gBenchmark->Start("generator");//timer  
+  //   while(finishedGenerator()==false){
+  //     nextEvent();
+  //     countGenEvent();
+  //     if(generator().GetNDone()%1000==0) std::cout<<"event number "<<generator().GetNDone()<<std::endl;
+  //   }
+  //   gBenchmark->Stop("generator");//timer  
+  //   gBenchmark->Print("generator");//timer  
+  //   generator().Summary();
+
+  // }
+  /*
   //////////////////////////////////////////////////////////////
   inline ParticleManager& particles(){return generator().Particles();}
   
@@ -154,5 +168,5 @@ namespace elSpectro{
 	
     return  dynamic_cast<ElectronScattering*>( generator().Reaction());
   }
- 
+  */
 }//namespace elSpectro

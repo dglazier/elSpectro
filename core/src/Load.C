@@ -23,18 +23,13 @@ void Load(){
   if(JPAC.Length()==0) JPAC = ELSPECTRO+"jpacPhoto";
   
   gInterpreter->AddIncludePath(JPAC+"/include/");
-  gInterpreter->AddIncludePath(JPAC+"/include/core");
-  gInterpreter->AddIncludePath(JPAC+"/include/inclusive");
-  gInterpreter->AddIncludePath(JPAC+"/include/box");
+  gInterpreter->AddIncludePath(JPAC+"/include/src");
+  gInterpreter->AddIncludePath(JPAC+"/include/physics");
   //First try libraries installed with source code
-  auto jlib=gSystem->Load(JPAC+"/lib/libjpacPhoto."+gSystem->GetSoExt());
-  gSystem->Load(JPAC+"/lib/libjpacBox."+gSystem->GetSoExt());
-  gSystem->Load(JPAC+"/lib/libjpacInclusive."+gSystem->GetSoExt());
+  auto jlib=gSystem->Load(JPAC+"/lib/libJPACPHOTO."+gSystem->GetSoExt());
   //If not, check LD_LIBRARY_PATH
   if(jlib!=0){
-    jlib=gSystem->Load(TString("libjpacPhoto.")+gSystem->GetSoExt());
-    gSystem->Load(JPAC+"/lib/libjpacBox."+gSystem->GetSoExt());
-    gSystem->Load(JPAC+"/lib/libjpacInclusive."+gSystem->GetSoExt());
+    jlib=gSystem->Load(TString("libJPACPHOTO.")+gSystem->GetSoExt());
   }
   if(jlib!=0) Warning("elSpectro::Load","libjpacPhoto not found");
   
@@ -45,7 +40,18 @@ void Load(){
   if(ellib!=0)ellib=gSystem->Load(TString("libelSpectro.")+gSystem->GetSoExt());
   if(ellib!=0) Fatal("elSpectro::Load","libelSpectro not found");
 
+ 
+  //jpac photo factory
+  gROOT->ProcessLine(Form(".x %s/jpacAmps/JpacFactory.C",ELSPECTRO.Data()));
+   gInterpreter->AddIncludePath(ELSPECTRO+"/jpacAmps");
+ 
+  //particle factory
+  //gROOT->ProcessLine(Form(".x %s/phoPro/ParticleFactory.C",ELSPECTRO.Data()));
+  gInterpreter->AddIncludePath(ELSPECTRO+"/phoPro");
+ 
+ 
+  
   //libs loaded can continue
-  gROOT->ProcessLine("elSpectro::Manager::Instance();");
+  //  gROOT->ProcessLine("elSpectro::Manager::Instance();");
 
 }

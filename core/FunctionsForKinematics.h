@@ -222,6 +222,11 @@ namespace elSpectro {
     
        angles->SetXYZ(CMMes.Vect().Dot(xV),CMMes.Vect().Dot(yV),CMMes.Vect().Dot(zV));
     }
+
+    inline void BoostParticles(const BetaVector& vboost, std::vector<Particle*>& parts ){
+      std::for_each(parts.begin(),parts.end(),[&vboost](Particle* p){p->Boost(vboost);});
+    }
+
     
   }
 }

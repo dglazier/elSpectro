@@ -14,6 +14,7 @@
 #include "Distribution.h"
 #include <Math/RotationZYX.h>
 #include <Math/RotationZ.h>
+#include <TDatabasePDG.h>
 #include <map>
 
 namespace elSpectro{
@@ -38,6 +39,10 @@ namespace elSpectro{
     Particle* Take(Particle* p);
 
     void RegisterMassDistribution(int pdg, Distribution* dist){
+      if(_massDist[pdg]!=nullptr){
+	std::cout<<"RegisterMassDistribution already regisered for "<<pdg<<std::endl; 
+	return;
+      }
       _massDist[pdg]=dist_uptr{dist};
       dist=nullptr;
       //Check if any predefined particles need this distribution
@@ -48,18 +53,41 @@ namespace elSpectro{
       }
 
     }
+    bool CheckInPdgTable(int pdg = 0){
+      return TDatabasePDG::Instance()->GetParticle(pdg)!=nullptr ? true : false; 
+    }
     
-    int RegisterNewPdgParticle(double nominalMass,Distribution* dist=nullptr){
-      std::cout<<"RegisterNewPdgParticle "<<" "<<_nextPdg<<std::endl;
-      AddToPdgTable(_nextPdg,nominalMass);
-      if(dist != nullptr){
-	RegisterMassDistribution(_nextPdg,dist);
-      }
-      _nextPdg++;
-      return _nextPdg-1;
+    bool CheckUsedPdg(int pdg=0){
+      if(std::find(_usedPdgs.begin(), _usedPdgs.end(), pdg) != _usedPdgs.end())
+	return true;
+      else
+	return false;
+   }
+    
+    void InsertPdg(int pdg){
+      if(std::find(_usedPdgs.begin(), _usedPdgs.end(), pdg) == _usedPdgs.end())
+	_usedPdgs.push_back(pdg);
+      
     }
 
-    void AddToPdgTable(int pdg,double mass);
+    int RegisterNewPdgParticle(double nominalMass,Distribution* dist=nullptr,const TString& type="",int pdg=0){
+      //if not given PDG use a new one
+      if(pdg==0){
+	pdg = _nextPdg;
+	_nextPdg++;
+      }	
+      std::cout<<"RegisterNewPdgParticle "<<" "<<pdg<<std::endl;
+
+      AddToPdgTable(pdg,nominalMass);
+      
+      if(dist != nullptr){
+	RegisterMassDistribution(pdg,dist);
+      }
+     
+      return pdg;
+    }
+
+    void AddToPdgTable(int pdg,double mass,const TString& type="");
     Double_t GetMassFor(int pdg);
     /* void RegisterMassSquaredDistribution(int pdg, Distribution* dist){ */
     /*   _mass2Dist[pdg]=dist_uptr{dist}; */
@@ -119,6 +147,7 @@ namespace elSpectro{
     
     //all the particles in the generator
     std::vector<particle_uptr> _particles;
+    std::vector<int> _usedPdgs;
     
     particle_ptrs _stables; //products which are stable (to be detected)
     particle_ptrs _stableslab; //products which are stable and in lab frame

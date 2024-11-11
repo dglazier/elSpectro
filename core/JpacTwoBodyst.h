@@ -14,7 +14,7 @@
 #include "DecayModelst.h"
 #include "SDME.h"
 #include "FunctionsForElectronScattering.h"
-#include "core/amplitude.hpp"
+#include "src/amplitude.hpp"
 
 namespace elSpectro{
 

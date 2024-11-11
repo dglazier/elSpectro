@@ -19,9 +19,9 @@ namespace elSpectro{
   ///////////////////////////////////////////////////////
   ///constructor includes subseqent decay of Ngamma* system
   DecayModelQ2W::DecayModelQ2W( double thresh,
-				DecayModel* gNmodel,DecayVectors* gNdecayer) :
+				decaymodel_ptr gNmodel,decayer_ptr gNdecayer) :
     _threshold{thresh},
-    DecayModel{{ new DecayingParticle{-2211,gNmodel,gNdecayer} },{11}}
+    DecayModel{{ DecayingParticle{-2211,gNmodel,gNdecayer} },{11}}
   {
     _name={"DecayModelQ2W_with_primary_decay_and_decayer"};
     Init();
@@ -42,6 +42,7 @@ namespace elSpectro{
     _gstarNuc->Print();
     
     auto gNprods=dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->Products();
+    
     if( TString("Baryon")==TDatabasePDG::Instance()
 	->GetParticle(gNprods[0]->Pdg())->ParticleClass() ){
       //Make sure meson is product 0 and baryon product 1
@@ -53,20 +54,20 @@ namespace elSpectro{
   void DecayModelQ2W::PostInit(ReactionInfo* info){
       _prodInfo = dynamic_cast<ReactionElectroProd*> (info);
       //std::cout<<"DecayModelQ2W::PostInit "<<_electron->P4ptr()<<" "<<_gstarNuc->P4ptr()<<std::endl;
-      if( _prodInfo==nullptr) std::cerr<<"DecayModelQ2W PostInit not an ElectronScattering reaction"<<std::endl;
-      _prodInfo->_scattered=_electron->P4ptr();
-      _prodInfo->_photoN=_gstarNuc->P4ptr();
-      _prodInfo->_photon=&_gamma;
-      _prodInfo->_photonPol=&_photonPol;
+      if( _prodInfo==nullptr){
+	std::cerr<<"DecayModelQ2W PostInit not an ElectronScattering reaction"<<std::endl;
+	exit(0);
+      }
+      
       if(_prodInfo->_Wmax==0){
 	//For backward compatability, should be done with
 	//colliding particles now and set in ProductionProcess::PostInit().
-	_prodInfo->_Wmax=( *(_prodInfo->_target) + *(_prodInfo->_ebeam) ).M();
+	_prodInfo->_Wmax=( (_prodInfo->_target) + (_prodInfo->_ebeam) ).M();
       }
-      auto gNprods=dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->Products();
+      // auto gNprods=dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->Products();
 
-      _prodInfo->_baryon=gNprods[1]->P4ptr();
-      _prodInfo->_meson=gNprods[0]->P4ptr();
+      // _prodInfo->_baryon=gNprods[1]->P4ptr();
+      // _prodInfo->_meson=gNprods[0]->P4ptr();
       
       
       DecayModel::PostInit(_prodInfo);
@@ -74,7 +75,7 @@ namespace elSpectro{
       //upate in case minumim mass changed..
       if(_threshold<MinimumMassPossible() )_threshold=MinimumMassPossible(); 
       
-      // FindExcitationSpectra();
+      FindExcitationSpectra();
       
   }
   
@@ -87,27 +88,36 @@ namespace elSpectro{
  
   
     //calculate virtual photon
-    const auto& p4beam=*(_prodInfo->_ebeam);
-    const auto& p4tar=*(_prodInfo->_target);
-    const auto& p4scat=_electron->P4();
+    auto p4beam=(_prodInfo->_ebeam);
+    auto p4tar=(_prodInfo->_target);
+    auto p4scat=_electron->P4();
 
     _gamma = p4beam-p4scat;//can now use getQ2
 
     //calculate photon polarisation
     auto epsilon = escat::virtualPhotonPolarisation(p4beam,p4tar,p4scat);
-    auto delta = 2*escat::M2_el()/getQ2()*(1-epsilon);
+    //protect divide by 0
+    auto delta = (epsilon==1)? 0: 2*escat::M2_el()/getQ2()*(1-epsilon);
     
     _photonPol.SetEpsilon(epsilon);
     _photonPol.SetDelta(delta);
  
     //   Get envelope weight from integrated cross section
      double weight=1.0;
-    // if(_Wrealphoto_Dist.get()){
-    //   weight = _Wrealphoto_Dist->GetWeightFor( W  );
-    // }
+     if(_Wrealphoto_Dist.get()){
+       weight = _Wrealphoto_Dist->GetWeightFor( W  );
+     }
     
      weight*=Q2H1Rho();
+     // std::cout<<"DecayModelQ2W "<<weight<<" "<<getQ2()<<std::endl;
 
+     //copy all currently known particle info
+     _prodInfo->_scattered=p4scat;
+     //_prodInfo->_photoN=_gstarNuc->P4();
+     _prodInfo->_photon=_gamma;
+     _prodInfo->_photonPol=_photonPol;
+     
+     
      return weight;
   }
   void DecayModelQ2W::FindExcitationSpectra(){
@@ -121,28 +131,74 @@ namespace elSpectro{
     double maxW = _prodInfo->_Wmax;
    
     std::cout<<"DecayModelQ2W::PostInit generating max cross section @W, may take some time... "<<std::endl;
-    auto gNprods=dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->Products();
+    auto gNprods=GetGammaN()->Model()->Products();
       
     //auto baryon = gNprods[1];
     auto meson=gNprods[0];
  
     //DecayModelst* mesonBaryon = nullptr;
     TwoBodyProduction* mesonBaryon = nullptr;
-     TH1D histlow("Wdistlow","Wdistlow",400,_threshold,maxW);
-     TH1D histpeak("Wdisthigh","Wdisthigh",400,_threshold,maxW);
+    // TH1D histlow("Wdistlow","Wdistlow",400,_threshold,maxW);
+    // TH1D histpeak("Wdisthigh","Wdisthigh",400,_threshold,maxW);
 
-     if( ( mesonBaryon=dynamic_cast<TwoBodyProduction*>(GetGammaN()->Model())) != nullptr){
-      TH1D hWdist("Wintegrate","Wintegrate",100,_threshold,maxW);
+    if( ( mesonBaryon=dynamic_cast<TwoBodyProduction*>(GetGammaN()->Model())) != nullptr){
+      //W bins want focussed on threshold
+      /*
+	std::vector<double > WBins;
+	int NW=100;
+	double minW = _threshold;
+	double WRange = maxW-minW;
+	double deltaW = WRange/NW;
+	double convertToLog=(WRange)/(NW-1);
+	for(int iW=NW/10;iW<=NW;++iW){
+	WBins.push_back(minW-TMath::Log10(iW*deltaW/WRange)*WRange);
+	std::cout<<"DecayModelQ2W::FindExcitationSpectra() "<<WBins.back()<<" "<<std::endl;
+	}
+	//increasing order
+	std::sort(WBins.begin(),WBins.end());
+      // auto firstbinmin=WBins[0];
+      // auto firstbinmax=WBins[1];
+      // UInt_t NAddBins=10;
+      // for(int iW=1;iW<=NAddBins;iW++){ //dont double count first
+      // 	// std::cout<<"DecayModelQ2W::FindExcitationSpectra() "<<static_cast<Double_t>(iW*(firstbinmax-firstbinmin))/NAddBins<<" "<<iW*(firstbinmax-firstbinmin)<<std::endl;
+      // 	WBins.push_back(firstbinmin+static_cast<Double_t>(iW*(firstbinmax-firstbinmin))/NAddBins);
+      // }
+      // std::cout<<"DecayModelQ2W::FindExcitationSpectra() range "<<minW<<" "<<maxW<<std::endl;
+      //increasing order
+      std::sort(WBins.begin(),WBins.end());
+      */
+      //W bins want focussed on threshold
+      std::vector<double > WBins;
+      int NW=20;//safe at 60 but much faster with 20!
+      double minW = _threshold;
+      double WRange = maxW-minW;
+      double deltaW = WRange/NW;
+      for(int iW=0;iW<NW+1;++iW){
+	int Nsteps = NW-iW;
+	if(Nsteps==0)Nsteps==1;
+	if(iW==0) Nsteps = 50; //extra at threshold
+	for(int iWi=0;iWi<Nsteps;++iWi){
+	  WBins.push_back(minW + iW*deltaW+static_cast<double>(iWi*deltaW)/Nsteps );
+	}
+      }
+      WBins.push_back(maxW);
+      //increasing order
+      std::sort(WBins.begin(),WBins.end());
  
-      //mesonBaryon->HistIntegratedXSection(hWdist);
-      mesonBaryon->HistMaxXSection(hWdist);
+
+    
+      TH1D hWdist("Wintegrate","Wintegrate",WBins.size()-1,WBins.data());
+      //TH1D hWdist("Wintegrate","Wintegrate",100,_threshold,maxW);
+ 
+      mesonBaryon->HistIntegratedXSection(hWdist);
+      //mesonBaryon->HistMaxXSection(hWdist);
       hWdist.SetName("Wdist");
 
         
-     _Wrealphoto_Dist.reset( new DistTH1(hWdist) );
-    }
-    else{
-      std::cerr<<"DecayModelQ2W::FindExcitationSpectra()Need a TwoBodyProduction"<<std::endl;
+       _Wrealphoto_Dist.reset( new DistTH1(hWdist) );
+     }
+     else{
+       std::cerr<<"DecayModelQ2W::FindExcitationSpectra()Need a TwoBodyProduction"<<std::endl;
       exit(0);
     }
   }

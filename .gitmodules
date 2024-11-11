@@ -1,3 +1,6 @@
 [submodule "JpacPhoto"]
 	path = jpacPhoto
 	url = https://github.com/JointPhysicsAnalysisCenter/jpacPhoto
+[submodule "jpacPhoto"]
+	path = jpacPhoto
+	url = https://github.com/JointPhysicsAnalysisCenter/jpacPhoto

@@ -37,7 +37,7 @@ namespace elSpectro{
     histyQ2.Fill(escat::Q2_xy( Ee,xx,yy,Mion),yy);
     histyx.Fill(xx,yy);
     histW.Fill(W);
- 
+    //if(W<140.7)std::cout<<"ScatteredElectron_xy::Generate E = "<<Egamma<<" W= "<<W<<std::endl;
     return 1;//in this case distribution already accounts for virtual photon flux
   
     /*

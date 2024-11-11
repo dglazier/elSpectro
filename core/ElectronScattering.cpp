@@ -1,5 +1,8 @@
 #include "ElectronScattering.h"
+#include "FormationQ2W.h"
+#include "TwoBodyProduction.h"
 #include "FunctionsForGenvector.h"
+#include "FunctionsForKinematics.h"
 #include "Manager.h"
 #include "Interface.h" //for generator
 #include "ScatteredElectron_xy.h"
@@ -17,54 +20,54 @@ namespace elSpectro{
   int ElectronScattering::NintegralsElectronScattering=0;
 
   /////////////////////////////////////////////////////////////////////
-  ElectronScattering::ElectronScattering(double ep,double ionp, DecayModel* model, int ionpdg):
-    _pElectron{ep},
-    _pIon{ionp},
-    _angleElectron{TMath::Pi()},
-    _angleIon{0},
-    _pdgIon{ionpdg},
-    _beamElec{11},
-    _beamNucl{ionpdg},
-    ProductionProcess{0,nullptr,model}
-  {
+  // ElectronScattering::ElectronScattering(double ep,double ionp, DecayModel* model, int ionpdg):
+  //   _pElectron{ep},
+  //   _pIon{ionp},
+  //   _angleElectron{TMath::Pi()},
+  //   _angleIon{0},
+  //   _pdgIon{ionpdg},
+  //   _beamElec{11},
+  //   _beamNucl{ionpdg},
+  //   ProductionProcess{0,nullptr,model}
+  // {
       
-      SetBeamCondtion();
-  }
+  //     SetBeamCondtion();
+  // }
+  // /////////////////////////////////////////////////////////////////////
+  // ElectronScattering::ElectronScattering(double ep,double ionp,
+  // 		     double eangle,double ionangle,  DecayModel* model, int ionpdg):
+  //   _pElectron{ep},
+  //   _pIon{ionp},
+  //   _angleElectron{eangle},
+  //   _angleIon{ionangle},
+  //   _pdgIon{ionpdg},
+  //   _beamElec{11},
+  //   _beamNucl{ionpdg},
+  //   ProductionProcess{0,nullptr,model}
+  // {
+  //     SetBeamCondtion();
+  // }
   /////////////////////////////////////////////////////////////////////
-  ElectronScattering::ElectronScattering(double ep,double ionp,
-		     double eangle,double ionangle,  DecayModel* model, int ionpdg):
-    _pElectron{ep},
-    _pIon{ionp},
-    _angleElectron{eangle},
-    _angleIon{ionangle},
-    _pdgIon{ionpdg},
-    _beamElec{11},
-    _beamNucl{ionpdg},
-    ProductionProcess{0,nullptr,model}
-  {
-      SetBeamCondtion();
-  }
-  /////////////////////////////////////////////////////////////////////
-  ElectronScattering::ElectronScattering(CollidingParticle *electron,CollidingParticle* target,  DecayModel* model):
+  ElectronScattering::ElectronScattering(const CollidingParticle& electron,const CollidingParticle& target,decaymodel_ptr model):
     ProductionProcess{electron,target,model},
     _beamElec{11},
-    _beamNucl{target->GetInteractingPdg()}
+    _beamNucl{target.GetInteractingPdg()}
   {
     //For convenience keep our own
     //pointers to electron and target
-    _electronptr =electron;
-    _targetptr = target;
+    _electronptr =Incident1(); //order given to ProductionProcess
+    _targetptr = Incident2();
     
-      SetNominalBeamCondtion();
+    SetNominalBeamCondtion();
   }
 
   /////////////////////////////////////////////////////////////////////
   void ElectronScattering::SetNominalBeamCondtion(){
     
     
-    _beamElec.SetP4(*(_electronptr->GetInteracting4Vector()));
+    _beamElec.SetP4(_electronptr->GetNominal4Vector());
     
-    _beamNucl.SetP4(*(_targetptr->GetInteracting4Vector()));
+    _beamNucl.SetP4(_targetptr->GetNominal4Vector());
    _massIon=_beamNucl.PdgMass();
 
     /*  //not sure why this was there
@@ -82,7 +85,7 @@ namespace elSpectro{
 
     //set inital lab particles
     //this can be written to output file
-    std::cout<<"ElectronScattering vertex "<<_electronptr->VertexPosition()<<std::endl;
+    std::cout<<"ElectronScattering vertex "<<_electronptr->VertexPosition()<<" "<<_electronptr<< " "<<_targetptr<<std::endl;
     AddInitialParticlePtr(_electronptr);
     AddInitialParticlePtr(_targetptr);
   //set inital lab particles
@@ -101,9 +104,9 @@ namespace elSpectro{
     
     _massIon=TDatabasePDG::Instance()->GetParticle(_pdgIon)->Mass();
 
-    
     _beamElec.SetXYZT(0,0,_pElectron,
 		      escat::E_el(_pElectron));
+    
     auto p4=_beamElec.P4();
     genvector::LorentzRotateY(p4,_angleElectron);
     _beamElec.SetP4(p4);
@@ -116,7 +119,7 @@ namespace elSpectro{
     genvector::LorentzRotateY(p4,_angleIon);
     _beamNucl.SetP4(p4);
     std::cout<<"ElectronScattering::SetBeamCondtion() Nucl "<< _beamNucl.P4()<<std::endl;
- 
+    
     //For decaying
     SetXYZT(_beamElec.P4().X(),_beamElec.P4().Y(),
 	    _beamElec.P4().Z(),_beamElec.P4().T());
@@ -132,50 +135,53 @@ namespace elSpectro{
     //set inital lab particles
     AddInitialParticlePtr(&_beamElec);
     AddInitialParticlePtr(&_beamNucl);
-
+    std::cout<<"ElectronScattering::SetBeamCondtion() ptrs "<<&_beamElec<<" "<<&_beamNucl<<std::endl;
 
    }
   /////////////////////////////////////////////////////////////////////////
   void ElectronScattering::InitGen(){
-    std::cout<<"Electron Scattering InitGen "<<std::endl;
+    std::cout<<"Electron Scattering InitGen 1"<<std::endl;
     //pass on lorentzvectors in nucleon rest frame
     //This is the internal frame for the generator
-    _reactionInfo._target=&_nuclRestNucl;
-    _reactionInfo._ebeam =&_nuclRestElec;
-    
-     
- 
-    auto& unproducts=Model()->UnstableProducts();
-    //if(unproducts.empty()==true) return;
-    
-    if(unproducts.size()!=1) {
-      std::cerr<<"ElectronScattering::InitGen need a Q2W model with just a gamma*N decay product"<<std::endl;
-    }
+    _reactionInfo._target=_nuclRestNucl;
+    _reactionInfo._ebeam =_nuclRestElec;
 
+    //DecayModelQ2W should be initialised with single product gamma*N
+    //auto& unproducts=Model()->Products();
+    std::cout<<"ElectronScattering::InitGen() Model "<<Model()->GetName()<<std::endl;
+									   // auto* formation = dynamic_cast<FormationQ2W*>(Model());
+    // if(unproducts.size()!=1) {
+    //   std::cerr<<"ElectronScattering::InitGen need a Q2W model with just a gamma*N decay product"<<std::endl;
+									   //}
+    std::cout<<"Electron Scattering InitGen 2 "<<Q2WModel()<<" "<<std::endl;
     double minMass=_massIon;
-    if(unproducts.empty()==false){
-      _gStarN = unproducts[0];//should only be gamma*N decaying product
-      std::cout<<"Electron Scattering min mass "<<_gStarN->MinimumMassPossible()<<std::endl;
-      minMass=_gStarN->MinimumMassPossible();
-    }
+    //if(unproducts.empty()==false){
+    auto& gStarN = Q2WModel()->GetGammaN();
+    std::cout<<"Electron Scattering min mass "<<gStarN.MinimumMassPossible()<<std::endl;
+    minMass=gStarN.MinimumMassPossible();
+    //}
   
-    if(auto Q2WModel=dynamic_cast<DecayModelQ2W*>(Model())){
-      auto thresh=Q2WModel->getThreshold();
-      if(minMass<thresh)minMass=thresh;
-    }
-    
+    //    if(auto Q2WModel=dynamic_cast<FormationQ2W*>(Model())){
+    auto thresh=Q2WModel()->getThreshold();
+    if(minMass<thresh)minMass=thresh;
+    // }
+    std::cout<<"Electron Scattering InitGen 2"<<std::endl;
+  
     //default scatteredelectron_xy, now have all parameters
-    if(Decayer()==nullptr){
-      //Need to give ebeam (in ion rest), mass of ion, W threshold
-      auto tempDecayer=new ScatteredElectron_xy(_nuclRestElec.P(), _massIon, minMass);
-      tempDecayer->SetModel(Model());
-      SetDecayer(tempDecayer); //give it to a sink
-      
-    }
-    mutableDecayer()->PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
+    // if(Decayer()==nullptr){
+    //Need to give ebeam (in ion rest), mass of ion, W threshold
+    // auto tempDecayer=new ScatteredElectron_xy(_nuclRestElec.P(), _massIon, minMass);
+    //tempDecayer->SetModel(Model());
+    //SetDecayer0(tempDecayer); //give it to a sink
+    // SetDecayer0(new ScatteredElectron_xy(_nuclRestElec.P(), _massIon, minMass));
+    SetDecayer0(std::make_shared<ScatteredElectron_xy>(_nuclRestElec.P(), _massIon, minMass));
+    
+    // mutableDecayer()->PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
 
     auto decayer= dynamic_cast<ScatteredElectron_xy* >(mutableDecayer());
-    
+    decayer->SetModel(Model());
+    std::cout<<"Electron Scattering InitGen 3"<<std::endl;
+
     if(decayer!=nullptr){
       //Set any thresholds and ranges
       if(_Q2min!=0)  decayer->Dist().SetQ2min(_Q2min);
@@ -189,7 +195,8 @@ namespace elSpectro{
 
       //Do momemntum =>y, W limits last
       _Wmin=  minMass;
- 
+      std::cout<<"Electron Scattering InitGen 4"<<std::endl;
+
       if(_ePmax!=0||_Ymin!=0) { //convert to y limit
 	//Find lowest allowed y
 	double y =0;
@@ -237,7 +244,7 @@ namespace elSpectro{
 	}
 	
       }
-       if(_ePmin!=0) { //convert to y limit
+      if(_ePmin!=0) { //convert to y limit
 	if( (_nuclRestElec.E() < escat::E_el(_ePmin)) ){
 	  std::cerr<<"ElectronScattering::InitGen() Error, requested Minimum electron momentum (in proton rest frame) higher than beam energy "<< escat::E_el(_ePmin)<<" > "<<_nuclRestElec.E()<<std::endl;
 	  exit(0);
@@ -252,50 +259,48 @@ namespace elSpectro{
     }
   
     std::cout<<"ElectronScattering::InitGen() final minimum W "<<_Wmin<<std::endl;
-    if(_gStarN!=nullptr){
-      _gStarN->SetMinMass(_Wmin);
-       if(auto Q2WModel=dynamic_cast<DecayModelQ2W*>(Model())){
-	 Q2WModel->setThreshold(_Wmin);
-     }
-      generator().SetModelForMassPhaseSpace(_gStarN->Model());
-    }
+    //if(_gStarN!=nullptr){
+    Q2WModel()->GetGammaN().SetMinMass(_Wmin);
+    //  if(auto Q2WModel=dynamic_cast<FormationQ2W*>(Model())){
+    Q2WModel()->setThreshold(_Wmin);
+      //   }
+      //      generator().SetModelForMassPhaseSpace(_gStarN->Model());
+      //}
 
     //try here so chance to redefine minimum masses etc
     ProductionProcess::PostInit(dynamic_cast<ReactionInfo*>(&_reactionInfo));
  
  
-   }
+  }
   //////////////////////////////////////////////////////////////////////////
   ///Use Frixione + sigma(W) to integrate cross section over x , y and t
   double ElectronScattering::IntegrateCrossSectionFast(){
     gBenchmark->Start("IntegrateCrossSectionFast");
     auto collision=MakeCollision();
 
-    auto Q2WModel =dynamic_cast<DecayModelQ2W*>(Model());
-    Q2WModel->ZeroPhoton();//need Q2=0 for P1CM
+    //auto Q2WModel =dynamic_cast<FormationQ2W*>(Model());
+    Q2WModel()->ZeroPhoton();//need Q2=0 for P1CM
     
-    //   auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
-    auto gStarModel =dynamic_cast<TwoBodyProduction*>(_gStarN->Model());
+    // //   auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
+    auto gStarModel =dynamic_cast<ProductionModel*>(Q2WModel()->GetGammaN().Model());
     auto threshold=gStarModel->GetMeson()->PdgMass()+gStarModel->GetBaryon()->PdgMass();
     
-    TH1D* hWdist=new  TH1D("sdisthigh","sdisthigh",100,threshold,collision.M());
-    gStarModel->HistIntegratedXSection( *hWdist);
+    TH1D hWdist("sdisthigh","sdisthigh",100,threshold,collision.M());
+    std::cout<<"ElectronScattering::IntegrateCrossSectionFast() "<<threshold<<" "<<collision.M()<<std::endl;
+    hWdist=gStarModel->CrossSectionW( hWdist);
     
     double integrated_xsection = 0; // get sigma_ep from integral over W: f(W)*sigma_gp(W)
 
     
-    for(int i=0; i<hWdist->GetNbinsX(); i++) {
-      double W = hWdist->GetXaxis()->GetBinCenter(i+1);
-      double WbinWidthScale = hWdist->GetBinWidth(i+1);
-      double W_xsection = hWdist->GetBinContent(i+1);
+    for(int i=0; i<hWdist.GetNbinsX(); i++) {
+      double W = hWdist.GetXaxis()->GetBinCenter(i+1);
+      double WbinWidthScale = hWdist.GetBinWidth(i+1);
+      double W_xsection = hWdist.GetBinContent(i+1);
       
-      // double y = (W*W-escat::M2_pr())/_nuclRestElec.E()/2/escat::M_pr();
-      // double W_fluxWeight = escat::Frixione(_nuclRestElec.E(),y) * W /_nuclRestElec.E() /escat::M_pr();
-      //change to ion mass 8.3.2023
+       //change to ion mass 8.3.2023
       double y = (W*W-_massIon)/_nuclRestElec.E()/2/_massIon;
       double W_fluxWeight = escat::Frixione(_nuclRestElec.E(),y,_massIon) * W /_nuclRestElec.E() /_massIon;
-      std::cout<<"ElectronScattering::IntegrateCrossSectionFast() W = "<< W<<" photoXS = "<<W_xsection<<" photoFlux = "<<W_fluxWeight<<" xs "<<W_xsection * W_fluxWeight* WbinWidthScale<<std::endl;
-      //      gStarModel->sigma(W);
+      //std::cout<<"ElectronScattering::IntegrateCrossSectionFast() W = "<< W<<" photoXS = "<<W_xsection<<" photoFlux = "<<W_fluxWeight<<" xs "<<W_xsection * W_fluxWeight* WbinWidthScale<<std::endl;
       integrated_xsection += W_xsection * W_fluxWeight* WbinWidthScale;
     }
     gBenchmark->Stop("IntegrateCrossSectionFast");
@@ -309,13 +314,12 @@ namespace elSpectro{
     //Generate collision 4-momentum
     if(_electronptr!=nullptr){
       _electronptr->GenerateComponents();
-      _beamElec.SetP4(*(_electronptr->GetInteracting4Vector()));
+      _beamElec.SetP4(_electronptr->GetInteracting4Vector());
     }
     if(_targetptr!=nullptr){
       _targetptr->GenerateComponents();
-      _beamNucl.SetP4(*(_targetptr->GetInteracting4Vector()));
+      _beamNucl.SetP4(_targetptr->GetInteracting4Vector());
     }
-
     //First, Eventually want to sample from beam divergence distributions
     LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
     //Boost into ion rest frame
@@ -326,7 +330,7 @@ namespace elSpectro{
     _nuclRestElec= boost(_beamElec.P4(),prBoost);
     //set decay parent for e -> e'g*
     SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
-    //  std::cout<<"ElectronScattering::MakeCollision() "<<collision<<std::endl;
+    // std::cout<<" ElectronScattering::MakeCollision()  "<<(_targetptr->GetInteracting4Vector())<<" "<<_electronptr<<_beamElec.P4()<<_beamNucl.P4()<<_nuclRestNucl<<_nuclRestElec<<collision<<std::endl;
     return collision;
   }
   //////////////////////////////////////////////////////////////////////////
@@ -334,7 +338,6 @@ namespace elSpectro{
   double ElectronScattering::IntegrateCrossSection(){
     
     auto collision=MakeCollision();
- 
 
     auto photonFlux= dynamic_cast<ScatteredElectron_xy* >(mutableDecayer());
 
@@ -343,20 +346,19 @@ namespace elSpectro{
 
 
     
-     auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.99,-1,1,"");
+    auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.99,-1,1,"");
     
-     //DEBUG
-     // auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
-     auto gStarModel =dynamic_cast<TwoBodyProduction*>(_gStarN->Model());
-    auto Q2WModel =dynamic_cast<DecayModelQ2W*>(Model());
+    //DEBUG
+    // auto gStarModel =dynamic_cast<DecayModelst*>(_gStarN->Model());
+    auto gStarModel =dynamic_cast<TwoBodyProduction*>(Q2WModel()->GetGammaN().Model());
     
     photonFlux->Dist().SetWThresholdVal(gStarModel->GetMeson()->PdgMass()+gStarModel->GetBaryon()->PdgMass());
-
+    
     auto Eel=_nuclRestElec.E();
-
+    
     double_t threshW= gStarModel->GetMeson()->PdgMass()+gStarModel->GetBaryon()->PdgMass();
     Double_t maxVal=0;
-    auto fXYcosth = [this,&photonFlux,&gStarModel,&Q2WModel,&Eel,&threshW,&maxVal](const double *x)
+    auto fXYcosth = [this,&photonFlux,&gStarModel,&Eel,&threshW,&maxVal](const double *x)
       {
 	if(x[0]==0) return 0.; //x
 	if(x[1]==0) return 0.; //y
@@ -366,7 +368,7 @@ namespace elSpectro{
 	//calculate scatered electron at x and y 
 	photonFlux->GenerateGivenXandY(P4(),Model()->Products(),TMath::Exp(x[0]),TMath::Exp(x[1]));
 	//calculate virtual photon
-	Q2WModel->Intensity();
+	Q2WModel()->Intensity();
 	//get value of dsigma(s)/dcosth cross section at x,y,costh
 	//Double_t dsigma_dcosth=gStarModel->dsigma_costh(x[2]);
 	Double_t dsigma_dcosth=gStarModel->dsigma_dcosth(gStarModel->get_W_FromParent(),x[2]);
@@ -374,7 +376,7 @@ namespace elSpectro{
 	//additional (not real photo) Q2dependence of cross section
 	if(TMath::IsNaN(val)) return 0.;
 	if(val<0) return 0.;
-	val*=Q2WModel->Q2H1Rho();
+	val*=Q2WModel()->Q2H1Rho();
 	return val;
       };
   
@@ -391,9 +393,8 @@ namespace elSpectro{
      
  
     gBenchmark->Start("RooFitIntegral");
-
     auto RFintegral=pdf.getNorm(roovars);
-  
+ 
     gBenchmark->Stop("RooFitIntegral");
     gBenchmark->Print("RooFitIntegral");
      
@@ -402,28 +403,33 @@ namespace elSpectro{
     //xvar.Print();
     //yvar.Print();
     //cthvar.Print();
-    
-    photonFlux->Dist().SetWThresholdVal(Q2WModel->getThreshold());
+    photonFlux->Dist().SetWThresholdVal(Q2WModel()->getThreshold());
    
     return RFintegral;
   }
 /////////////////////////////////////////////////////////////////////////
-  DecayStatus  ElectronScattering::GenerateProducts(){
+  DecayStatus  ElectronScattering::GenerateProducts(const ProductionProcess* production){
 
     auto collision=MakeCollision();
     
     //proceed through decay chain
-    while(DecayingParticle::GenerateProducts()!=DecayStatus::Decayed){
+    while(DecayingParticle::GenerateProducts(this)!=DecayStatus::Decayed){
       _nsamples++;
       collision=MakeCollision();
+      // std::cout<<"ElectronScattering::GenerateProducts() next event "<<_nsamples<<std::endl;
     }//DecayModelQ2W
     
      
     //Boost all stable particles back to lab
-    auto prBoost=_beamNucl.P4().BoostToCM();
-    Manager::Instance().Particles().BoostStable(-prBoost);
+    auto prBoost=-_beamNucl.P4().BoostToCM();
+    //    Manager::Instance().Particles().BoostStable(-prBoost);
     //Manager::Instance().Particles().BoostToFrame(-prBoost,collision);
-   
+
+    particle_ptrs final_state;
+    EventParticles(final_state);//collect all final state particles
+    kine::BoostParticles(prBoost,final_state); //boost back to lab
+    SetFinalParticles(final_state); //assign to process
+    
     return DecayStatus::Decayed;
   }
 

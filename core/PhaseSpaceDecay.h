@@ -19,8 +19,8 @@ namespace elSpectro{
     //only declaring default constructor
     //so other 5 constructors also defaulted(rule of 5)
     //constructor to decay into particles
-    PhaseSpaceDecay( particle_ptrs , const std::vector<int> pdgs );
-
+    //    PhaseSpaceDecay( particle_ptrs , const std::vector<int> pdgs );
+    PhaseSpaceDecay(const decaying_objs& decs, const particle_objs& stables);
     // Each model must define its intensity
     // Phase space intensity is handled by MassPhaseSpace
     double Intensity() const final{
@@ -33,9 +33,10 @@ namespace elSpectro{
     void SetParent(DecayingParticle* pa) override;
     void PostInit(ReactionInfo* info)  override;
     
+ private:
      
-    void nBodyDecayer(DecayingParticle* parent,  const particle_ptrs stable,  const decaying_ptrs unstable );
-    void SetParentAndProducts(DecayingParticle* pa, const particle_ptrs stable,  const decaying_ptrs unstable);
+    void nBodyDecayer(DecayingParticle* parent, particle_objs& stable, decaying_objs& unstable );
+    void SetParentAndProducts(DecayingParticle* pa, particle_objs& stable,  decaying_objs& unstable);
  
  private:
 

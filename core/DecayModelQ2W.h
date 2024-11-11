@@ -37,7 +37,7 @@ namespace elSpectro{
     DecayModelQ2W(  double thresh  );
     //constructor giving W theshold and subsequent primary decay of Nucl+gamma* system
     //DecayModelQ2W(  double thresh, DecayModel* gNmodel,DecayVectors* gNdecayer=nullptr);
-    DecayModelQ2W(  double thresh, DecayModel* gNmodel,DecayVectors* gNdecayer=new TwoBodyFlat());
+    DecayModelQ2W(  double thresh, decaymodel_ptr gNmodel,decayer_ptr gNdecayer=CloneDecayer(TwoBodyFlat()));
     
     // Each model must define its intensity
     double Intensity() const override;
@@ -80,6 +80,13 @@ namespace elSpectro{
 
 
     double dsigma() const override { return  dynamic_cast<DecayingParticle*>(_gstarNuc)->Model()->dsigma();}// * Q2 factor }
+
+       //Any preliminaries required
+    bool ReadyForDecay() override{
+      ChooseDecay(); //need to choose from all TwoBodyProductions based on CrossSection
+      return true;
+      // or return CheckThreshold(); ?
+    }
 
   protected:
     

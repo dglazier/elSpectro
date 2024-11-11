@@ -3,21 +3,33 @@
 
 namespace elSpectro{
 
-  void Writer::Init(){
+  void Writer::InitEvent(const particle_ptrs& iptrs,const particle_ptrs& sptrs,const std::vector<const LorentzVector*>& vers){
     
-     //get copies of the particle pointers
+    _finalParticles.clear();
+    _initialParticles.clear();
+    _vertices.clear();
+    
+    //get copies of the particle pointers
  
-    auto& sptrs=Manager::Instance().Particles().StableParticles();
-    for(const auto* p:sptrs){
+    for(auto* p:sptrs){
       _finalParticles.push_back(p);
-     }
+    }
 
     
-    auto& iptrs=Manager::Instance().Reaction()->InitialParticles();
-    for(const auto* p:iptrs)
+    for(auto* p:iptrs){
       _initialParticles.push_back(p);
+    }
 
-    _vertices = (&(Manager::Instance().GetVertices()));
-   
+    for(auto* v:vers){
+      _vertices.push_back(v);
+    }
+
+    
+  }
+  void Writer::Init(const particle_ptrs& iptrs){
+    _initialParticles.clear();
+      for(auto* p:iptrs){
+	_initialParticles.push_back(p);
+      }
   }
 }

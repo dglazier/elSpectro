@@ -13,6 +13,7 @@
 
 #pragma once
 #include "ProductionProcess.h"
+#include "FormationQ2W.h"
 #include "PhaseSpaceDecay.h"
 #include "FunctionsForElectronScattering.h"
 
@@ -39,9 +40,9 @@ namespace elSpectro{
 		       double anglee,double anglep,DecayModel* model=new PhaseSpaceDecay{{},{11,-2211}},int ionpdg=2212);
     ElectronScattering(double ep,double ionp,DecayModel* model=new PhaseSpaceDecay{{},{11,-2211}},int ionpdg=2212);
 
-    ElectronScattering(CollidingParticle *electron,CollidingParticle* target,  DecayModel* model);
+    ElectronScattering(const CollidingParticle& electron,const CollidingParticle& target,decaymodel_ptr model);
     
-    DecayStatus  GenerateProducts( ) override;
+    DecayStatus  GenerateProducts(const ProductionProcess* production=nullptr ) override;
 
  
     void InitGen() override;
@@ -68,7 +69,7 @@ namespace elSpectro{
 
     double dsigma() const override {
       // std::cout<<"ElSc dsigma "<< _gStarN->Model()->dsigma()<<" "<<Decayer()->dsigma()<<std::endl;
-      return _gStarN->Model()->dsigma()* Decayer()->dsigma();}
+      return Q2WModel()->GetGammaN().Model()->dsigma()* Decayer()->dsigma();}
     //double dsigma() const override {return _gStarN->Model()->dsigma();}
     //double dsigma() const override {return Decayer()->dsigma();}
 
@@ -77,6 +78,7 @@ namespace elSpectro{
     LorentzVector MakeCollision();
 
     void SetCacheIntegrals(int doit=1){_cacheIntegrals=doit;}
+    const FormationQ2W* Q2WModel() const {return static_cast<FormationQ2W*>(Model());}
     
   private:
     
@@ -117,7 +119,7 @@ namespace elSpectro{
 
     short _cacheIntegrals={0};
     
-    DecayingParticle* _gStarN={nullptr}; 
+    //  DecayingParticle* _gStarN={nullptr}; 
     CollidingParticle* _electronptr={nullptr};
     CollidingParticle* _targetptr={nullptr};
     

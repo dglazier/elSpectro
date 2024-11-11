@@ -12,7 +12,6 @@
 
 #include "LorentzVector.h"
 #include "Distribution.h"
-//#include "DistFlatMass.h"
 #include "SDME.h"
 #include <TObject.h> //for ClassDef
 #include <TMath.h> //for Sqrt
@@ -34,10 +33,10 @@ namespace elSpectro{
 
  
     Particle()=default;
-    virtual ~Particle()=default;
-    Particle(const Particle& other); //need the virtual destructor...so rule of 5
+    virtual ~Particle(){std::cout<<"Particle::Delete "<<Pdg()<<" "<<this<<std::endl;}//=default;
+    Particle(const Particle& other)=default; //need the virtual destructor...so rule of 5
     Particle(Particle&&)=default;
-    Particle& operator=(const Particle& other);
+    Particle& operator=(const Particle& other)=default;
     Particle& operator=(Particle&& other) = default;
 
     Particle(int pdg);
@@ -72,10 +71,11 @@ namespace elSpectro{
       return _dynamicMass;
     }
     
-    void SetMassDist(Distribution* dist){
-      _massDist=dist;
+    void SetMassDist(std::shared_ptr<Distribution> dist){
+      _massDist = dist;
     }
-    const Distribution* MassDistribution() const{return _massDist;}
+   
+    Distribution* MassDistribution() const{return _massDist.get();}
     
 
     void SetPdgMass(double val){ _pdgMass=val; SetP4M(val); }
@@ -83,6 +83,7 @@ namespace elSpectro{
     double PdgMass()const  noexcept{return _pdgMass;}
 
     virtual double MinimumMassPossible()const  noexcept{
+      // std::cout<<"Particle::MinimumMassPossible() "<< _pdgMass<<std::endl;
       return  PdgMass();
     }
     virtual double MaximumMassPossible()const  noexcept{
@@ -95,6 +96,9 @@ namespace elSpectro{
 
     virtual void Print()  const;
 
+    void SetVertexID(int vertexID){
+      _vertexID=vertexID;
+    }
     void SetVertex(int vertexID,const LorentzVector* v){
       _vertexID=vertexID;
       _vertex=v;
@@ -114,8 +118,6 @@ namespace elSpectro{
     void LockMass(){_massLocked=true;}
     void UnlockMass(){_massLocked=false;}
     
-  protected:
- 
     void SetP4M(double mm){
       auto P2=_vec.P2();
       _vec.SetXYZT(_vec.X(),_vec.Y(),_vec.Z(),TMath::Sqrt(P2+mm*mm));
@@ -127,7 +129,7 @@ namespace elSpectro{
     friend DecayModel; //for  DetermineDynamicMass()
     friend DistFlatMassMaster; //for  DetermineDynamicMass()
     
-    //if mass comes from a distribution
+    //if mass comes from a distribution sample it
     void  DetermineDynamicMass(double xmin=-1,double xmax=-1){
       
       if(_massDist==nullptr ) return; //stick at pdgMass
@@ -165,10 +167,9 @@ namespace elSpectro{
     int _vertexID={0};
     const LorentzVector* _vertex={nullptr};
     
-    Distribution* _massDist={nullptr};
+    std::shared_ptr<Distribution> _massDist={nullptr};
     bool _massLocked={false};
     
-    // DistType _distType={DistType::kMass};
     
     ClassDef(elSpectro::Particle,1); //class Particle
     

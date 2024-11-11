@@ -21,7 +21,8 @@ namespace elSpectro{
  
     double SampleSingle()  noexcept final {
       _x=_th1.GetRandom();
-      _val=_th1.Interpolate(_x);
+      //_val=_th1.Interpolate(_x);
+      _val=_th1.GetBinContent(_th1.FindFixBin(_x));
       return _x;
     }
     
@@ -38,14 +39,31 @@ namespace elSpectro{
 
     //  double GetWeightFor(double valX)  {return  (static_cast<TH1D*>(&_th1))->GetBinContent((static_cast<TH1D*>(&_th1))->FindBin(valX))/_max_val;}
     // double GetWeightFor(double valX)  {return (static_cast<TH1D*>(&_th1))->Interpolate(valX)/_max_val;}
-    double GetValueFor(double valX,double valY=0) const final  {return (static_cast<const TH1D*>(&_th1))->Interpolate(valX);}
-    
+    double GetValueFor(double valX,double valY=0) const final  {
+      //  std::cout<<"DistTH1::GetValueFor "<<valX <<" "<<_th1.FindFixBin(valX)<<" "<<_th1.GetBinContent(_th1.FindFixBin(valX))<<" "<<_th1.Interpolate(valX)<<std::endl;
+      return _th1.GetBinContent(_th1.FindFixBin(valX));
+    }
+    double GetValueForBinAbove(double valX) const {
+      auto bin =_th1.FindFixBin(valX);
+      if(bin==_th1.GetNbinsX())  return _th1.GetBinContent(bin+1);
+      return _th1.GetBinContent(bin+1);
+    }
+    double GetValueForBinBelow(double valX) const {
+      auto bin =_th1.FindFixBin(valX);
+      if(bin==1)  return _th1.GetBinContent(bin);
+      return _th1.GetBinContent(bin-1);
+    }
+    //      return (static_cast<const TH1D*>(&_th1))->Interpolate(valX);}
+    double GetValueInterpolated(double valX) const {
+      return _th1.Interpolate(valX);
+    }
     const TH1D& GetTH1() const noexcept {return _th1;}
     void Draw(const TString& opt) { _th1.Draw(opt);}
     
-  private:
-    //no one should use default constructor
     DistTH1()=default;
+
+     
+  private:
 
     TH1D _th1;
     double _val{0};
