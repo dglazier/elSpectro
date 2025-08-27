@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "CurrentEventInfo.h"
 #include "Particle.h"
 #include "DecayModel.h"
 #include "DecayVectors.h"
@@ -66,8 +65,7 @@ namespace elSpectro{
     
     virtual DecayStatus GenerateProducts(const ProductionProcess* production);
     
-    // virtual const CurrentEventInfo* EventInfo() const {return nullptr;}
-
+ 
     double MaximumMassPossible() const  noexcept override {
 
       Double_t maxMass=0;

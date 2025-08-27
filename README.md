@@ -20,7 +20,8 @@ We require jpacPhot but this is included as a submodule. You may link to your ow
 
      setenv ELSPECTRO /path/to/elSpectro (or $PWD)
      setenv PATH ${PATH}:${ELSPECTRO}/bin
-
+     setenv JPACPHOTO $ELSPECTRO/jpacPhoto/
+     
 Note, if you want to use jpacPhoto with jpacBox you need to add the C++ boost library location to your path
 
       setenv PATH ${PATH}:/where/is/boost

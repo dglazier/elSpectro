@@ -1,0 +1,21 @@
+DecayModelQ2W::DecayModel::ChooseDecay()
+Calculate branching fractions from total cross sections
+->TwoBodyProduction & Meson/Baryon DecayingParticles
+
+TwoBodyProduction::DecayModel::ChooseDecay()
+->Decays of Meson and Baryon
+
+class DecayChannel{
+Model() -> Fixed this channel i.e. specific decay particles 
+Decayer()
+}
+vector<DecayChannel>_decays
+
+DecayParticle::ChooseDecay()	
+
+  _decays[].Model()
+  _decays[].Decayer()
+
+_decays[].Model()->ChooseDecay()	
+     for(auto* p:_unstables) p->ChooseDecay()
+

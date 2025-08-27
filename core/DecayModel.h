@@ -12,7 +12,6 @@
 #pragma once
 
 #include "Particle.h"
-#include "CurrentEventInfo.h"
 #include "FunctionsForKinematics.h"
 #include "ReactionInfo.h"
 #include <TObject.h> //for ClassDef

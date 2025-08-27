@@ -8,9 +8,7 @@
 ///               reaction CoM state(from DecayingParticle)
 #pragma once
 
-#include "CurrentEventInfo.h"
 #include "DecayModel.h"
-//#include "Manager.h"
 #include "DecayingParticle.h"
 #include "TwoBodyProduction.h"
 #include "CollidingParticle.h"

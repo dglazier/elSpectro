@@ -1,0 +1,379 @@
+{
+  "status_code": 200,
+  "status_message": "OK",
+  "request_timestamp": "2024-08-20 02:25:30 PST",
+  "request_url": "https://pdgapi.lbl.gov/summaries/M001",
+  "edition": "2024",
+  "about": "For further information see https://pdg.lbl.gov/api",
+  "pdgid": "M001",
+  "description": "omega(782)",
+  "summaries": {
+    "properties": [
+      {
+        "pdgid": "M001M",
+        "description": "omega(782) MASS",
+        "pdg_values": [
+          {
+            "value": 782.655723752181,
+            "error_positive": 0.12901268855076,
+            "error_negative": 0.128997046034751,
+            "value_text": "782.66+-0.13",
+            "unit": "MeV",
+            "scale_factor": 2.03663,
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001W",
+        "description": "omega(782) WIDTH",
+        "pdg_values": [
+          {
+            "value": 8.68,
+            "error_positive": 0.132000087077645,
+            "error_negative": 0.132000087077645,
+            "value_text": "8.68+-0.13",
+            "unit": "MeV",
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001LAM",
+        "description": "PARAMETER Lambda IN omega --\u003E pi0 mu+ mu- DECAY",
+        "pdg_values": [
+          {
+            "value": 0.66977930731493,
+            "error_positive": 0.00553983358676031,
+            "error_negative": 0.00553983358676031,
+            "value_text": "0.670+-0.006",
+            "unit": "GeV",
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001A02",
+        "description": "PARAMETER Lambda IN omegatopi^0 e^+ e^- DECAY",
+        "pdg_values": [
+          {
+            "value": 0.709,
+            "error_positive": 0.037,
+            "error_negative": 0.037,
+            "value_text": "0.71+-0.04",
+            "unit": "GeV",
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001A00",
+        "description": "ENERGY DEPENDENCE OF omega --\u003E pi+ pi- pi0 DALITZ PLOT",
+        "pdg_values": [
+          {
+            "value": 0.132822546896223,
+            "error_positive": 0.00792761200156022,
+            "error_negative": 0.00792761200156022,
+            "value_text": "0.133+-0.008",
+            "type": "OUR AVERAGE"
+          }
+        ]
+      }
+    ],
+    "branching_fractions": [
+      {
+        "pdgid": "M001.1",
+        "description": "omega(782) --\u003E pi+ pi- pi0",
+        "mode_number": 1,
+        "pdg_values": [
+          {
+            "value": 0.892453789967336,
+            "error_positive": 0.00646202381004035,
+            "error_negative": 0.00654192234337016,
+            "value_text": "(89.2+-0.7)%",
+            "scale_factor": 1.03041,
+            "type": "OUR FIT"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.3",
+        "description": "omega(782) --\u003E pi0 gamma",
+        "mode_number": 2,
+        "pdg_values": [
+          {
+            "value": 0.0834511807864607,
+            "error_positive": 0.002712949878115,
+            "error_negative": 0.002712949878115,
+            "value_text": "(8.35+-0.27)%",
+            "scale_factor": 2.166874,
+            "type": "OUR FIT"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.2",
+        "description": "omega(782) --\u003E pi+ pi-",
+        "mode_number": 3,
+        "pdg_values": [
+          {
+            "value": 0.0153487720167148,
+            "error_positive": 0.00123239481116193,
+            "error_negative": 0.00123239481116193,
+            "value_text": "(1.53+-0.12)%",
+            "scale_factor": 1.214947,
+            "type": "OUR FIT"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.13",
+        "description": "omega(782) --\u003E neutrals (excluding pi0 gamma)",
+        "mode_number": 4,
+        "pdg_values": [
+          {
+            "value": 0.00718124102759415,
+            "error_positive": 0.00753078206859179,
+            "error_negative": 0.00449611990068785,
+            "value_text": "(7+8-4)E-3",
+            "scale_factor": 1.082399,
+            "type": "OUR FIT"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.6",
+        "description": "omega(782) --\u003E eta gamma",
+        "mode_number": 5,
+        "pdg_values": [
+          {
+            "value": 0.000449690954172769,
+            "error_positive": 0.000040216051455131,
+            "error_negative": 0.000040216051455131,
+            "value_text": "(4.5+-0.4)E-4",
+            "scale_factor": 1.102911,
+            "type": "OUR FIT"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.14",
+        "description": "omega(782) --\u003E pi0 e+ e-",
+        "mode_number": 6,
+        "pdg_values": [
+          {
+            "value": 0.000767314243898574,
+            "error_positive": 0.000059227331774363,
+            "error_negative": 0.000059227331774363,
+            "value_text": "(7.7+-0.6)E-4",
+            "type": "OUR FIT"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.11",
+        "description": "omega(782) --\u003E pi0 mu+ mu-",
+        "mode_number": 7,
+        "pdg_values": [
+          {
+            "value": 0.00013358223677635,
+            "error_positive": 0.000018271375879217,
+            "error_negative": 0.000018271375879217,
+            "value_text": "(1.34+-0.18)E-4",
+            "scale_factor": 1.459008,
+            "type": "OUR FIT"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.18",
+        "description": "omega(782) --\u003E eta e+ e-",
+        "mode_number": 8,
+        "pdg_values": "no summary value"
+      },
+      {
+        "pdgid": "M001.7",
+        "description": "omega(782) --\u003E e+ e-",
+        "mode_number": 9,
+        "pdg_values": [
+          {
+            "value": 0.00007378858432498,
+            "error_positive": 0.000002172151804138,
+            "error_negative": 0.000002172151804138,
+            "value_text": "(7.38+-0.22)E-5",
+            "scale_factor": 1.924308,
+            "type": "OUR FIT"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.12",
+        "description": "omega(782) --\u003E pi+ pi- pi0 pi0",
+        "mode_number": 10,
+        "pdg_values": [
+          {
+            "value": 0.0002,
+            "value_text": "\u003C2E-4",
+            "is_limit": true,
+            "is_upper_limit": true,
+            "confidence_level": 90,
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.4",
+        "description": "omega(782) --\u003E pi+ pi- gamma",
+        "mode_number": 11,
+        "pdg_values": [
+          {
+            "value": 0.0036,
+            "value_text": "\u003C3.6E-3",
+            "is_limit": true,
+            "is_upper_limit": true,
+            "confidence_level": 95,
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.15",
+        "description": "omega(782) --\u003E pi+ pi- pi+ pi-",
+        "mode_number": 12,
+        "pdg_values": [
+          {
+            "value": 0.001,
+            "value_text": "\u003C1E-3",
+            "is_limit": true,
+            "is_upper_limit": true,
+            "confidence_level": 90,
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.5",
+        "description": "omega(782) --\u003E pi0 pi0 gamma",
+        "mode_number": 13,
+        "pdg_values": [
+          {
+            "value": 0.000066593049876122,
+            "error_positive": 0.000011522404061183,
+            "error_negative": 0.000010828545274354,
+            "value_text": "(6.7+-1.1)E-5",
+            "scale_factor": 1.005881,
+            "type": "OUR FIT"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.17",
+        "description": "omega(782) --\u003E eta pi0 gamma",
+        "mode_number": 14,
+        "pdg_values": [
+          {
+            "value": 0.000033,
+            "value_text": "\u003C3.3E-5",
+            "is_limit": true,
+            "is_upper_limit": true,
+            "confidence_level": 90,
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.8",
+        "description": "omega(782) --\u003E mu+ mu-",
+        "mode_number": 15,
+        "pdg_values": [
+          {
+            "value": 0.000074047132845467,
+            "error_positive": 0.000017956601122699,
+            "error_negative": 0.000017956601122699,
+            "value_text": "(7.4+-1.8)E-5",
+            "type": "OUR FIT"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.10",
+        "description": "omega(782) --\u003E 3gamma",
+        "mode_number": 16,
+        "pdg_values": [
+          {
+            "value": 0.00019,
+            "value_text": "\u003C1.9E-4",
+            "is_limit": true,
+            "is_upper_limit": true,
+            "confidence_level": 95,
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.9",
+        "description": "omega(782) --\u003E eta pi0",
+        "mode_number": 17,
+        "section": "Charge conjugation (C) violating modes",
+        "pdg_values": [
+          {
+            "value": 0.00021,
+            "value_text": "\u003C2.1E-4",
+            "is_limit": true,
+            "is_upper_limit": true,
+            "confidence_level": 90,
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.193",
+        "description": "omega(782) --\u003E 2pi0",
+        "mode_number": 18,
+        "section": "Charge conjugation (C) violating modes",
+        "pdg_values": [
+          {
+            "value": 0.00022,
+            "value_text": "\u003C2.2E-4",
+            "is_limit": true,
+            "is_upper_limit": true,
+            "confidence_level": 90,
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.16",
+        "description": "omega(782) --\u003E 3pi0",
+        "mode_number": 19,
+        "section": "Charge conjugation (C) violating modes",
+        "pdg_values": [
+          {
+            "value": 0.00023,
+            "value_text": "\u003C2.3E-4",
+            "is_limit": true,
+            "is_upper_limit": true,
+            "confidence_level": 90,
+            "type": "OUR AVERAGE"
+          }
+        ]
+      },
+      {
+        "pdgid": "M001.194",
+        "description": "omega(782) --\u003E invisible",
+        "mode_number": 20,
+        "section": "Charge conjugation (C) violating modes",
+        "pdg_values": [
+          {
+            "value": 0.00007,
+            "value_text": "\u003C7E-5",
+            "is_limit": true,
+            "is_upper_limit": true,
+            "confidence_level": 90,
+            "type": "OUR AVERAGE"
+          }
+        ]
+      }
+    ]
+  }
+}
