@@ -33,18 +33,20 @@ namespace elSpectro{
 
 
     double MatrixElementsSquared_T() const override {
-
+      //set current value of mass
+      // _amp->get_kinematics()->set_meson_mass( GetMeson()->PdgMass() );
+       _amp->get_kinematics()->set_meson_mass( GetMeson()->Mass() );
+       //std::cout<<"me "<<GetMeson()->Mass()<<" t "<<get_t()<<" s "<<get_s()<<" W "<<get_W()<<" jpac "<<_amp->get_kinematics()->Wth()<<" VAL "<<_amp->probability_distribution(get_s(),get_t())/4<<" "<<_amp->differential_xsection(get_s(),get_t())<<std::endl;
       //std::cout<<"JpacTwoBody::MatrixElementsSquared_T "<< GetMeson()->Mass() <<" "<<get_s()<<" "<<get_t()<<" "<<get_cosThCM()<<" "<<get_W()<<std::endl;
       // if(-get_t()<_amp->get_kinematics()->t_min(get_s())) return 0.;
       //if(-get_t()<_amp->get_kinematics()->t_max(get_s())) return 0.;
-      
-      _amp->get_kinematics()->set_meson_mass( GetMeson()->PdgMass() );
-      // _amp->get_kinematics()->set_meson_mass( GetMeson()->Mass() );
+      // std::cout<<"JpacTwoBody::MatrixElementsSquared_T CHECK "<< _amp->probability_distribution(28,-0.01)<<std::endl;
+      //_amp->get_kinematics()->set_meson_mass( GetMeson()->Mass() );
       //if(get_W()<_amp->get_kinematics()->Wth()) return 0;
       // auto res = _amp->probability_distribution(get_s(),get_t())/4;
       //std::cout<<"JpacTwoBody::MatrixElementsSquared_T "<< GetMeson()->Mass() <<" "<<get_s()<<" "<<get_t()<<" "<<get_cosThCM()<<" "<<get_W()<<" "<<std::endl;
-      //   auto res = _amp->probability_distribution(get_s(),get_t())/4;
-      // std::cout<<"JpacTwoBody::MatrixElementsSquared_T "<< GetMeson()->Mass() <<" "<<get_s()<<" "<<get_t()<<" "<<get_cosThCM()<<" "<<get_W()<<" "<<res<<std::endl;
+     //auto res = _amp->probability_distribution(get_s(),get_t())/4;
+     // std::cout<<"JpacTwoBody::MatrixElementsSquared_T "<< GetMeson()->Mass() <<" "<<get_s()<<" "<<get_t()<<" "<<get_cosThCM()<<" "<<get_W()<<" "<<_amp->probability_distribution(get_s(),_amp->get_kinematics()->t_min(get_s()))/4<<std::endl;
       // if(get_W()>2.32) exit(0);
 
       return _amp->probability_distribution(get_s(),get_t())/4;// Average over initial state helicites;
@@ -55,8 +57,9 @@ namespace elSpectro{
       // if(-get_t()<_amp->get_kinematics()->t_min(get_s())) return 0.;
       //if(-get_t()<_amp->get_kinematics()->t_max(get_s())) return 0.;
       
-      _amp->get_kinematics()->set_meson_mass( GetMeson()->PdgMass() );
-      //if(get_W()<_amp->get_kinematics()->Wth()) return 0;
+       _amp->get_kinematics()->set_meson_mass( GetMeson()->PdgMass() );
+      // _amp->get_kinematics()->set_meson_mass( GetMeson()->Mass() );
+       //if(get_W()<_amp->get_kinematics()->Wth()) return 0;
         return _amp->probability_distribution(get_s(),_amp->get_kinematics()->t_min(get_s()))/4;// Average over initial state helicites;
     }
 
@@ -65,7 +68,7 @@ namespace elSpectro{
     }
   private:
 
-    jpacAmp_ptr _amp={nullptr}; //I am not the owner
+    jpacAmp_ptr _amp={nullptr}; //shared_ptr
 
     ClassDefOverride(elSpectro::JpacTwoBody,1); //class JpacTwoBody
     

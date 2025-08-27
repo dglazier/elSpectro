@@ -16,6 +16,14 @@ namespace elSpectro{
   // }
   ///////////////////////////////////////////////////////
   //Create a decay model decaying to g*N(-2211) and e'
+  FormationQ2W::FormationQ2W( double thresh) :
+    Formation{thresh,{ DecayingParticle{-2211} },{11}}
+  {
+    _name={"FormationQ2W"};
+    Init();
+  }
+  ///////////////////////////////////////////////////////
+  //Create a decay model decaying to g*N(-2211) and e'
   FormationQ2W::FormationQ2W( double thresh,
 			      decaymodel_ptr gNmodel,decayer_ptr gNdecayer) :
     Formation{thresh,{ DecayingParticle{-2211,gNmodel,gNdecayer} },{11}}
@@ -41,8 +49,8 @@ namespace elSpectro{
   
     }
  
-    GetScatteredElectron().Print();
-    GetGammaN().Print();
+    // GetScatteredElectron().Print();
+    // GetGammaN().Print();
     
     /* auto gNprods=GetGammaN().Model()->Products();
     
@@ -116,11 +124,11 @@ namespace elSpectro{
     //   Get envelope weight from integrated cross section
     double weight=1.0;
     
-    weight = TotalCrossSection().GetWeightFor( W  );
+    weight = CurrCrossSection().GetWeightFor( W  );
     
     
     weight*=Q2H1Rho();
-    // std::cout<<"FormationQ2W "<<weight<<" "<<getQ2()<<std::endl;
+    // std::cout<<"FormationQ2W "<<weight<<" "<<getQ2()<< " "<<W<<std::endl;
     
     //copy all currently known particle info
     prodInfo->_scattered=p4scat;

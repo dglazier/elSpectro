@@ -32,35 +32,28 @@ namespace elSpectro{
     }
     ///////////////////////////////////////////////////////////////
     decaymodel_ptr ParticleData::ChannelModel(uint ichn) const{
-      std::cout<< "ParticleData::ChannelModel "<<ichn<<std::endl;
-	//determine what model decays into
+  	//determine what model decays into
 	elSpectro::decaying_objs dec_parts;
 	elSpectro::particle_objs stable_parts;
       
 	//get products for requested channel
 	auto chan_products = _decayChannels[ichn];
 
-    std::cout<< "ParticleData::ChannelModel nproducts "<<chan_products.size()<<std::endl;
-	for(uint i=0;i<chan_products.size();++i){
+ 	for(uint i=0;i<chan_products.size();++i){
 	  auto h = chan_products[i];
-	  std::cout<< "ParticleData::ChannelModel "<<i<<" "<<h.GetName()<<std::endl;
 	  if (h.ShouldItDecay() && h.IsDecaying() ){
 	    auto dproduct = ParticleFactory::Instance().CreateDecayingParticle(h.PDGCode());
 	    dec_parts.push_back(std::move(dproduct));
 	  }
 	  else{
+
 	    stable_parts.push_back(h.PDGCode());
 	  }
 	}
-	std::cout<< "ParticleData::ChannelModel prods  "<<stable_parts.size()<<" "<<dec_parts.size() <<std::endl;
-	//	elSpectro::particle_ptrs ptrs;
-	//for(auto& p:dec_parts){
-	// ptrs.push_back(&p);
-	//}
 	//CloneModel will copy all particles locally
 	//dec_parts and ptrs will go out of scope here
 	auto res = elSpectro::CloneModel(elSpectro::PhaseSpaceDecay(dec_parts,stable_parts) );
-	std::cout<< "ParticleData::ChannelModel done "<<res.get()<<std::endl;
+	
 	return res;
   
       }
@@ -74,9 +67,7 @@ namespace elSpectro{
       
       double br = _branchRatio[ichn];
       
-      std::cout<<"BranchRatio  "<<_decayChannels.size()<<std::endl;
       for(const auto& product :_decayChannels[ichn]){
-	std::cout<<product.PDGCode()<<std::endl;
 	br *= product.BranchRatio();
       }
       
@@ -84,7 +75,7 @@ namespace elSpectro{
     }
     //////////////////////////////////////////////////////////////////
      void ParticleData::Print(Option_t *option) const{
-	std::cout<<"ParticleData "<< GetName()<<" "<<PDGCode() <<" "<<Mass()<<" "<<Width()<<std::endl;
+       std::cout<<"ParticleData "<< GetName()<<" "<<PDGCode() <<" mass = "<<Mass()<<" width = "<<Width()<<" lifetime = "<<Lifetime()<<"("<< MeanFreePath()<<" mm)"<<std::endl;
 	std::cout<<"\t Decays :"<<std::endl;
 	uint idec=0;
 	double sumBranches = 0;

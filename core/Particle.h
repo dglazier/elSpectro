@@ -33,13 +33,15 @@ namespace elSpectro{
 
  
     Particle()=default;
-    virtual ~Particle(){std::cout<<"Particle::Delete "<<Pdg()<<" "<<this<<std::endl;}//=default;
+    virtual ~Particle()=default;
     Particle(const Particle& other)=default; //need the virtual destructor...so rule of 5
     Particle(Particle&&)=default;
     Particle& operator=(const Particle& other)=default;
     Particle& operator=(Particle&& other) = default;
 
     Particle(int pdg);
+    
+    virtual bool IsDecaying() const {return false;}
 
     LorentzVector const& P4() const {return _vec;}//const be changed by others
     LorentzVector* P4ptr() {return &_vec;}
@@ -60,14 +62,26 @@ namespace elSpectro{
       _vec=p4;
       _dynamicMass=_vec.M();
     }
+    void TakeMaximumMass(){
+      SetP4M( MaximumMassPossible() );
+    }
+   void TakeMinimumMass(){
+      SetP4M( MinimumMassPossible() );
+    }
+    void TakePdgMass(){
+      SetP4M( PdgMass() );
+    }
+
     void Boost(const  elSpectro::BetaVector& vboost ){
       _vec=ROOT::Math::VectorUtil::boost(_vec,vboost);
     }
 
     double M2() const {
+      if(Pdg()==22) return 0.;
       return _dynamicMass*_dynamicMass;
     }
     double Mass() const {
+      if(Pdg()==22) return 0.;
       return _dynamicMass;
     }
     
@@ -77,10 +91,13 @@ namespace elSpectro{
    
     Distribution* MassDistribution() const{return _massDist.get();}
     
-
+    void SetParent(Particle* parent);
+ 
     void SetPdgMass(double val){ _pdgMass=val; SetP4M(val); }
     
-    double PdgMass()const  noexcept{return _pdgMass;}
+    double PdgMass()const  noexcept{
+      return _pdgMass;
+    }
 
     virtual double MinimumMassPossible()const  noexcept{
       // std::cout<<"Particle::MinimumMassPossible() "<< _pdgMass<<std::endl;
@@ -89,7 +106,10 @@ namespace elSpectro{
     virtual double MaximumMassPossible()const  noexcept{
       return  PdgMass();
     }
-    
+    virtual double MinimumMassForChannel() const  noexcept{
+      return MinimumMassPossible();
+    }
+ 
     double MassWeight() const noexcept {
       return _massWeight;
     }
@@ -99,11 +119,14 @@ namespace elSpectro{
     void SetVertexID(int vertexID){
       _vertexID=vertexID;
     }
-    void SetVertex(int vertexID,const LorentzVector* v){
-      _vertexID=vertexID;
+    void SetVertexPosition(const LorentzVector& v){
       _vertex=v;
-     }
-    const LorentzVector* VertexPosition()const noexcept{return _vertex;}
+    }
+    // void SetVertex(int vertexID,const LorentzVector* v){
+    //   _vertexID=vertexID;
+    //   _vertex=v;
+    //  }
+    const LorentzVector& VertexPosition()const noexcept{return _vertex;}
     int VertexID()const noexcept{return _vertexID;}
 
     virtual DecayType IsDecay() const noexcept {return DecayType::Stable;}
@@ -131,26 +154,52 @@ namespace elSpectro{
     
     //if mass comes from a distribution sample it
     void  DetermineDynamicMass(double xmin=-1,double xmax=-1){
-      
-      if(_massDist==nullptr ) return; //stick at pdgMass
+      // std::cout<<"Particle::DetermineDynamicMass "<<Pdg()<<" "<<_dynamicMass<<" "<<_massDist<<" "<<xmin<<" "<<xmax<<std::endl;
+      if(_massDist==nullptr ){
+	TakePdgMass();
+	return; //stick at pdgMass
+      }
       if(_massLocked==true) return; //someone else in charge...
       _dynamicMass=-1;
+      _massWeight=0;
       auto minposs = MinimumMassPossible();
-      
-      while(_dynamicMass<minposs){
-	auto minRange = xmin==-1?minposs:xmin;
-	auto maxRange = xmax==-1?_massDist->GetMaxX():xmax;
- 	if(minRange>maxRange){//unphysical
-	  std::cout<<"Warning  Particle::DetermineDynamicMass min "<<minRange<<" greater than max "<<maxRange<<" for "<<_pdg<<std::endl;
+   
+      auto minRange = (xmin==-1)?minposs:xmin;
+      if(minRange>minposs)minRange=minposs;
+      auto maxRange = (xmax==-1)?_massDist->GetMaxX():xmax;
+      if((maxRange-minRange)<0) {
+	if((maxRange-minRange)>-1E-6) {
 	  _dynamicMass=minRange;
-	  break;
+	  return;
 	}
+      }
+
+      if(minRange>maxRange){//unphysical
+	std::cout<<"Warning  Particle::DetermineDynamicMass min "<<minRange<<" greater than max "<<maxRange<<" for "<<_pdg<<" minposs "<<minposs<<" "<<xmax<<" "<<_massDist->GetMaxX()<<" equal "<<(minposs==_massDist->GetMaxX())<<std::endl;
+	_dynamicMass=minRange; 
+	return ;
+	//	exit(0);
+	 
+      }
+      while(_dynamicMass<minposs){
+	// if((maxRange-minRange)<1E-6) {
+	//   _dynamicMass=minRange;
+	//   return;
+	// }
+	//        std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<" "<<_massWeight<<" "<<minRange<<" "<<maxRange<<" check "<<minposs-minRange<<"check "<<_massDist->GetMinX()-minRange<<std::endl;
+
 	_dynamicMass= _massDist->SampleSingle(minRange,maxRange);
 	
+
+	//std::cout<<"DONE "<<_pdg<<"  DetermineDynamicMass( "<<_dynamicMass<<" "<<MinimumMassPossible()<<" diff "<<_dynamicMass-minRange<<" "<<maxRange-minRange<<std::endl;
 	//need a weight for "envelope"
 	_massWeight =_massDist->GetCurrentWeight();
-	//	std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<" "<<_massWeight<<" "<<minRange<<" "<<maxRange<<std::endl;
-	
+
+	if(_dynamicMass==0) {
+	  std::cout<<"Error  Particle::DetermineDynamicMass zero mass"<<std::endl;
+	  std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<" "<<_massWeight<<" "<<minRange<<" "<<maxRange<<std::endl;
+	  exit(0);
+	}
       }
       SetP4M(_dynamicMass);
 
@@ -165,7 +214,7 @@ namespace elSpectro{
     
     int _pdg={0};
     int _vertexID={0};
-    const LorentzVector* _vertex={nullptr};
+    LorentzVector _vertex;
     
     std::shared_ptr<Distribution> _massDist={nullptr};
     bool _massLocked={false};

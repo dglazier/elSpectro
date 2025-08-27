@@ -48,7 +48,8 @@ namespace elSpectro{
 
     virtual double Integrate1DX(double xlow=0,double xhigh=0) const;
     virtual double Mean1DX(double xlow=0,double xhigh=0) const;
-    
+
+    virtual void Print(){};
   protected :
 
  

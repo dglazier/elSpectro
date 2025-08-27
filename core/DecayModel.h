@@ -12,7 +12,6 @@
 #pragma once
 
 #include "Particle.h"
-#include "NBodyPhaseSpace.h"
 #include "CurrentEventInfo.h"
 #include "FunctionsForKinematics.h"
 #include "ReactionInfo.h"
@@ -76,11 +75,11 @@ namespace elSpectro{
       return CheckThreshold();
     }
     
-    void ChooseDecay();
+    void ChooseDecay() const;
     
     bool CheckThreshold() const{
       SumAllProducts();
-      //  std::cout<<"CheckThreshold() "<<_sumOfMasses<<" "<<_parent.M()<<std::endl;
+      // std::cout<<"CheckThreshold() "<<_sumOfMasses<<" "<<_parent.M()<<std::endl;
       if(_sumOfMasses>_parent.M()) return false;
       else return true;
     }
@@ -106,7 +105,8 @@ namespace elSpectro{
 
     const std::string& GetName()const {return _name;}
 
-    virtual double PhaseSpaceWeightSq(double W);
+    virtual double PhaseSpaceWeightSq(double W,bool resample);
+    bool SampleMasses(double W);
 
     void DetermineProductMasses();
     
@@ -114,7 +114,8 @@ namespace elSpectro{
 
     virtual bool CanUseSDME()const noexcept{return false;}
 
-    virtual void SetParent(DecayingParticle* pa){ _parentPtr=pa;}
+    virtual void SetParent(DecayingParticle* pa);
+    
     DecayingParticle* Parent()const noexcept{return _parentPtr;}
 
     virtual double dsigma() const {return 1;}
@@ -132,7 +133,9 @@ namespace elSpectro{
     particle_objs& MutableStableProducts()   { return _stables;}
     Particle*  MutableProduct(UInt_t i)      { return _products[i];}
  
-    
+    bool SampleMassesIteration(double W);
+ 
+ 
   private:
 
     DecayingParticle* _parentPtr={nullptr};
@@ -145,7 +148,7 @@ namespace elSpectro{
     
     mutable LorentzVector _parent;
     mutable double _sumOfMasses=0;
-
+    mutable double _threshold = -1.;
     
     ClassDef(elSpectro::DecayModel,1); //class DecayModel
     

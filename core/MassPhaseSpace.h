@@ -68,12 +68,13 @@ namespace elSpectro{
       if(wee>max){
 	// _sampledMax=wee;
 	std::cerr<<"MassPhaseSpace check weight >  max,  W "<<parentM<<" this "<<wee<<" "<<max<<" normal max "<<kine::PhaseSpaceWeightMax(parentM,_masses)<<std::endl;
-	std::cout<<" parent "<<parentM<<" ";
+	std::cout<<" parent "<<parentM<<" "<<_masses.size() <<" ";
 	for(auto& m:_masses)
 	  std::cout<<m<<" ";
 	std::cout<<std::endl;
-      }
- 
+	std::cout<<" Done MAssPhaseSpace loop "<<std::endl;
+       }
+      std::cout<<" Done MAssPhaseSpace "<<std::endl;
       _successN++;
      }
     bool AcceptPhaseSpace(double parentM){

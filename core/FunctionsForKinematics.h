@@ -86,6 +86,7 @@ namespace elSpectro {
       double wt=1;
    
       for (uint n=0; n<Nt-1; ++n) {
+	//	std::cout<<"PhaseSpaceWeightMaxFromEquDist "<<invMass[n+1]<<" "<<invMass[n]<<" "<<masses[n+1]<<" "<<PDK(invMass[n+1],invMass[n],masses[n+1])<<std::endl;
 	wt*= PDK(invMass[n+1],invMass[n],masses[n+1]);
       }
       

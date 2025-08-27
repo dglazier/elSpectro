@@ -10,6 +10,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
   DecayingParticle.h
   CollidingParticle.h
   DecayModel.h
+  DecayChannel.h
   PhaseSpaceDecay.h
   ProductionModel.h
   ExcitationSpectra.h
@@ -61,7 +62,7 @@ ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
 #  MassPhaseSpace.h
   Writer.h
   HepMC3Writer.h
-#  LundWriter.h
+  LundWriter.h
 #  GlueXWriter.h
 #  EICSimpleWriter.h
 #  FunctionsForJpac.h
@@ -77,6 +78,7 @@ add_library(${ELSPECTRO} SHARED
   DecayingParticle.cpp
   CollidingParticle.cpp
   DecayModel.cpp
+  DecayChannel.cpp
   PhaseSpaceDecay.cpp
 #  NuclearBreakup.cpp
 #  Bremsstrahlung.cpp
@@ -125,7 +127,7 @@ add_library(${ELSPECTRO} SHARED
 #  MassPhaseSpace.cpp
   Writer.cpp
   HepMC3Writer.cpp
-#  LundWriter.cpp
+  LundWriter.cpp
 #  GlueXWriter.cpp
 #  EICSimpleWriter.cpp
   Manager.cpp

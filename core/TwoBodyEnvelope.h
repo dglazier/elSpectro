@@ -26,6 +26,7 @@ namespace elSpectro{
   TwoBodyEnvelope(const DistYGivenX& dist);
 
     double RandomCosTh() noexcept final{
+      std::cout<<"TwoBodyEnvelopeRandomCosTh() "<<std::endl;
       _dist.SetX(W());
       _dist.SampleSingle();
       _weight = _dist.GetCurrentWeight();

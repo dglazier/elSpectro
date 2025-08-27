@@ -9,7 +9,6 @@
 #pragma once
 
 #include "ProductionModel.h"
-#include "DecayingParticle.h"
 #include "FunctionsForElectronScattering.h"
 #include "DistTH1.h"
 #include "DistYGivenX.h"
@@ -69,19 +68,7 @@ namespace elSpectro{
     double get_max() const noexcept{ return _max; }
     void set_max(double val) const { _max=val; }
 
-    double get_W_FromParent()const {return Parent()->P4().M();}
 
-    //Any preliminaries required
-    bool ReadyForDecay() override{
-      ChooseDecay();//Need full decay chain
-      SampleNBodyPhaseSpace(get_W_FromParent(),this);
-      //Need to check whether we should check threshold here
-      //The W has been established at this point
-      //so we should be above threshold anyway.
-      //And not need to regenerate
-      return true;
-      //return CheckThreshold();
-    }
     double Q2PhaseSpaceCorrect() const;
     double MassPhaseSpaceCorrect() const;
     
@@ -115,7 +102,7 @@ namespace elSpectro{
       //std::cout<<" DiffXS() "<<std::endl;
       //Note if your derived model already gives differential cross section
       //you will need to divide by PhaseSpaceFactor to get MatrixElementSquared from it
-      //  std::cout<<"ps = "<<PhaseSpaceFactor() <<" mass "<<_meson->P4().M()<<" "<<MatrixElementsSquared_T()<<" eps "<<_photonPol->Epsilon()<<" delta "<<_photonPol->Delta()<<std::endl;
+      //std::cout<<"ps = "<<PhaseSpaceFactor() <<" mass "<<_p4meson.M()<<" "<<MatrixElementsSquared_T()<<std::endl;
       return PhaseSpaceFactor() * MatrixElementsSquared_T();
       /* need to change to this when get MatrixElementsSquared_L set
 	return _photonPol==nullptr ?

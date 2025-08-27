@@ -8,6 +8,8 @@
 #pragma once
 
 #include "DecayModel.h"
+#include "DecayingParticle.h"
+#include "NBodyPhaseSpace.h"
 #include <TH1D.h>
 
 
@@ -31,12 +33,36 @@ namespace elSpectro{
 
     void SetMesonIdx(uint idx){_idxMeson=idx;}
     void SetBaryonIdx(uint idx){_idxBaryon=idx;}
+    
+    double get_W_FromParent()const {return Parent()->P4().M();}
 
+    //Any preliminaries required
+    bool ReadyForDecay() override{
+      auto currW = get_W_FromParent();
+      if(_cacheW==currW) return true;
+      ChooseDecay();//Need full decay chain
+      // auto idec = _channels.ChooseDecay(P4().M());
+      //std::cout<<" ProductionModel::ReadyForDecay ChooseDecay()  "<<Pdg()<<" "<<idec<<std::endl;
+ 
+      _cacheW = currW;
+      SampleNBodyPhaseSpace(currW,this);
+      //Need to check whether we should check threshold here
+      //The W has been established at this point
+      //so we should be above threshold anyway.
+      //And not need to regenerate
+
+      
+      
+      return true;
+      //return CheckThreshold();
+    }
+ 
   protected:
     Particle* GetMutableMeson() noexcept{return Products()[_idxMeson] ; }
     Particle* GetMutableBaryon() noexcept{return Products()[_idxBaryon]; }
 
   private:
+    double _cacheW=-1.;
     uint _idxMeson=0;
     uint _idxBaryon=0;
   };

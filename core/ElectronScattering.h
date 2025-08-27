@@ -47,6 +47,8 @@ namespace elSpectro{
  
     void InitGen() override;
 
+    const ReactionInfo* GetReactionInfo() const override{return &_reactionInfo;};
+
     double W2Max()const noexcept{
       return  sqrt(_massIon*_massIon + 2 * (_nuclRestElec.E() -escat::M_el())
 		   *(_massIon - escat::M_el()));
@@ -73,12 +75,14 @@ namespace elSpectro{
     //double dsigma() const override {return _gStarN->Model()->dsigma();}
     //double dsigma() const override {return Decayer()->dsigma();}
 
-    double IntegrateCrossSection() override;
-    double IntegrateCrossSectionFast() override;
+    double IntegrateCrossSection(TwoBodyProduction* model2body) override;
+    double IntegrateCrossSectionFast(TwoBodyProduction* model2body) override;
     LorentzVector MakeCollision();
 
     void SetCacheIntegrals(int doit=1){_cacheIntegrals=doit;}
     const FormationQ2W* Q2WModel() const {return static_cast<FormationQ2W*>(Model());}
+
+    const DecayingParticle& Product() override{return Q2WModel()->GetGammaN();}
     
   private:
     

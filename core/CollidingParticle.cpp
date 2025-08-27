@@ -80,7 +80,7 @@ namespace elSpectro{
       auto& products=_model->Products();
       //same vertex as parent
       for(auto* prod: products){
-	prod->SetVertex(VertexID(),VertexPosition());
+	prod->SetVertexID(VertexID());
       }
     
     _model->PostInit(info);

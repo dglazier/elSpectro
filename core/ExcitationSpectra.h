@@ -27,6 +27,7 @@ namespace elSpectro{
     void SpectraFromModel(ProductionModel* model);
     DistTH1 SumSpectra();
     const DistTH1& TotalCrossSection()const {return _total;}
+    const DistTH1& GetSpectra(uint i) const {return _spectra[i];}
 
   private:
     

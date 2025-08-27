@@ -109,7 +109,8 @@ namespace elSpectro{
     auto yvar = RooRealVar("y","y",-(_lnymax-_lnymin)/2,_lnymin,_lnymax,"");
     xvar.Print();
     yvar.Print();
-    
+
+    /*
     auto flambda = [this](const double *x)
       {
 	if(x[0]==0) return 0.;
@@ -126,7 +127,7 @@ namespace elSpectro{
     _integral=pdf.getNorm(roovars);
 
     std::cout<<"DistVirtPhotFlux_xy INTEGRAL "<<pdf.getNorm(roovars)<<" at proton rest frame e- energy "<<_ebeam<<" and W threshold "<<TMath::Sqrt(_Wthresh2)<< std::endl;
-  
+    */
   }
 
   void DistVirtPhotFlux_xy::FindMaxVal(){

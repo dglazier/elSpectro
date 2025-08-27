@@ -24,6 +24,21 @@ namespace elSpectro{
     double _Wmin=0;
     //  ProductionProcess* _process={nullptr};
     virtual double Wmax() const {return 0;}
+
+    const std::vector<LorentzVector>& GetVertices() const {return _vertices;}
+
+    void ClearVertices() const{
+      _vertices.clear();
+    }
+    
+    uint AddVertex() const{
+      _vertices.push_back(LorentzVector());
+      return (_vertices.size()-1);
+    }
+ 
+  private:
+    mutable std::vector<LorentzVector> _vertices;
+ 
   };
 
   class ReactionPhotoProd : public ReactionInfo {

@@ -30,7 +30,7 @@ namespace elSpectro{
     _file.close();
 
   }
-  void HepMC3Writer::InitEvent(const particle_ptrs& iptrs,const particle_ptrs& sptrs,const std::vector<const LorentzVector*>& vers){
+  void HepMC3Writer::InitEvent(const particle_ptrs& iptrs,const particle_ptrs& sptrs,const std::vector<LorentzVector>& vers){
     Writer::InitEvent(iptrs,sptrs,vers);
 
     _vertexParticles.clear();
@@ -89,6 +89,10 @@ namespace elSpectro{
 	  int decay_particle_status=3;
 	  //save decay vertex ID and this particle id
 	  writtenVertexParticles.push_back(std::pair<int,int>(p->DecayVertexID(),_id));//before _id incremened
+	  //HACK only Keep production vertice for now
+	  //need to remove line below when fixed
+	  //Shuold remove not enough implicit vertices warning in ascii convertor
+	  if(final_vertex_id>0) final_vertex_id=0;
 	  StreamParticle(p,final_vertex_id, decay_particle_status);
 	}
       }
@@ -109,11 +113,15 @@ namespace elSpectro{
 	      return -1;//default, shouldn't ever happen!
 	    };
 	    auto decayParticleID=findVertex();
-	    
-	    StreamVertex(final_vertex_id,final_vertex_status,{decayParticleID});
+
+	    //HACK only Keep production vertice for now
+	    // StreamVertex(final_vertex_id,final_vertex_status,{decayParticleID});
 	    first=false;
 	  }
-
+	  //HACK only Keep production vertice for now
+	  //need to remove line below when fixed
+	  //Shuold remove not enough implicit vertices warning in ascii convertor
+	  if(final_vertex_id>0) final_vertex_id=0;
 	  StreamParticle(p,final_vertex_id,final_status);
 	}
       }

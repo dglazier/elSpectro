@@ -27,7 +27,9 @@ namespace elSpectro{
   }
   ///////////////////////////////////////////////////////////////////
   void DecayingParticle::CopyOther(const DecayingParticle& other){
+    //std::cout<<"DecayingParticle::CopyOther( "<<this <<" other "<<&other <<" "<<other.Pdg()<<" "<<other._channels.CurrModel()->Product(0)->Pdg()<<" "<<other._channels.CurrModel()->Product(0)<<std::endl;
     _channels=other._channels;
+    // std::cout<<"DecayingParticle::CopyOther( "<<_channels.N()<<std::endl;
     _decVertexDist=other._decVertexDist;
     
     _minMass=other._minMass;
@@ -48,8 +50,7 @@ namespace elSpectro{
   }
   ////////////////////////////////////////////////////////////////////
   DecayingParticle::DecayingParticle(DecayingParticle&& other):Particle(other){
-    CopyOther(other);  
-    _decVertexDist=nullptr;
+    CopyOther(other);
   }
   ////////////////////////////////////////////////////////////////////
   DecayingParticle& DecayingParticle::operator=(const DecayingParticle& other){
@@ -60,54 +61,69 @@ namespace elSpectro{
   ////////////////////////////////////////////////////////////////////
   DecayingParticle& DecayingParticle::operator=(DecayingParticle&& other){
     Particle::operator=(other);
-    CopyOther(other);  
-    _decVertexDist=nullptr;
+    CopyOther(other);
     return *this;
   }
   //////////////////////////////////////////////////////////////////////
   void DecayingParticle::PostInit(ReactionInfo* info) {
-    std::cout<<" DecayingParticle::PostInit "<<Pdg()<<" "<<std::endl;
-
+    //std::cout<<" DecayingParticle::PostInit "<<Pdg()<<" with n decay channels = "<<_channels.N()<<std::endl;
+    if(_channels.N() == 0){
+      throw std::runtime_error("DecayingParticle::PostInit, no decay channels given");
+    }
     //_process = info->_process;
    
     
     //Decay type depends on Lifetime
-    if(TDatabasePDG::Instance()->GetParticle(Pdg())){
-      double lifetime=TDatabasePDG::Instance()->GetParticle(Pdg())->Lifetime();
-      double meanFreePath=lifetime*TMath::C()*1000; //in mm
-      if( meanFreePath>0.1 ){ //0.1mm
-    	_decayType=DecayType::Detached;
-	_decVertexDist = new DistTF1(TF1("MFP","TMath::Exp(-x/[0])",0,25*lifetime));//in mm
-	_decVertexDist->GetTF1().SetParameter(0,lifetime);
-	_decVertexDist->GetTF1().SetNpx(500);
-      }
-      else _decayType=DecayType::Attached;
-    }
-    else _decayType=DecayType::Attached;
+    //if(TDatabasePDG::Instance()->GetParticle(Pdg())){
+      //double lifetime=TDatabasePDG::Instance()->GetParticle(Pdg())->Lifetime();
+      //double meanFreePath=lifetime*TMath::C()*1000; //in mm
+      //std::cout<<"DecayingParticle::PostInit "<<Pdg()<<" "<<lifetime<<" "<<meanFreePath<<std::endl;
+      //if( meanFreePath>0.1 ){ //0.1mm
+      //	_decayType=DecayType::Detached;
+	//	_decVertexDist = new DistTF1(TF1("MFP","TMath::Exp(-x/[0])",0,25*lifetime));//in mm
+	//_decVertexDist->GetTF1().SetParameter(0,lifetime);
+	//_decVertexDist->GetTF1().SetNpx(500);
+      //}
+      //else _decayType=DecayType::Attached;
+      //}
+      //else _decayType=DecayType::Attached;
    
     //decay vertex position
-    auto& products=Model()->Products();
-    //  std::cout<<" DecayingParticle::PostInit "<<Pdg()<<" "<<products.size()<<std::endl;
+
+
+    
+      /*
+      //  std::cout<<" DecayingParticle::PostInit "<<Pdg()<<" "<<products.size()<<std::endl;
     //    if(IsDecay()==DecayType::Detached||IsDecay()==DecayType::Production){
     if(IsDecay()==DecayType::Detached){
       //create a new detached vertex
       //_decayVertexID=Manager::Instance().AddVertex(&_decayVertex);
-      _decayVertexID=0;
+      _decayVertexID=info->AddVertex();
+      // _decayVertexID=0;
       for(auto* prod: products){
-	prod->SetVertex(_decayVertexID,&_decayVertex);
+	prod->SetVertexID(_decayVertexID);
       }
     }
     else{//same vertex as parent
       for(auto* prod: products){
-	prod->SetVertex(VertexID(),VertexPosition());
+	prod->SetVertexID(VertexID());
       }
     }
 
-    //if(_decay)_decay->PostInit(info);
-    //if(_decayer)_decayer->PostInit(info);
-    std::cout<<"DecayingParticle::PostInit "<<dynamic_cast<ReactionElectroProd*>(info) <<std::endl; 
-     _channels.PostInit(info);
+    */
+
+
+
+
+
+
+
     
+    _channels.PostInit(info);
+
+    auto& products=Model()->Products();
+
+  
     if(Pdg()!=0&&Pdg()!=-2211){//for real particles
       Double_t productMasses = 0.0;
       for(auto* prod: products){
@@ -121,18 +137,21 @@ namespace elSpectro{
 	exit(0);
       }
     }
-
-    
+  
   }
+  
 //////////////////////////////////////////////////////////////////////
   DecayStatus   DecayingParticle::GenerateProducts(const ProductionProcess* production){
-    //if(Pdg()==-2211) std::cout<<"********************************DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<Model()->Products().size()<<" "<<" "<<Model()->Products()[0]->Pdg()<<" prod mass "<<Model()->Products()[0]->Mass()<<" "<<Model()->UnstableProducts().size()<<" "<<Model()->StableProducts().size()<<" "<<std::endl;
-    // std::cout<<"********************************DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<Model()->Products().size()<<" "<<" "<<Model()->Products()[0]->Pdg()<<" prod mass "<<Model()->Products()[0]->Mass()<<" "<<Model()->UnstableProducts().size()<<" "<<Model()->StableProducts().size()<<" "<<std::endl;
+    // if(Pdg()==-2211) std::cout<<"********************************DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<Model()->Products().size()<<" "<<" "<<Model()->Products()[0]->Pdg()<<" prod mass "<<Model()->Products()[0]->Mass()<<" "<<Model()->UnstableProducts().size()<<" "<<Model()->StableProducts().size()<<" "<<std::endl;
+    //std::cout<<"********************************DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" minmass "<<MinimumMassPossible()<<" ? "<<(Mass()-MinimumMassPossible())<<" "<<Model()->Products().size()<<" "<<" pdg1 "<<Model()->Products()[0]->Pdg()<<" pdg2 "<<Model()->Products()[1]->Pdg()<<" prod mass "<<Model()->Products()[0]->Mass()<<" "<<Model()->UnstableProducts().size()<<" "<<Model()->StableProducts().size()<<" "<<std::endl;
 
     _generateCalls++;
-    
+
+    if(Mass()<MinimumMassPossible()) return DecayStatus::ReGenerate;
+    //std::cout<<"DecayingParticle::GenerateProducts got here 1"<<std::endl;
     if(Model()->ReadyForDecay()==false) return DecayStatus::ReGenerate;
-    
+    //std::cout<<"DecayingParticle::GenerateProducts got here 2"<<std::endl;
+   
     bool decayed=false;
 
     double _maxWeight=1;
@@ -156,13 +175,13 @@ namespace elSpectro{
     //  std::cout<<"DecayingParticle::GenerateProducts GetIntensity"<<std::endl;
     if(Model()!=nullptr)  weight = Model()->Intensity();
     //if in charge of phase space calculate masses for full decay chain
-    //  std::cout<<"DecayingParticle::GenerateProducts GetIntensity "<<weight<<std::endl;
+    // std::cout<<"DecayingParticle::GenerateProducts GetIntensity "<<weight<<std::endl;
 
-    if(TMath::IsNaN(weight)||TMath::Abs(weight)==TMath::Infinity()){
-      std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<Model()->Products().size()<<" W "<<Model()->Products()[0]->Mass()<<" "<<Model()->Products()[0]->Pdg()<<" "<<Model()->UnstableProducts().size()<<" "<<Model()->StableProducts().size()<<" "<<std::endl;     exit(0);
-    }
+    // if(TMath::IsNaN(weight)||TMath::Abs(weight)==TMath::Infinity()){
+    //   std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<Model()->Products().size()<<" W "<<Model()->Products()[0]->Mass()<<" "<<Model()->Products()[0]->Pdg()<<" "<<Model()->UnstableProducts().size()<<" "<<Model()->StableProducts().size()<<" "<<std::endl;     //exit(0);
+    // }
     if(weight==0)  return DecayStatus::ReGenerate;
-    if(TMath::IsNaN(weight))  return DecayStatus::ReGenerate;
+    if(TMath::IsNaN(weight)||TMath::Abs(weight)==TMath::Infinity())  return DecayStatus::ReGenerate;
     //if(TMath::IsNaN(weight))  return DecayStatus::TryAnother;
     
     if(samplingWeight - weight < -1E-4 ){//tolerance 0.0001
@@ -189,6 +208,8 @@ namespace elSpectro{
     //if decay depends on variable chosen by parent need to regenerate on fail
     //if decay indendent of parent variables can just try for another
     decayed = weight > gRandom->Uniform() ;
+    //std::cout<<"+++++++++++++++++DecayingParticle "<<decayed<<std::endl;
+
     if (decayed == false && (Model()->RegenerateOnFail()==false) )
       return DecayStatus::TryAnother;
     else if (decayed == false && (Model()->RegenerateOnFail()==true) )
@@ -196,23 +217,23 @@ namespace elSpectro{
 
     //else true
 
-    //decay vertex position
+      //decay vertex position
     GenerateVertexPosition(production);
 
  
-    //std::cout<<"+++++++++++++++++DecayingParticle "<<decayed<<std::endl;
     auto& unproducts=Model()->MutableUnstableProducts();
     for(auto& prod: unproducts){
       DecayStatus prodStatus=DecayStatus::ReGenerate;
       // std::cout<<"+++++DecayingParticle start checking unstable "<<unproducts.size()<<" "<<Model()->StableProducts().size()<<" "<<Model()->Products().size()<<" "<<Pdg()<<std::endl;
   
       while((prodStatus=prod.GenerateProducts(production)) != DecayStatus::Decayed){
-	//	std::cout<<"DEcayingPArticle prodStatus "<<Pdg()<<" "<<((Int_t)(prodStatus))<<" "<<((Int_t)(DecayStatus::TryAnother))<<std::endl;
+      	//std::cout<<"DEcayingPArticle prodStatus "<<Pdg()<<" "<<((Int_t)(prodStatus))<<" tryanother "<<((Int_t)(DecayStatus::TryAnother))<<" regen "<<((Int_t)(DecayStatus::ReGenerate))<<" decayed "<<((Int_t)(DecayStatus::Decayed))<<std::endl;
 	if(prodStatus==DecayStatus::ReGenerate) return DecayStatus::ReGenerate;
       }
     }
 
   
+    // std::cout<<"+++++++++++++++++DecayingParticle we did decay "<<Pdg()<<" "<<std::endl;
     return DecayStatus::Decayed;
     
   }
@@ -225,21 +246,36 @@ namespace elSpectro{
   }
 
    void DecayingParticle::GenerateVertexPosition(const ProductionProcess* production)  noexcept{
-      //auto old=VertexPosition();
+      _decayVertex = VertexPosition();
       if( IsDecay()==DecayType::Detached){
-	Double_t t0=_decVertexDist->SampleSingle();//in s
+	//	std::cout<<"\t DecayParticle GenerateVertexPosition "<<Pdg()<<" "<<" "<<production<<std::endl;
+	Double_t t0=_decVertexDist.SampleSingle();//in s
 	//Need lab 4-vector
 	LorentzVector lab=P4();
 	production->BoostToLab(lab);
-	
+	//std::cout<<"\t DecayParticle GenerateVertexPosition "<<Pdg()<<std::endl;
 	Double_t r= t0 * lab.Gamma() * TMath::C() * lab.Beta() *1000; //Lorentz contraction , mm
 	Double_t labP=lab.P();
 	//Set in direction of particle momentum
 	//with length of decay
-	_decayVertex.SetXYZT(lab.X()/labP*r,lab.Y()/labP*r,lab.Z()/labP*r,r/1000/TMath::C());
-	//add production vertex
-	_decayVertex+=*VertexPosition(); 
+	_decayVertex.SetXYZT(
+			     _decayVertex.X()+lab.X()/labP*r,_decayVertex.Y()+lab.Y()/labP*r,
+			     _decayVertex.Z()+lab.Z()/labP*r,_decayVertex.T()+r/1000/TMath::C());
+	
+	//add new decay vertex for writing
+	_decayVertexID=production->GetReactionInfo()->AddVertex();
+	auto products = Model()->MutableProducts();
+	for(auto* prod: products){
+	  prod->SetVertexID(_decayVertexID);
+	}
       }
+      //set vertex position of decays
+      auto products = Model()->MutableProducts();
+      for(auto prod:products){
+	prod->SetVertexPosition(_decayVertex);
+      }
+      // std::cout<<"\t DecayParticle GenerateVertexPosition "<<VertexPosition()<<" "<<_decayVertex<<std::endl;
+
     }
  
 }

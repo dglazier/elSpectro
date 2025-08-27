@@ -1,4 +1,5 @@
 #include "Particle.h"
+#include "DistFlatMass.h"
 #include <TDatabasePDG.h>
 #include <iostream>
 
@@ -10,7 +11,7 @@ namespace elSpectro{
     auto particle=pdgDB->GetParticle(pdg);
 
     if(particle==nullptr) {
-      std::cerr<<"Particle::Particle pdg "<<pdg<<" does ntoe exist in table"<<std::endl;
+      std::cerr<<"Particle::Particle pdg "<<pdg<<" does not exist in table"<<std::endl;
       exit(0);
       
     }
@@ -31,5 +32,14 @@ namespace elSpectro{
       P4().Y()<<" "<<P4().Z()<<" "<<P4().T()<<" \n";
     
   }
-
+//////////////////////////////////////////////////////////////////////
+  void Particle::SetParent(Particle* parent){
+    //need to update the mass distribution parent pointer
+    if(dynamic_cast<DistFlatMassMaster*>(MassDistribution()) ){
+      auto mdist = dynamic_cast<DistFlatMassMaster*>(MassDistribution());
+      mdist->SetParentPtr(dynamic_cast<DecayingParticle*>(parent));
+    }
+    
+  }
+ 
 }

@@ -32,7 +32,9 @@ namespace elSpectro{
     bool RegenerateOnFail() const  noexcept final {return false;}
     void SetParent(DecayingParticle* pa) override;
     void PostInit(ReactionInfo* info)  override;
+    void SetMassMaster(DistFlatMassMaster* master);
     
+   void Print() const override;
  private:
      
     void nBodyDecayer(DecayingParticle* parent, particle_objs& stable, decaying_objs& unstable );

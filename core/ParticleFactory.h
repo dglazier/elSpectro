@@ -10,6 +10,8 @@
 ///            elSpectro::Particles for generator are then created
 ///            from ParticleData
 ///            Relevent DecayModels are responsible for ownership/keeping alive
+///            Example, print data for a particle particelFactory.GetData("name").Print();
+
 #pragma once
 
 
@@ -25,13 +27,16 @@
 #include "ParticleData.h"
 #include "DecayingParticle.h"
 #include "CppHelperFuncs.h"
-
+#include "TSystem.h"
 
 
 namespace elSpectro{
 
   namespace particles{
 
+    constexpr short inter_phasespace=-9;
+    constexpr short gamma_star=-22;
+    constexpr short gamma_star_nucleon=-2211;
  
     class ParticleFactory {
 
@@ -40,16 +45,28 @@ namespace elSpectro{
       static ParticleFactory& Instance() { static ParticleFactory instance; return instance; }
  
       static void  Init(){
-	TDatabasePDG *pdgDB = new TDatabasePDG();
-	//	pdgDB->ReadPDGTable(Form("%s/etc/el_pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
+	//	TDatabasePDG *pdgDB = new TDatabasePDG();
+	auto pdgDB = TDatabasePDG::Instance();
+
+
 	
-	//name,title,mass,stable,width,charge,type.code 
-	pdgDB->AddParticle("gamma_star","gamma_star", 0.0, kFALSE,
-			   0, 0, "virtual", -22);
+        pdgDB->ReadPDGTable(Form("%s/etc/xyz_pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
+        pdgDB->ReadPDGTable(Form("%s/etc/rndmflav_pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
+	//	pdgDB->ReadPDGTable(Form("%s/etc/pdg_table.txt",gSystem->Getenv("ROOTSYS")));
+	pdgDB->ReadPDGTable(Form("%s/etc/pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
+
+	//Must read table via files first,
+	//as AddPArticle generates defualt table
+  	//special elspectro particles first
+	// //name,title,mass,stable,width,charge,type.code 
+	pdgDB->AddParticle("intermediate_phasespace","intermediate_phasespace",
+			   0.0, kFALSE, 0, 0, "virtual", inter_phasespace);
+	pdgDB->AddParticle("gamma_star","gamma_star", 0.0, kFALSE, 0, 0,
+			   "virtual", gamma_star);
 	pdgDB->AddParticle("gamma_star_nucleon","gamma_star_nucleon",
-			   pdgDB->GetParticle("proton")->Mass(), kFALSE,
-			   0, 0, "virtual", -2211);
-      }
+	 		   pdgDB->GetParticle("proton")->Mass(), kFALSE,
+	 		   0, 0, "virtual",gamma_star_nucleon );
+  }
       
       ParticleData  GetData(int pdg){
 	return GetData(TDatabasePDG::Instance()->GetParticle(pdg)->GetName());

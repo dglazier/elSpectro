@@ -35,8 +35,7 @@ namespace elSpectro{
   }
   /////////////////////////////////////////////////////////////////
   void TwoBodyProduction::PostInit(ReactionInfo* info){
-     std::cout<<"TwoBodyProduction::PostInit "<<" "<<GetName()<<std::endl;
-     DecayModel::PostInit(info);
+    DecayModel::PostInit(info);
  
      _prodInfo= dynamic_cast<ReactionElectroProd*> (info); //I need Reaction info
      if(_prodInfo==nullptr){
@@ -55,10 +54,11 @@ namespace elSpectro{
     //need to find meson and baryon
     if(TDatabasePDG::Instance()->GetParticle(Products()[0]->Pdg())->ParticleClass()==TString("Baryon") && TDatabasePDG::Instance()->GetParticle(Products()[1]->Pdg())->ParticleClass()==TString("Meson")){
       //We need the meson first for TwoBody decay vectors t-distribution
+      std::cout<<"TwoBodyProduction swap " <<Products()[0]->Pdg()<<" "<<Products()[0]<<" "<<Products()[1]->Pdg()<<" "<<Products()[1]<<" 223 products  "<<dynamic_cast<DecayingParticle*>(Products()[1])->Model()->Product(0)->Pdg()<<" "<<dynamic_cast<DecayingParticle*>(Products()[1])->Model()->Product(0)<<" "<<dynamic_cast<DecayingParticle*>(Products()[1])->Model()->Product(1)<<" "<<dynamic_cast<DecayingParticle*>(Products()[1])->Model()->Product(1)->Pdg()<<std::endl;
       SwapProducts(0,1);
       SetBaryonIdx(1);
       SetMesonIdx(0);
-      std::cout<<"TwoBodyProduction swap " <<Products()[0]->Pdg()<<" "<<Products()[1]->Pdg()<<std::endl;
+      std::cout<<"TwoBodyProduction swap " <<Products()[0]->Pdg()<<" "<<Products()[0]<<" "<<Products()[1]->Pdg()<<" "<<Products()[1]<<" products  "<<dynamic_cast<DecayingParticle*>(Products()[0])->Model()->Product(0)->Pdg()<<" "<<dynamic_cast<DecayingParticle*>(Products()[0])->Model()->Product(0)<<" "<<dynamic_cast<DecayingParticle*>(Products()[0])->Model()->Product(1)<<" "<<dynamic_cast<DecayingParticle*>(Products()[0])->Model()->Product(1)->Pdg()<<std::endl;
     }
     else  if(TDatabasePDG::Instance()->GetParticle(Products()[1]->Pdg())->ParticleClass()==TString("Baryon") && TDatabasePDG::Instance()->GetParticle(Products()[0]->Pdg())->ParticleClass()==TString("Meson")){
       SetBaryonIdx(1);
@@ -87,7 +87,9 @@ namespace elSpectro{
     _p4baryon=GetBaryon()->P4();
     _p4meson=GetMeson()->P4();
 
-     //make sure mass is above threshold, as meson and baryon masses may have changed
+    //std::cout<<"Start TwoBodyProduction::Intensity w = "<<get_W()<<" masses "<<_p4meson.M()<<" "<<_p4baryon.M()<<std::endl;
+
+    //make sure mass is above threshold, as meson and baryon masses may have changed
     if( _W < (_p4meson.M()+_p4baryon.M()) ) return 0;
  
     //calculate thetaCM etc. for this event
@@ -96,7 +98,6 @@ namespace elSpectro{
     //    if(_isElProd==kTRUE) ElectroProduction();//photon polarisation etc.
     double weight = DiffXS();
     //double weight =  MatrixElementsSquared_T();
-    // std::cout<<"Start TwoBodyProduction::Intensity w = "<<get_W()<<" weight "<<weight<<" masses "<<_p4meson->P4().M()<<" "<<_p4baryon->P4().M()<<std::endl;
      ++_Ntries;
      // _totalXS +=  DiffXS();
 
@@ -106,22 +107,22 @@ namespace elSpectro{
     //   std::cout<<"TwoBodyProduction::Intensity() high weight % "<<_NhighWeight/_Ntries<<" "<<weight/get_max() <<std::endl;
     // }
 
-     //apply suppression for regions with low mass phase space
-     //This will be close to/sub threshold
-     // if(_distMassFrac.get()) weight*=_distMassFrac->GetWeightFor(_W);
-
      auto wmaxDist = _distHighXS.GetValueFor(_W);
      double wmax = 0.;//DiffXS_at_tmin();
      wmax = wmax < wmaxDist ? wmaxDist : wmax;
      wmax = wmax < (wmaxDist=_distHighXS.GetValueInterpolated(_W)) ? wmaxDist : wmax ;
-     wmax = wmax < (wmaxDist=_distHighXS.GetValueForBinAbove(_W)) ? wmaxDist : wmax ;
-     wmax = wmax < (wmaxDist=_distHighXS.GetValueForBinBelow(_W)) ? wmaxDist : wmax ;
+     // wmax = wmax < (wmaxDist=_distHighXS.GetValueForBinAbove(_W)) ? wmaxDist : wmax ;
+     // wmax = wmax < (wmaxDist=_distHighXS.GetValueForBinBelow(_W)) ? wmaxDist : wmax ;
+
+     
      //     wmax = wmax < wmaxDist=_distHighXS.GetValueFor(_W) ? wmaxDist :wmax ;
      //std::cout<< _distHighXS.GetValueFor(_W)<<" "<<_distHighXS.GetValueInterpolated(_W)<<" "<<_distHighXS.GetValueForBinAbove(_W)<<" "<<_distHighXS.GetValueForBinBelow(_W)<<" "<<_distHighXS.GetTH1().FindFixBin(_W)<<" out of "<<_distHighXS.GetTH1().GetNbinsX() <<std::endl;
      if(wmax==0)wmax=1.;
-     wmax*=1.5;
-     //
-     //std::cout<<" TwoBodyProduction::Intensity w = "<<get_W()<<" weight "<<weight<<" "<<wmax<<" new weight"<< weight/wmax<<" cos  "<<get_cosThCM()<<" t "<<get_t()<<" or "<<kin_tFromWCosTh(get_W(),get_cosThCM())<<" min "<<kin_tFromWCosTh(get_W(),1)<<" Q2 "<<-_p4photon->M2()<<std::endl;
+     wmax*=Q2PhaseSpaceCorrect();
+     wmax*=MassPhaseSpaceCorrect();
+     wmax*=2;//fudge factor
+    //
+     //     std::cout<<" TwoBodyProduction::Intensity w = "<<get_W()<<" weight "<<weight<<" "<<wmax<<" new weight"<< weight/wmax<<" cos  "<<get_cosThCM()<<" t "<<get_t()<<" or "<<kin_tFromWCosTh(get_W(),get_cosThCM())<<" min "<<kin_tFromWCosTh(get_W(),1)<<" Q2 "<<-_p4photon.M2() <<std::endl;
       weight/=wmax;
       //weight*=0.5; ///the reduces the efficiecny of the sampling, but also decreases the probability of current weight being grerater than the sampling weight. This may happen due to different values of t for a given cosTheta due to the mass not being PDG
       
@@ -253,9 +254,9 @@ namespace elSpectro{
       set_W(hist.GetXaxis()->GetBinCenter(ih));
       wbins.push_back(hist.GetXaxis()->GetBinCenter(ih));
       //if(_W>1.7) exit(0);
-      if( _W < Wmin )
-	hist.SetBinContent(ih, 0);
-      else{
+      // if( _W < Wmin )
+      // 	hist.SetBinContent(ih, 0);
+      // else{
 	//to account for meson mass distribution :
 	//   evaluate at  mean mass allowed up to current W (allows sub-threshold)
 	//   multiply by fraction of mass distribution to currentW (suppress sub-threshold )
@@ -328,14 +329,16 @@ namespace elSpectro{
 	// }
 	
 	// if(ih>2)exit(0);
-      }
+	//      }
       //	hist.SetBinContent(ih, 1 );
       if( TMath::IsNaN(hist.GetBinContent(ih)) )hist.SetBinContent(ih, 0 );
 
       // std::cout<<"TwoBodyProduction::CrossSectionW " <<ih<<" "<<_W <<" "<<hist.GetBinContent(ih)<<std::endl;
 
     }
-    std::cout<<"TwoBodyProduction::CrossSectionW total cross-section" <<" "<<hist.Integral("w")<<std::endl;
+    std::cout<<"TwoBodyProduction::CrossSectionW total cross-section" <<" "<<hist.Integral("w")<<" threshold "<<hist.GetXaxis()->GetBinCenter(1)<<std::endl;
+    std::cout<<"DEBUG TwoBodyProduction::CrossSectionW" <<" "<<cthbins.size()<<" "<<wbins.size()<<std::endl;
+    
     if(decMeson_ptr!=nullptr) decMeson_ptr->TakePdgMass();
     if(decBaryon_ptr!=nullptr) decBaryon_ptr->TakePdgMass();
 

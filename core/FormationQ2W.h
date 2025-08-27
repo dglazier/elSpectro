@@ -25,7 +25,7 @@ namespace elSpectro{
     //so other 5 constructors also defaulted(rule of 5)
 
     //constructor giving W theshold, just produces scatted electron kinematics
-    // FormationQ2W(  double thresh  );
+    FormationQ2W(  double thresh  );
     //constructor giving W theshold and subsequent primary decay of Nucl+gamma* system
     //FormationQ2W(  double thresh, DecayModel* gNmodel,DecayVectors* gNdecayer=nullptr);
     FormationQ2W(  double thresh, decaymodel_ptr gNmodel,decayer_ptr gNdecayer=CloneDecayer(TwoBodyFlat()));

@@ -19,15 +19,18 @@ namespace elSpectro{
 	auto rootPdg = TDatabasePDG::Instance()->GetParticle(name.data());
 	p.SetMass(rootPdg->Mass());
 	p.SetWidth(rootPdg->Width());
+	p.SetLifetime(rootPdg->Lifetime());
 	p.SetNameTitle(rootPdg->GetName(),rootPdg->GetName());
+
 	if(p.ShouldItDecay()){ //check lifetime
-	  
+
+	  //register all its decays
 	  auto decays = rootPdg->DecayList();
 	  for(auto* odecay:*decays){
 	    auto decay  = static_cast<TDecayChannel*>(odecay);
 	    std::vector<ParticleData> products;
+	    //register all its children
 	    for(auto ip = 0; ip<decay->NDaughters();++ip){
-	      if(decay->DaughterPdgCode(ip)==1)exit(0);
 	      products.push_back( GetData(decay->DaughterPdgCode(ip)) );
 	    }
 	    p.AddDecay(decay->BranchingRatio(),products);
@@ -56,24 +59,48 @@ namespace elSpectro{
     //////////////////////////////////////////////////////////////////
     DecayingParticle ParticleFactory::CreateDecayingParticle(int pdg){//,decaymodel)
       auto pdata = GetData(pdg);
-      std::cout<<"DecayingParticle ParticleFactory got pdata "<<pdg<<std::endl;
+      // std::cout<<"DecayingParticle ParticleFactory  "<<pdata.ShouldItDecay()<<" "<<pdata.IsDecaying()<<" w "<<pdata.Width()<<" mfp "<<pdata.MeanFreePath()<<" "<<pdata.PDGCode()<<std::endl;
+     //std::cout<<"DecayingParticle ParticleFactory got pdata "<<pdg<<std::endl;
       //check width/lifetime and for decay channels
       //same condition should be in ChannelModel
       if( pdata.ShouldItDecay() && pdata.IsDecaying() ){
-	
 	DecayingParticle dp{pdg};
-	dp.SetMassDist( cpp::MakeBaseShared<Distribution>(pdata.BreitWignerDistribution()) );
-	std::cout<<"DecayingParticle ParticleFactory got pdata Add decays "<<std::endl;
- 	
-	//	for(uint i=0;i<pdata.NDecays();++i){
-	for(uint i=0;i<1;++i){
-	  std::cout<<"DecayingParticle ParticleFactory  "<<pdg<<" "<<i<<" "<<pdata.NDecays()<<" "<<pdata.BranchRatio(i)<<std::endl;
+	if(pdata.IsWide()){
+	  //delta mass distribution if width < 0.1MeV
+
+	  if(TMath::Abs(pdata.PDGCode())==82){
+	    //special case of rndmflav particle
+	    //this decays randomly to multi-mesons
+	    //should have flat mass distribution
+	    dp.SetMassDist( cpp::MakeBaseShared<Distribution>( elSpectro::DistTF1{TF1("Mass",Form("1"),pdata.Mass(),pdata.Mass()+pdata.Width())} ));
+	  }
+	  
+	  else{
+	    dp.SetMassDist( cpp::MakeBaseShared<Distribution>(pdata.BreitWignerDistribution()) );
+	  }
+	  
+	}
+	
+	//	std::cout<<"DecayingParticle ParticleFactory got pdata Add decays "<<std::endl;
+	if( pdata.MeanFreePath()>0.01 ){ //0.1mm
+	  
+	  auto decDist=DistTF1(TF1(Form("VertexFor%s",pdata.GetName()),"TMath::Exp(-x/[0])",0,25*pdata.Lifetime()));//in s
+	  
+	  decDist.GetTF1().SetParameter(0,pdata.Lifetime());
+	  decDist.GetTF1().SetNpx(200);
+
+	  dp.SetDecayVertexDist(std::move(decDist));
+	}
+	
+	for(uint i=0;i<pdata.NDecays();++i){
+	  //	for(uint i=0;i<1;++i){
+	  //std::cout<<"DecayingParticle ParticleFactory  "<<pdg<<" "<<i<<" "<<pdata.NDecays()<<" "<<pdata.BranchRatio(i)<<std::endl;
  
 	  dp.AddDecay(pdata.BranchRatio(i),pdata.ChannelModel(i),pdata.ChannelDecayer(i));
-	  std::cout<<"DecayingParticle ParticleFactory  decay added "<<std::endl;
+	  // std::cout<<"DecayingParticle ParticleFactory  decay added "<<std::endl;
 	}
-	std::cout<<"DecayingParticle ParticleFactory got pdata can return "<<std::endl;
-	return dp;
+      	//std::cout<<"DecayingParticle ParticleFactory got pdata can return "<<pdata.GetName()<<std::endl;
+	return (dp);
       }
       else{
 	std::cerr<<"ParticleFactory::CreateDecayingParticle "<<pdg <<" does not decay!"<<std::endl;
@@ -81,6 +108,6 @@ namespace elSpectro{
 	return DecayingParticle(0);
       }
     }
-  }
 
+  }
 }

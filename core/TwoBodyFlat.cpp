@@ -21,12 +21,14 @@ namespace elSpectro{
     _b=products[1]->P4();
 
     
+    // std::cout<<"TwoBodyFlat::Generate "<<" "<<_W <<" m1 "<<sqrt(m2_a)<<" "<<" m2 "<<sqrt(m2_b) <<" "<<std::endl;
     if((_W - TMath::Sqrt(m2_a) - TMath::Sqrt(m2_b) ) < 0 ) return 0;//non physical
     auto e_a = (_W*_W + m2_a - m2_b)/(2.0*_W); // E decay product a
     auto p_a = TMath::Sqrt(e_a*e_a - m2_a); // p for both
     // auto e_b = TMath::Sqrt(p_a*p_a + m2_b); // E for decay product b
-
+    //std::cout<<"TwoBodyFlat::Generate "<< _W<<std::endl;
     auto costh = RandomCosTh();
+    //std::cout<<"DONE TwoBodyFlat::Generate "<<costh<<" "<<_weight<<" m1 "<<sqrt(m2_a)<<" "<<" m2 "<<sqrt(m2_b) <<std::endl;
     if(_weight==0) return _weight; //faster not creating this branch point !!
     
     auto sinth=TMath::Sqrt(1-costh*costh);

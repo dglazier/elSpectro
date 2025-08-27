@@ -2,13 +2,13 @@
 //generator : Real Time =   3.51 seconds Cpu Time =   3.52 seconds
 
 //Just need jpacPhoto headers
-#include "reaction_kinematics.hpp"
-#include "regge_trajectory.hpp"
-#include "core/vector_exchange.hpp"
-#include "core/pseudoscalar_exchange.hpp"
-#include "core/pomeron_exchange.hpp"
-#include "core/amplitude_sum.hpp"
-#include "core/baryon_resonance.hpp"
+// #include "reaction_kinematics.hpp"
+// #include "regge_trajectory.hpp"
+// #include "core/vector_exchange.hpp"
+// #include "core/pseudoscalar_exchange.hpp"
+// #include "core/pomeron_exchange.hpp"
+// #include "core/amplitude_sum.hpp"
+// #include "core/baryon_resonance.hpp"
 
 #include "FunctionsForGenvector.h"
 
@@ -61,6 +61,8 @@ TH2D tbd;
 //void EIC_JPACTwoBody_nZc(double ebeamE = 5, double pbeamE = 100, double nLumi=1E34, int nDays = 5) {
 void EIC_JPACTwoBody_nZc(double ebeamE = 5, double pbeamE = 100, double nLumi=1E34, int nDays = 5) {
 
+  using namespace jpacPhoto;
+  
   Double_t crossingAngle=0;
   //define e- beam, pdg =11
   auto elBeam = initial(11,ebeamE);

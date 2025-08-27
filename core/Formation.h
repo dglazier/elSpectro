@@ -34,7 +34,11 @@ namespace elSpectro{
     bool RegenerateOnFail() const  noexcept override {return false;}
 
     const DecayingParticle& GetGammaN() const noexcept{return *static_cast<const DecayingParticle*>(Product(_idxGStarNuc)); }
-   
+
+    void AddHadronicChannel(double bratio,decaymodel_ptr  mod,decayer_ptr  dec=CloneDecayer(TwoBodyFlat())){
+      static_cast<DecayingParticle*>(MutableProduct(_idxGStarNuc))->AddDecay(bratio,mod,dec);
+    }
+    
     double getW() const noexcept{ return GetGammaN().Mass();}
     double getThreshold() const noexcept{return _threshold;}
     
@@ -48,7 +52,8 @@ namespace elSpectro{
 
     //Any preliminaries required
     bool ReadyForDecay() override{
-      ChooseDecay(); //need to choose from all TwoBodyProductions based on CrossSection
+      //remove ChooseDecay will do this in ProducitonProcess
+      //ChooseDecay(); //need to choose from all TwoBodyProductions based on CrossSection
       return true;
       // or return CheckThreshold(); ?
     }
@@ -77,7 +82,8 @@ namespace elSpectro{
 
     const DistTH1& TotalCrossSection()const  noexcept{return _spectra.TotalCrossSection();}
 
-    const ExcitationSpectra& ExciteSpectra() const noexcept{return _spectra;}
+    //const ExcitationSpectra& ExciteSpectra() const noexcept{return _spectra;}
+    const DistTH1& CurrCrossSection() const noexcept{return _spectra.GetSpectra(GetGammaN().Channels().CurrChannel() );}
 
     void CreateExcitationSpectra(){
       _spectra.CreateSpectra( Channels(), _reactInfo->Wmax());

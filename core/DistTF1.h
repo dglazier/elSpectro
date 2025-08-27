@@ -19,7 +19,8 @@ namespace elSpectro{
   public :
 
     DistTF1(const TF1& ff);
- 
+    DistTF1()=default;
+
     double SampleSingle()   noexcept final {
       _x=_tf1.GetRandom();
       _val=_tf1.Eval(_x);
@@ -48,9 +49,7 @@ namespace elSpectro{
     TF1& GetTF1()  noexcept {return _tf1;}
     
   private:
-    //no one should use default constructor
-    DistTF1()=default;
-
+ 
     TF1 _tf1;
     double _val{0};
     double _x{0};

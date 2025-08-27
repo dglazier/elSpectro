@@ -36,38 +36,43 @@ namespace elSpectro{
     
     void AddDecay(DecayingParticle* parent,double bratio,decaymodel_ptr mod,decayer_ptr dec){
       _brRatioSum.push_back(_brRatioSum.back()+bratio);
-      _models.push_back(std::move(mod));
+      _brRatios.push_back(bratio);
+     _models.push_back(std::move(mod));
       _models.back()->SetParent(parent);
       _decayers.push_back(std::move(dec));
        _idecay++; //so we can edit new decay
-    }
+
+     }
 
     void SetParent(DecayingParticle* parent){
       for(uint i = 0; i<_models.size();++i){
-	SetChannel(i);
+	SetCurrChannel(i);
 	CurrModel()->SetParent(parent);
       }
-      SetChannel(0);
+      SetCurrChannel(0);
     }
     
     void PostInit(ReactionInfo* info){
-     std::cout<<"DecayChannel::PostInit "<<dynamic_cast<ReactionElectroProd*>(info) <<std::endl; 
+      //    std::cout<<"DecayChannel::PostInit "<<dynamic_cast<ReactionElectroProd*>(info) <<std::endl; 
      for(uint i = 0; i<_models.size();++i){
-	SetChannel(i);
+	SetCurrChannel(i);
+	//	std::cout<<"DecayChannel::PostInit model "<<i<<" "<<CurrModel()<<std::endl;
 	CurrModel()->PostInit(info);
  	CurrDecayer()->PostInit(info);
       }
-      SetChannel(0);
-    }
-    uint ChooseDecay() const{
-      //choose random number between 0 and sum of all branch ratios
-      //find index corresponding to that value
-      return _brRatioSum.size() == 1 ? _idecay :
-	(_idecay = (std::lower_bound(_brRatioSum.begin(),_brRatioSum.end(),gRandom->Uniform(0,_brRatioSum.back()))) - _brRatioSum.begin() -1) ; //return 0 if 1 decay, if not choose.
-    }
+     MaxThreshold();
+     SetCurrChannel(0);
+     }
+    uint ChooseDecay(double W) const;
+    
     uint CurrChannel() const {return _idecay>=N() ? 0 : _idecay;}
 
-    void SetChannel(uint val) const {_idecay=val;};
+    void SetCurrChannel(uint val) const {
+      if(val>=N()){
+	throw std::runtime_error(Form("DecayChannel::Threshold, asked for model %d, but only have %d",val,N()));
+      }
+      _idecay=val;
+    };
 
     DecayModel* CurrModel()  const {return _models[CurrChannel()].get();}
 
@@ -85,6 +90,10 @@ namespace elSpectro{
       _models[index]=std::move(mod);
     }
 
+    double CurrThreshold() const{
+     return _models[_idecay]->MinimumMassPossible();
+    }
+    
     double Threshold() const{
       double threshold = 1E30;
       //take the minimum possible mass of all models
@@ -95,11 +104,42 @@ namespace elSpectro{
       return threshold;
     }
     
-  private:
+    double MaxThreshold() const{
+      if(_maxThreshold>0.) return _maxThreshold;
+      _maxThreshold=0.;
+      //take the minimum possible mass of all models
+      for(const auto model : _models){
+	auto mm = model->MinimumMassPossible();
+	if(mm>_maxThreshold) _maxThreshold = mm;
+      }
+      return _maxThreshold;
+    }
     
+  private:
+
+    friend ProductionProcess;
+    
+    void SetBranchRatios(const std::vector<double>& brs) const{
+      if(_brRatioSum.size()!=brs.size()+1){
+	std::cerr<<"DecayChannel::SetBranchRatios must have same number of branching ratios as channels = " <<_brRatioSum.size()<< " not "<< brs.size()<<" "<<_models.size()<<std::endl;exit(0);
+      }
+
+      _brRatioSum.clear();
+      _brRatios.clear();
+      _brRatioSum.push_back(0.0); //sum vector must start at 0.
+      for(auto br:brs){
+	_brRatioSum.push_back(_brRatioSum.back()+br);
+	_brRatios.push_back(br);
+      }
+      
+    }
     std::vector<decaymodel_ptr > _models;
     std::vector<decayer_ptr  > _decayers;
-    std::vector<double> _brRatioSum={0.0};
+    mutable std::vector<double> _brRatioSum={0.0};
+    mutable std::vector<double> _brRatios={0.0};
+    mutable double _maxThreshold=0.;
     mutable uint _idecay=0;
   };
+
+ 
 }

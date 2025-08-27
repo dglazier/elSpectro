@@ -27,7 +27,13 @@ namespace elSpectro{
     DistFlatMass(DistFlatMassMaster* master);
  
     double SampleSingle()   noexcept override;
-    
+    double SampleSingle(double xmin,double xmax)  noexcept override{
+      auto result = SampleSingle();
+      if(result < xmin) return xmin;
+      if(result > xmax) return xmax;
+      return result;
+      //  return SampleSingle();
+    }
     dist_pair SamplePair()   noexcept final {return dist_pair{0,0};} ;
 
     double CurrentValue() const noexcept final {return 1.;}
@@ -49,6 +55,7 @@ namespace elSpectro{
     void SetMaster(DistFlatMassMaster* m){
       _master = m;
     }
+    void Print() override;
     
   protected :
     void SetIndex(uint index){_index=index;}
@@ -75,11 +82,14 @@ namespace elSpectro{
     DistFlatMassMaster(DecayingParticle* original, particle_ptrs ps);
 
     void SetParticlePtrs(particle_ptrs ps);
-
+    void SetParentPtr(DecayingParticle* p) {_parent = p;}
+    DecayingParticle* Parent(){return _parent;}
+    particle_ptrs Products(){ return _products;}
     double GetMass(uint i)const noexcept{
       return _invMass[i];
     }
 
+    size_t Size() const {return _size;}
     double SampleSingle()   noexcept final ;
     
     double GetValueFor(double valX,double valY=0) const final  {return 1.;}
@@ -112,11 +122,5 @@ namespace elSpectro{
   };
 
 
-  //inline functions which rely on forward declaration
-  inline  double DistFlatMass::SampleSingle()   noexcept {
-    return  _master->GetMass(_index);
-  }
-  
-  inline double DistFlatMass::GetX() const noexcept { return _master->GetMass(_index);}
-
+ 
 }

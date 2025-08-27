@@ -59,7 +59,7 @@ namespace elSpectro{
     
     //for each x bin there must be a vector of ybins in y
     if(_nBinsX!=_ybins.size()){
-      std::cerr<<" DistYGivenX::DistYGivenX x and y size not the same"<<std::endl;
+      std::cerr<<" DistYGivenX::DistYGivenX x and y size not the same "<<_nBinsX<<" "<<_ybins.size()<<std::endl;
       exit(0);
     }
      
@@ -88,6 +88,7 @@ namespace elSpectro{
       _xbins_max[ix]=0;
       for(auto iy=0;iy<y[ix].size();++iy){//loop over y
 	//	_vals[ix][iy]+=max_diff;//add max difference//TESTING
+	_vals[ix][iy]+=_xbins_max[ix]*0.5;//add max difference//TESTING
 	
 	double contribution = _vals[ix][iy]*_ybins_widths[ix][iy];
 	//runing sums for binary search
@@ -123,7 +124,7 @@ namespace elSpectro{
       SetY(gRandom->Uniform(GetMinY(),GetMaxY()));
       SetVal(1);
       _current_max = 1.;
-      std::cout<<"Warning :: DistYGivenX::RandomXY() warning zero distribution at x = "<<x<<" bin "<<xbin<<std::endl;
+      //std::cout<<"Warning :: DistYGivenX::RandomXY() warning zero distribution at x = "<<x<<" bin "<<xbin<<std::endl;
       return;
     }
     

@@ -7,17 +7,18 @@
 
 #include "BuildReaction.h"
 
-void EIC_rho(double ebeamE = 10, double pbeamE = 100, double nLumi=6.1E33, double nDays = 1./24/60/60) {
-  //void EIC_rho(double ebeamE = 18, double pbeamE = 275, double nLumi=1, double nDays = 100) {
+//void EIC_rho(double ebeamE = 10, double pbeamE = 0, double nLumi=6.1E33, double nDays = 1./24/60/60) {
+void EIC_rho(double ebeamE = 18, double pbeamE = 275, double nLumi=6.1E33, double nDays = 1./24/60/60/10) {
 
   //create a generator 
   auto generator = elSpectro::Manager{};
   elSpectro::particles::ParticleFactory::Init();
+  auto& particleFactory = elSpectro::particles::ParticleFactory::Instance();
   // ---------------------------------------------------------------------------
   // TWO-BODY PARTICLES
   // ---------------------------------------------------------------------------
   //phoPro::RhoMeson rho; //meson decays
-  auto rho=elSpectro::particles::ParticleFactory::Instance().CreateDecayingParticle("rho0");
+  auto rho=particleFactory.CreateDecayingParticle("rho0");
   
   int proton_id = 2212; //baryon stable
   
@@ -36,14 +37,16 @@ void EIC_rho(double ebeamE = 10, double pbeamE = 100, double nLumi=6.1E33, doubl
   //photo-nucleon system decaying to meson and baryon
   cout<<"rho "<<rho.Pdg()<<endl;
   auto two_body = elSpectro::JpacTwoBody{jpac_amp,{ rho },{proton_id} }; 
-  //create eic electroproduction of X + proton  
-  generator.Reaction( phoPro::Build_ep_Collision(ebeamE,pbeamE,two_body) );
+  //create eic electroproduction of X + proton
+  auto elscat =   phoPro::Build_ep_Collision(ebeamE,pbeamE,two_body) ;
+  elscat->SetLimit_Ymin(0.05);
+  generator.Reaction( elscat );
 
   
   // ---------------------------------------------------------------------------
   // Initialize HepMC3
   // ---------------------------------------------------------------------------
-  generator.SetWriter( new  elSpectro::HepMC3Writer{Form("out_new/jpac_rho_%d_%d.txt",(int)ebeamE,(int)pbeamE)});
+  generator.SetWriter( new  elSpectro::HepMC3Writer{Form("out_benchmarks/lowQ2_rho_%d_%d.txt",(int)ebeamE,(int)pbeamE)});
   
   // ---------------------------------------------------------------------------
   //initilase the generator, may take some time for making distribution tables 
@@ -54,8 +57,8 @@ void EIC_rho(double ebeamE = 10, double pbeamE = 100, double nLumi=6.1E33, doubl
   //Set number of events via experimental luminosity and beamtime
   // ---------------------------------------------------------------------------
   // rho_prod->SetCombinedBranchingFraction(rho.BranchRatio()); 
-  // generator.SetNEvents_via_LuminosityTime(nLumi,24*60*60*nDays);
-  generator.SetNEvents(100000);
+  //generator.SetNEvents_via_LuminosityTime(nLumi,24*60*60*nDays);
+   generator.SetNEvents(1000);
   //auto fastIntegral=generator.Reaction()->IntegrateCrossSectionFast();
   //std::cout<<"       check fast cross section "<<fastIntegral<<std::endl;
 

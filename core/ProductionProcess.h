@@ -12,6 +12,7 @@
 #include "DecayModel.h"
 //#include "Manager.h"
 #include "DecayingParticle.h"
+#include "TwoBodyProduction.h"
 #include "CollidingParticle.h"
 #include "Distribution.h"
 #include "DistConst.h"
@@ -25,29 +26,28 @@ namespace elSpectro{
      
   public:
  
-    // ProductionProcess()=delete;
-    //only construct via and take ownership of model 
-    //ProductionProcess(DecayModel* model);
     ProductionProcess(const CollidingParticle& p1,const CollidingParticle& p2,decaymodel_ptr  model,decayer_ptr  decayer=nullptr);
-    //ProductionProcess(int pdg, DecayVectors* decayer, DecayModel* model);
-
+  
     virtual ~ProductionProcess()=default;
     ProductionProcess(const ProductionProcess& other); //need the virtual destructor...so rule of 5
     ProductionProcess(ProductionProcess&&)=default;
     ProductionProcess& operator=(const ProductionProcess& other);
     ProductionProcess& operator=(ProductionProcess&& other) = default;
 
- 
+    virtual const ReactionInfo* GetReactionInfo() const=0;
     
     virtual void InitGen() =0;
+    //the intermediate state produced by this production process
+    //e.g. g* + N for electron scattering
+    virtual const DecayingParticle& Product() =0;
+
     
+    virtual double IntegrateCrossSection(TwoBodyProduction* model2body) = 0;
+    virtual double IntegrateCrossSectionFast(TwoBodyProduction* model2body) = 0;
+    double IntegrateCrossSections();
+
     void PostInit(ReactionInfo* info) override;
-    void Init();
-    void InitVertex(Manager& generator);
    
-    virtual double IntegrateCrossSection() = 0;
-    virtual double IntegrateCrossSectionFast() = 0;
-    
     void SetCombinedBranchingFraction(double branch){_branchFrac=branch;}
     double BranchingFraction()const noexcept {return _branchFrac;}
     
@@ -62,13 +62,13 @@ namespace elSpectro{
       _finalParticles.clear();
       _finalParticles = parts;
     }
-    
+     
     DecayType IsDecay() const noexcept override {return DecayType::Production;}
 
     virtual double dsigma() const{return 1;}
 
     virtual void GenerateVertexPosition(const ProductionProcess* production)  noexcept override{
-      SetVertexXYZT(_xvertexDist->SampleSingle(),
+      SetDecayVertexXYZT(_xvertexDist->SampleSingle(),
 		    _yvertexDist->SampleSingle(),
 		    _zvertexDist->SampleSingle(),
 		    _tvertexDist->SampleSingle());
@@ -94,7 +94,8 @@ namespace elSpectro{
     CollidingParticle* Incident1() {return &_in1;}
     CollidingParticle* Incident2() {return &_in2;}
 
-    
+     void InitVertex();
+ 
   private:
     ProductionProcess()=delete;
     particle_ptrs _initialParticles;

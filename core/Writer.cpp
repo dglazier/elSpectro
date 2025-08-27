@@ -3,7 +3,7 @@
 
 namespace elSpectro{
 
-  void Writer::InitEvent(const particle_ptrs& iptrs,const particle_ptrs& sptrs,const std::vector<const LorentzVector*>& vers){
+  void Writer::InitEvent(const particle_ptrs& iptrs,const particle_ptrs& sptrs,const std::vector<LorentzVector>& vers){
     
     _finalParticles.clear();
     _initialParticles.clear();
@@ -20,7 +20,7 @@ namespace elSpectro{
       _initialParticles.push_back(p);
     }
 
-    for(auto* v:vers){
+    for(const auto& v:vers){
       _vertices.push_back(v);
     }
 

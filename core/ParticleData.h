@@ -27,10 +27,11 @@ namespace elSpectro{
 	//particle may decay if short lived ( <1ns)
 	auto rootPdg = TDatabasePDG::Instance()->GetParticle(GetName());
 	//note pi0 lifetime 7.81e-09ns
+	//1E-9c =0.3m
 	return  rootPdg->Lifetime()<1E-9&&rootPdg->Lifetime()>0;
       }
       bool IsWide() const{
-	return Width()>0.001; //minimum width 1MeV
+	return Width()>0.0001; //minimum width 1MeV
       }
    
       void SetMass(double m){_mass = m;}
@@ -38,6 +39,10 @@ namespace elSpectro{
 
       void SetWidth(double w){_width=w;};
       double Width()const {return _width;}
+
+      void SetLifetime(double w){_lifetime=w;};
+      double Lifetime()const {return _lifetime;}
+      double MeanFreePath()const {return _lifetime*TMath::C()*1000;}//in mm
 
       bool IsDecaying(){
 	return _decayChannels.empty()!=true ;
@@ -53,7 +58,6 @@ namespace elSpectro{
       decayer_ptr ChannelDecayer(uint ichn) const{
 	//eventually should allow polarised/non-flat things here...
 	auto res = elSpectro::CloneDecayer( TwoBodyFlat()  );
-	std::cout<< "ParticleData::ChannelDecayer done "<<res.get()<<std::endl;
 	return res;
       }
     
@@ -73,6 +77,7 @@ namespace elSpectro{
       std::vector<double> _branchRatio;//
       double _mass=0;//
       double _width=0;//
+      double _lifetime=0;//
       int _pdg=0;//
  
 

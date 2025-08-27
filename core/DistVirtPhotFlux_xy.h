@@ -27,6 +27,7 @@ namespace elSpectro{
     }
     
     dist_pair SamplePair()   noexcept final {
+      // std::cout<<"DistVirtPhotFlux_xy() "<<std::endl;
       FindWithAcceptReject();
       return _xy;
     }
@@ -204,6 +205,7 @@ namespace elSpectro{
 	avail_xmin = Q2fromTh/r;
     }
     if(_requestXmin> avail_xmin) avail_xmin=_requestXmin;
+    // if(_maxPossiblexRange> avail_xmin) avail_xmin=_maxPossiblexRange;
     return avail_xmin;
   }
   

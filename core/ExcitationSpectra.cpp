@@ -9,15 +9,17 @@ namespace elSpectro{
     _minW = channels.Threshold();
     _maxW = Wmax;
 
-    CreateTemplateHist();
-   
+    
     for (uint ich = 0 ; ich<channels.N() ; ++ich ){
-      channels.SetChannel(ich);
+      channels.SetCurrChannel(ich);
+      _minW = channels.CurrThreshold();
       SpectraFromModel(dynamic_cast<ProductionModel*>( channels.CurrModel() ) );
     }
-    _total = SumSpectra();
+    // _total = SumSpectra();
 
-    std::cout<<"ExcitationSpectra::CreateSpectra "<<_minW<<" "<<_maxW<<" "<<_template.GetNbinsX()<< std::endl;
+    //take the absolute minimum for now
+    _minW = channels.Threshold();
+
   }
   
   DistTH1 ExcitationSpectra::SumSpectra(){
@@ -49,7 +51,7 @@ namespace elSpectro{
     WBins.push_back(_maxW);
     //increasing order
     std::sort(WBins.begin(),WBins.end());
-    
+    std::cout<<"ExcitationSpectra::CreateTemplateHist "<<WBins.size()<<" "<<WBins[0]<<" "<<WBins[1]<<std::endl;
     _template = { "XS_W","XS_W",(WBins.size()-1),WBins.data() };
    
   }
@@ -59,7 +61,10 @@ namespace elSpectro{
       exit(0);
       
     }
-    
+    //Note threshold changes for each channel
+    //so need to redefine template
+    CreateTemplateHist();
+  
     // Need to generate a 1D distribution dependent on W
     // integrating overall all other variables (masses, angles)
     _spectra.push_back( DistTH1( model->CrossSectionW(_template) ) );
