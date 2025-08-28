@@ -1,74 +1,54 @@
-cmake_minimum_required(VERSION 2.9)
-project(elSpectro)
+# 1. Use a modern CMake version and define the project
+cmake_minimum_required(VERSION 3.15)
+project(elSpectro VERSION 1.0 LANGUAGES CXX)
 
-#if -DCMAKE_INSTALL_PREFIX=/install/here use that 
-IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  SET(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR} CACHE PATH "install to source" FORCE)
-ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+# 2. Use standard CMake modules for installation paths
+# This replaces all the manual IF/SET logic for CMAKE_INSTALL_PREFIX
+include(GNUInstallDirs)
 
-IF(NOT CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_PREFIX}/bin)
-  set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
-ENDIF(NOT CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-
-#if no default install dirs, install at source
-if(NOT DEFINED CMAKE_INSTALL_BINDIR)
-  set(CMAKE_INSTALL_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-endif(NOT DEFINED CMAKE_INSTALL_BINDIR)
-
-if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
-  set(CMAKE_INSTALL_LIBDIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-endif(NOT DEFINED CMAKE_INSTALL_LIBDIR)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_INSTALL_BINDIR})
-
-message(INFO ${CMAKE_INSTALL_BINDIR} )
-
-set(CMAKE_CXX_FLAGS "-fPIC -O3")
-
-find_package(ROOT REQUIRED MathMore RooFit GenVector EG)
-list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}) 
-#---Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
-include(${ROOT_USE_FILE})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS}")
-
- 
-##INSTALL JPACPHOTO IF EXISTS AS SUBMODULE
-function(my_add_subdirectory _dir)
-  get_filename_component(_fullpath "${_dir}" REALPATH)
-  if (EXISTS "${_fullpath}" AND EXISTS "${_fullpath}/CMakeLists.txt")
-    get_property(_included_dirs GLOBAL PROPERTY GlobalAddSubdirectoryOnceIncluded)
-    list(FIND _included_dirs "${_fullpath}" _used_index)
-    if (${_used_index} EQUAL -1)
-      set_property(GLOBAL APPEND PROPERTY GlobalAddSubdirectoryOnceIncluded "${_fullpath}")
-      include_directories(${_dir})
-      include_directories(${_dir}/src)
-      include_directories(${_dir}/physics)
-#      include_directories(${_dir}/include/inclusive)
-#      include_directories(${_dir}/include/box)
-      add_subdirectory(${_dir} ${ARGN})
-      set(ENV{JPACPHOTO} ${PWD}/${_dir})
-      message(INFO " using local jpacPhoto")
+# Set a default installation prefix if the user hasn't provided one.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    if($ENV{ELSPECTRO})
+        # If $ELSPECTRO is set, use it as the default install path.
+        set(CMAKE_INSTALL_PREFIX "$ENV{ELSPECTRO}" CACHE PATH "Default install path from $ELSPECTRO env var" FORCE)
+        message(STATUS "Install prefix not set by user. Using default from $ELSPECTRO: ${CMAKE_INSTALL_PREFIX}")
+    else()
+        # If $ELSPECTRO is not set, default to a local 'install' directory.
+        set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/" CACHE PATH "Default install path" FORCE)
+        message(STATUS "Install prefix not set by user. Using default local path: ${CMAKE_INSTALL_PREFIX}")
     endif()
-  else()
-    message(WARNING "my_add_subdirectory: Can't find ${_fullpath}/CMakeLists.txt")
-  endif()
-endfunction(my_add_subdirectory)
+endif()
 
-my_add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/jpacPhoto)
+# 3. Find dependencies using modern CONFIG mode
+# This provides imported targets like ROOT::Core
+find_package(ROOT CONFIG REQUIRED COMPONENTS MathMore RooFit GenVector EG)
 
+# 4. Handle the jpacPhoto submodule
+# This is simpler than the custom function and adds the directory if it exists.
+# This will create a 'JPACPHOTO' library target if the submodule is present.
+# This logic checks for an environment variable first, then falls back to the submodule.
+if($ENV{JPACPHOTO} AND IS_DIRECTORY $ENV{JPACPHOTO})
+    # Store the path in a variable for subdirectories to use
+    set(JPACPHOTO_SOURCE_DIR $ENV{JPACPHOTO})
+    message(STATUS "Using jpacPhoto from environment variable: ${JPACPHOTO_SOURCE_DIR}")
+    add_subdirectory(${JPACPHOTO_SOURCE_DIR})
+    
+elseif(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/jpacPhoto)
+    # Store the path in a variable for subdirectories to use
+    set(JPACPHOTO_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/jpacPhoto)
+    message(STATUS "Using default jpacPhoto submodule.")
+    add_subdirectory(${JPACPHOTO_SOURCE_DIR})
+    
+else()
+    message(WARNING "jpacPhoto dependency not found.")
+endif()
 
-##INSTALL ELSPECTRO LIBRARY 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/core)
-add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/core)
+# 5. Add the core library subdirectory
+# This defines the 'elSpectro' library target.
+add_subdirectory(core)
 
-##INSTALL ELSPECTRO BINARY
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/core/src/)
-file(GLOB_RECURSE EXE_FILES "core/src/*.cpp")
-foreach( exefile ${EXE_FILES} )
-  get_filename_component( exename ${exefile} NAME_WE)
-  add_executable( ${exename} ${exefile} )
-  target_link_libraries( ${exename} elSpectro)
-  target_link_libraries( ${exename} JPACPHOTO)
-  target_link_libraries( ${exename}  ROOT::Core ROOT::Rint ROOT::RIO ROOT::RooFit ROOT::MathMore ROOT::EG ROOT::GenVector )
-endforeach( exefile ${EXE_FILES} )
+# 6. Add the executables
+# It's better practice to have executables in a separate directory (e.g., 'apps')
+# instead of globbing all .cpp files. This avoids creating unwanted executables.
+# This will define your main application targets.
+add_subdirectory(apps)

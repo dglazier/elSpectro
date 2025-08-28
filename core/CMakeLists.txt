@@ -1,146 +1,59 @@
-set(ELSPECTRO elSpectro)
-set(DIRNAME core)
-set(BASE $ENV{ELSPECTRO})
+# 1. Automatically find all source (.cpp) and header (.h) files in this directory.
+file(GLOB CORE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB CORE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
-include_directories($ENV{JPACPHOTO}/include)
-include_directories($ENV{JPACPHOTO}/include/amplitudes)
+# -- FIX STARTS HERE --
+# 2. IMPORTANT: Remove the LinkDef file from the main header list to ensure it's added last.
+list(REMOVE_ITEM CORE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/ElSpectroLinkDef.h")
+# -- FIX ENDS HERE --
 
-ROOT_GENERATE_DICTIONARY(G__${ELSPECTRO}
-  Particle.h
-  DecayingParticle.h
-  CollidingParticle.h
-  DecayModel.h
-  DecayChannel.h
-  PhaseSpaceDecay.h
-  ProductionModel.h
-  ExcitationSpectra.h
-  Formation.h
-  FormationQ2W.h
-#  NuclearBreakup.h
-  Bremsstrahlung.h
-  SDMEDecay.h
-#  TensorSDMEDecay.h
-#  VectorSDMEDecay.h
-#  DecayModelW.h
-#  DecayModelQ2W.h
-##  DecayModelst0.h
-##  DecayModelst.h
-  TwoBodyProduction.h
-#  DecayModelDnpee.h
-##  JpacModelst.h
-  JpacTwoBody.h
-#  JpacSemiInc.h
-#  GenericModelst.h
-  DecayVectors.h
-#  DontDecay.h
-  TwoBodyFlat.h
-##  TwoBody_stu.h
-  TwoBodyEnvelope.h
-  TwoBodytEnvelope.h
-  ScatteredElectron_xy.h
-#  QuasiFreeNucleon.h
-#  BremstrPhoton.h
-  ProductionProcess.h
-  ElectronScattering.h
-#  PhotoProduction.h
-  Distribution.h
-  DistTF1.h
-  DistConst.h
-  DistUniform.h
-  DistTH1.h
-  DistTH2.h
-  DistTH2Slice.h
-  DistYGivenX.h
-  DistFlatMass.h
-  SDME.h
-  PhotonPolarisationVector.h
-  DistVirtPhotFlux_xy.h
-#  ParticleManager.h
-  ParticleFactory.h
-  ParticleData.h
-#  DecayManager.h
-#  MassPhaseSpace.h
-  Writer.h
-  HepMC3Writer.h
-  LundWriter.h
-#  GlueXWriter.h
-#  EICSimpleWriter.h
-#  FunctionsForJpac.h
-  Manager.h
-  Interface.h
-  NBodyPhaseSpace.h
-#  amplitude_blend.hpp
-  LINKDEF ElSpectroLinkDef.h
-  )
+# 3. Define the library target using the automatically found source files.
+add_library(elSpectro SHARED ${CORE_SOURCES})
 
-add_library(${ELSPECTRO} SHARED
-  Particle.cpp
-  DecayingParticle.cpp
-  CollidingParticle.cpp
-  DecayModel.cpp
-  DecayChannel.cpp
-  PhaseSpaceDecay.cpp
-#  NuclearBreakup.cpp
-#  Bremsstrahlung.cpp
-#  SDMEDecay.cpp
-#  TensorSDMEDecay.cpp
-#  VectorSDMEDecay.cpp
-#  DecayModelW.cpp
-#  DecayModelQ2W.cpp
-##  DecayModelst.cpp
-  Formation.cpp
-  FormationQ2W.cpp
-  TwoBodyProduction.cpp
-  ExcitationSpectra.cpp
-##  DecayModelst0.cpp
-## JpacModelst.cpp
-#  JpacSemiInc.cpp
-  JpacTwoBody.cpp
-#  DecayModelDnpee.cpp
-#  GenericModelst.cpp
-#  DecayVectors.cpp
-#  DontDecay.cpp
-  TwoBodyFlat.cpp
-##  TwoBody_stu.cpp
-  TwoBodyEnvelope.cpp
-  TwoBodytEnvelope.cpp
-  ScatteredElectron_xy.cpp
-#  QuasiFreeNucleon.cpp
-#  BremstrPhoton.cpp
-  ProductionProcess.cpp
-  ElectronScattering.cpp
-#  PhotoProduction.cpp
-  Distribution.cpp
-  DistTF1.cpp
-  DistTH1.cpp
-  DistTH2.cpp
-  DistTH2Slice.cpp
-  DistYGivenX.cpp
-  DistFlatMass.cpp
-  DistVirtPhotFlux_xy.cpp
-  SDME.cpp
-  PhotonPolarisationVector.cpp
-#  ParticleManager.cpp
-  ParticleFactory.cpp
-  ParticleData.cpp
-#  DecayManager.cpp
-#  MassPhaseSpace.cpp
-  Writer.cpp
-  HepMC3Writer.cpp
-  LundWriter.cpp
-#  GlueXWriter.cpp
-#  EICSimpleWriter.cpp
-  Manager.cpp
-  NBodyPhaseSpace.cpp
-#  FunctionsForJpac.cpp
-#  amplitude_blend.cpp
-  G__${ELSPECTRO}.cxx
-  )
+# 4. Generate the ROOT dictionary.
+# The cleaned header list is passed first, and then the LinkDef file is added at the end.
+ROOT_GENERATE_DICTIONARY(G__elSpectro
+    ${CORE_HEADERS}
+    OPTIONS "-I${JPACPHOTO_SOURCE_DIR}"
+    LINKDEF ElSpectroLinkDef.h
+)
+target_sources(elSpectro PRIVATE G__elSpectro.cxx)
 
-target_link_libraries(${ELSPECTRO}   ROOT::Core ROOT::Rint ROOT::RIO ROOT::RooFit ROOT::MathMore ROOT::EG ROOT::GenVector )
+# 5. Set Target Properties (Modern way to set C++ standard and flags)
+set_target_properties(elSpectro PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    POSITION_INDEPENDENT_CODE ON # Replaces the -fPIC flag
+)
 
-install(TARGETS ${ELSPECTRO} 
-  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+# 6. Link dependencies directly to the target
+target_link_libraries(elSpectro PUBLIC
+    JPACPHOTO
+    ROOT::Core
+    ROOT::Rint
+    ROOT::RIO
+    ROOT::RooFit
+    ROOT::MathMore
+    ROOT::EG
+    ROOT::GenVector
+)
 
-install (FILES  ${CMAKE_CURRENT_BINARY_DIR}/libelSpectro_rdict.pcm    
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+# 6. Define public include directories for the target
+target_include_directories(elSpectro PUBLIC
+    ${JPACPHOTO_SOURCE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
+)
+
+# 7. Set up installation rules for the library and its headers
+install(TARGETS elSpectro
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libelSpectro_rdict.pcm
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+)
