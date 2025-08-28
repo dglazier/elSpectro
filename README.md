@@ -1,126 +1,18 @@
-# elSpectro 
+# elSpectro
 
-Event Generator framework for incorporating Spectroscopy into electro / photoproduction reactions.
+`elSpectro` is a C++ framework designed for the simulation of particle physics events, with a focus on electron scattering experiments. It provides a set of core libraries for defining particles, decay models, and production processes, allowing users to build and run custom event generators.
 
-# Prerequisites
- 
-ROOT 6
+***
 
-with MathMore RooFit GenVector EG
+## Core Concepts
 
-We require jpacPhot but this is included as a submodule. You may link to your own version of you prefer.
+The project is architecturally split into two main components:
 
-# Installation
+* **`core` Library (`libelSpectro`):** This is the heart of the framework. It is a shared library that contains all the fundamental physics classes and logic for defining particles, managing decays, and modeling reactions.
+* **`apps` Executables:** These are standalone programs that use the `core` library. The primary executable, `elSpectro`, acts as a custom ROOT environment that simplifies running simulation scripts.
 
-     git clone --recurse-submodules https://github.com/dglazier/elSpectro
+***
 
-     cd elSpectro
+## Directory Structure
 
- # Set Environment
-
-     setenv ELSPECTRO /path/to/elSpectro (or $PWD)
-     setenv PATH ${PATH}:${ELSPECTRO}/bin
-     setenv JPACPHOTO $ELSPECTRO/jpacPhoto/
-     
-Note, if you want to use jpacPhoto with jpacBox you need to add the C++ boost library location to your path
-
-      setenv PATH ${PATH}:/where/is/boost
-
-# Build with cmake
- 
-     mkdir build; cd build; cmake ../
-
-     cmake --build . --target install
-
-
-## Output files
-
-Currently you can write to CLAS12-Lund, HEPMC3, EICSmearSimple data formats e.g.
-
-  	  writer(new EICSimpleWriter{Form("outCollision/jpac_Zc3900_%d_%d.txt",(int)ebeamE,(int)pbeamE)});
-  	  writer(new HepMC3Writer{Form("out/jpac_x3872_%s_%d_%d.txt",ampPar.data(),(int)ebeamE,(int)pbeamE)});
- 	  writer(new LundWriter{Form("out_mesonex/ep_to_nX3pi_%d.dat",(int)ebeamE)});
- 
-
-## Running examples
-
-     cd examples
-
-Note the --i option means retain interactive root session, if not included elsepctro will exit once script is complete.
-
-### Examples comparing to simple weighting of TGenPhaseSpace
-
-1) Decay a rho meson to 2 pi
-
-      elspectro --i ComparePhaseSpaceto2.C
-
-2) Decay g+p -> rho(pi+,pi-) p
-
-      elspectro --i  ComparePhaseSpaceto3Rho.C
-
-3) Decay g+p -> X(rho(pi+,pi-) , phi(K+,K-) ) p
-
-       elspectro --i ComparePhaseSpaceto5RhoPhi.C
-
-4)  Decay g+p -> X(rho(pi+,pi-) , 4pi ) p
-
-       elspectro --i ComparePhaseSpaceto4PiRho.C
-
-
-### Examples of ElectroProduction of Jpac amplitudes
-
-1) e + p -> e' X (Jpsi (e+e-)rho(pi+,pi-)) p
-
-      elspectro  --i 'EIC_JPAC_X3872.C("high",5,41,1E33,10)'
-
-Which will run with 5GeV e- energy, 41 GeV proton, Luminosity=10^33 for 10 days
-
-Or with diagnostic histgrams
-
-      elspectro  --i 'EIC_JPAC_X3872_Hists.C("high",5,41,1E33,10)'
-
-The first argument can be "high" or "low" giving different parameterisations.
-
-To set luminosity and days change last 2 arguments, e.g. for luminosoty 10^33 and 25 days, e- energy 100 and p energy 100 with high energy paramterisation :
-
-      elspectro  --i 'EIC_JPAC_X3872_Hists.C("high",100,100,1E33,25)'
-
-To just run a fixed number of events leave last argument 0 and nLumi=number of events
-
-     elspectro  --i 'EIC_JPAC_X3872_Hists.C("high",100,100,1E4)'
-
-2) e + p -> e' Z(3900) (Jpsi (e+e-) pi+) n
-
-
-This exampl3 uses the amplitude_blend class rather than running either high or low amplitude.
-To run with luminosity 10^33 for 25 days
-
-      elspectro --i  'EIC_JPAC_nZc_Hists.C(5,41,1E33,25)'
-
-or to just run 1000 events
-
-      elspectro  --i 'EIC_JPAC_nZc_Hists.C("low",5,41,1000)'
-
-### Examples of MesonEx Quasi-real PhotoProduction
-
-Note forward tagger acceptance can be included with lines like
-
-     production->SetLimitTarRest_eThmin(1.5*TMath::DegToRad());
-     production->SetLimitTarRest_eThmax(5.5*TMath::DegToRad());
-     production->SetLimitTarRest_ePmin(0.4);
-     production->SetLimitTarRest_ePmax(6);
-
-
-1) e + p -> e' X (pi+pi-) p
-
-     elspectro MesonEx_p2pi.C
-
-2) e + p -> e' X (pi+pi+pi-) n
-
-     elspectro MesonEx_n3pi.C
- 
-3)  e + p -> e' P_c -> Jpsi(e+e-) p
-
-     elspectro MesonEx_JpsiPenta.C
-
-Also just does phase space Jpsi, which does not need jpacPhoto, see code for details
+The repository is organized as follows:
