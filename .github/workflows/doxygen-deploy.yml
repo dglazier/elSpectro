@@ -60,7 +60,6 @@ jobs:
 Please ensure that the link in your `docs/index.html` file correctly points to the `reference` subdirectory. The link should look like this:
 
 ```html
-<a href="./reference/" target="_blank" class="...">
+<a href="./reference/index.html" target="_blank" class="inline-block bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-600 transition-colors duration-300">
     View Full Class Reference (Doxygen)
 </a>
-
