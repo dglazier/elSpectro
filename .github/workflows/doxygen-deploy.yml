@@ -1,0 +1,67 @@
+name: Deploy Doxygen Documentation
+
+on:
+  # Runs on pushes targeting the new_start branch
+  push:
+    branches: ["new_start"]
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Install Doxygen and Graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      - name: Generate Doxygen Documentation
+        run: doxygen Doxyfile
+
+      - name: Prepare site for deployment
+        run: |
+          mkdir -p _site/reference
+          cp docs/index.html _site/
+          mv doxygen-html/* _site/reference/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # All files from the staging directory will be uploaded
+          path: './_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+### 2. Link in Your `docs/index.html`
+
+Please ensure that the link in your `docs/index.html` file correctly points to the `reference` subdirectory. The link should look like this:
+
+```html
+<a href="./reference/" target="_blank" class="...">
+    View Full Class Reference (Doxygen)
+</a>
+

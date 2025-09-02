@@ -1,0 +1,25 @@
+Doxyfile 1.9.1
+--- Project Details---
+PROJECT_NAME           = "elSpectro"
+PROJECT_BRIEF          = "A C++ framework for particle physics event simulation"PROJECT_NUMBER         = 1.0.0
+OUTPUT_DIRECTORY       = doxygen-html
+CREATE_SUBDIRS         = YES
+--- Source Code Location ---
+INPUT                  = ./core ./apps
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = /build/
+--- Output Format ---
+GENERATE_LATEX         = NO
+GENERATE_HTML          = YES
+HTML_OUTPUT            = .
+HTML_FILE_EXTENSION    = .html
+--- Diagram Generation (requires graphviz/dot) ---
+HAVE_DOT               = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+--- Doxygen Behavior ---
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = NO
