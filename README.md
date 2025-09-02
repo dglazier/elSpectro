@@ -2,6 +2,14 @@
 
 `elSpectro` is a C++ framework designed for the simulation of particle physics events, with a focus on electron scattering experiments. It provides a set of core libraries for defining particles, decay models, and production processes, allowing users to build and run custom event generators.
 
+
+**[View the Interactive Guide & Full Documentation](https://dglazier.github.io/elSpectro/)**
+
+## Quick Build
+```bash
+git clone --recurse-submodules https://github.com/dglazier/elSpectro
+...
+
 ***
 
 ## Core Concepts
