@@ -376,7 +376,7 @@ namespace elSpectro{
  	
 	//calculate virtual photon
 	Q2WModel()->Intensity();
-	//	std::cout<<"fXYcosth "<<Q2WModel()->getW()<<" "<<Q2WModel()->getQ2()<<" "<<val<<" xs "<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl;
+      	//std::cout<<"fXYcosth "<<Q2WModel()->getW()<<" "<<Q2WModel()->getQ2()<<" "<<val<<" xs "<<x[0]<<" "<<x[1]<<" "<<x[2]<<std::endl;
 	if(Q2WModel()->getW()<threshW) return 0.0;
 	//get value of dsigma(s)/dcosth cross section at x,y,costh
 	//Double_t dsigma_dcosth=model2body->dsigma_costh(x[2]);
@@ -389,7 +389,7 @@ namespace elSpectro{
 	if(val<0) return 0.;
 	val*=Q2WModel()->Q2H1Rho();
 
-	//	std::cout<< "check W "<<Q2WModel()->getW()<<" Q2 "<<Q2WModel()->getQ2()<<" pdg1 "<<Model()->Products()[0]->Pdg()<<" pdg2 "<<Model()->Products()[1]->Pdg()<<" "<<model2body->get_W_FromParent()<<" "<<threshW<<" "<<x[2]<<" "<<val<<std::endl;
+       	//std::cout<< "check W "<<Q2WModel()->getW()<<" Q2 "<<Q2WModel()->getQ2()<<" pdg1 "<<Model()->Products()[0]->Pdg()<<" pdg2 "<<Model()->Products()[1]->Pdg()<<" "<<model2body->get_W_FromParent()<<" "<<threshW<<" "<<x[2]<<" "<<val<<std::endl;
 
 	return val;
       };
@@ -412,7 +412,7 @@ namespace elSpectro{
     //std::vector<double> cosThMin={0.9};
     //std::vector<double> cosThMax={1};
     gBenchmark->Start("RooFitIntegral");
-    for(ushort iint=0;iint<1;iint++){
+    for(ushort iint=0;iint<3;iint++){
       TString pdfname(Form("ElScatterIntegral%d",NintegralsElectronScattering));
       auto cthvar = RooRealVar("CosThIntegral","CosThIntegral",0.8,cosThMin[iint],cosThMax[iint],"");
       auto pdf = RooFunctorPdfBinding(pdfname, "ElScatterIntegral", wrapPdf, RooArgList(xvar,yvar,cthvar));

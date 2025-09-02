@@ -21,12 +21,14 @@
 #pragma link C++ class elSpectro::JpacTwoBody+;
 #pragma link C++ class elSpectro::PhaseSpaceDecay+;
 #pragma link C++ class elSpectro::Bremsstrahlung+;
+#pragma link C++ class elSpectro::NuclearBreakup+;
 
 #pragma link C++ class elSpectro::DecayVectors+;
 #pragma link C++ class elSpectro::TwoBodyFlat+;
 #pragma link C++ class elSpectro::TwoBodyEnvelope+;
 #pragma link C++ class elSpectro::TwoBodytEnvelope+;
 #pragma link C++ class elSpectro::ScatteredElectron_xy+;
+#pragma link C++ class elSpectro::QuasiFreeNucleon+;
 
 #pragma link C++ class elSpectro::ProductionProcess+;
 #pragma link C++ class elSpectro::ElectronScattering+;

@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   
   TRint  *app = new TRint("elSpectro", &argc, argv);
   // Run the TApplication (not needed if you only want to store the histograms.)
-  app->ProcessLine(".x $ELSPECTRO/core/src/Load.C");
+  app->ProcessLine(".x $ELSPECTRO/apps/Load.C");
 
 
 

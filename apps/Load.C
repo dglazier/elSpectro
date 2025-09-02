@@ -22,9 +22,9 @@ void Load(){
   //if not defined jpacPhoto look for elSpectro submodule
   if(JPAC.Length()==0) JPAC = ELSPECTRO+"jpacPhoto";
   
-  gInterpreter->AddIncludePath(JPAC+"/include/");
-  gInterpreter->AddIncludePath(JPAC+"/include/src");
-  gInterpreter->AddIncludePath(JPAC+"/include/physics");
+  gInterpreter->AddIncludePath(JPAC+"");
+  gInterpreter->AddIncludePath(JPAC+"src");
+  gInterpreter->AddIncludePath(JPAC+"physics");
   //First try libraries installed with source code
   auto jlib=gSystem->Load(JPAC+"/lib/libJPACPHOTO."+gSystem->GetSoExt());
   //If not, check LD_LIBRARY_PATH

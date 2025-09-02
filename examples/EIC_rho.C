@@ -46,7 +46,7 @@ void EIC_rho(double ebeamE = 18, double pbeamE = 275, double nLumi=6.1E33, doubl
   // ---------------------------------------------------------------------------
   // Initialize HepMC3
   // ---------------------------------------------------------------------------
-  generator.SetWriter( new  elSpectro::HepMC3Writer{Form("out_benchmarks/lowQ2_rho_%d_%d.txt",(int)ebeamE,(int)pbeamE)});
+  generator.SetWriter( new  elSpectro::HepMC3Writer{Form("/home/dglazier/elspectro_out/eic_rho_%d_%d.hepmc",(int)ebeamE,(int)pbeamE)});
   
   // ---------------------------------------------------------------------------
   //initilase the generator, may take some time for making distribution tables 
@@ -56,9 +56,9 @@ void EIC_rho(double ebeamE = 18, double pbeamE = 275, double nLumi=6.1E33, doubl
   // ---------------------------------------------------------------------------
   //Set number of events via experimental luminosity and beamtime
   // ---------------------------------------------------------------------------
-  // rho_prod->SetCombinedBranchingFraction(rho.BranchRatio()); 
-  //generator.SetNEvents_via_LuminosityTime(nLumi,24*60*60*nDays);
-   generator.SetNEvents(1000);
+  //rho_prod->SetCombinedBranchingFraction(rho.BranchRatio()); 
+  generator.SetNEvents_via_LuminosityTime(nLumi,24*60*60*nDays);
+  // generator.SetNEvents(1000);
   //auto fastIntegral=generator.Reaction()->IntegrateCrossSectionFast();
   //std::cout<<"       check fast cross section "<<fastIntegral<<std::endl;
 
