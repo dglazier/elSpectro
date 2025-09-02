@@ -54,13 +54,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-```
 
 ### 2. Link in Your `docs/index.html`
 
 Please ensure that the link in your `docs/index.html` file correctly points to the `reference` subdirectory. The link should look like this:
 
-```html
+html
 <a href="./reference/" target="_blank" class="...">
     View Full Class Reference (Doxygen)
 </a>
