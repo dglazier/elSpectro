@@ -59,7 +59,7 @@ jobs:
 
 Please ensure that the link in your `docs/index.html` file correctly points to the `reference` subdirectory. The link should look like this:
 
-html
+```html
 <a href="./reference/" target="_blank" class="...">
     View Full Class Reference (Doxygen)
 </a>
