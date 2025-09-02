@@ -1,230 +1,310 @@
-//////////////////////////////////////////////////////////////
-///
-///Class:		Particle
-///Description:
-///             Control behaviour of particles
-///             Particle is defined by
-///             1) its instaneous LorentzVector
-///             2) any subsequent Decays
-
+/**
+ * @file Particle.h
+ * @author D. Glazier
+ * @brief Defines the base Particle class for the elSpectro framework.
+ * @date 2025-09-02
+ */
 
 #pragma once
 
 #include "LorentzVector.h"
 #include "Distribution.h"
 #include "SDME.h"
-#include <TObject.h> //for ClassDef
-#include <TMath.h> //for Sqrt
-#include <TRandom.h> //for Sqrt
+#include <TObject.h>
+#include <TMath.h>
+#include <TRandom.h>
 #include <vector>
 #include <memory>
+#include <iostream>
 
 namespace elSpectro{
-  
-  class DecayModel; //so can make friend
-  class DistFlatMassMaster; //so can make friend
+
+  class DecayModel;         
+  class DistFlatMassMaster; 
  
+  /**
+   * @enum DistType
+   * @brief Type of distribution (mass or mass squared).
+   */
   enum class DistType {kMass, kMassSquared};
+
+  /**
+   * @enum DecayType
+   * @brief Type to indicate particle decay status.
+   */
   enum class DecayType{ Stable, Attached, Detached, Production };
 
+  /**
+   * @class Particle
+   * @brief Controls the behaviour and properties of particles in elSpectro.
+   *
+   * Particle is defined by:
+   *   1) Its instantaneous LorentzVector
+   *   2) Any subsequent Decays
+   *
+   * Acts as the base class for all particle types within the framework.
+   */
   class Particle {
 
   public:
+    Particle();
+    virtual ~Particle();
+    Particle(const Particle& other);
+    Particle(Particle&&);
+    Particle& operator=(const Particle& other);
+    Particle& operator=(Particle&& other);
 
- 
-    Particle()=default;
-    virtual ~Particle()=default;
-    Particle(const Particle& other)=default; //need the virtual destructor...so rule of 5
-    Particle(Particle&&)=default;
-    Particle& operator=(const Particle& other)=default;
-    Particle& operator=(Particle&& other) = default;
-
+    /**
+     * @brief Construct a Particle from a PDG code.
+     * @param[in] pdg The PDG code.
+     */
     Particle(int pdg);
     
+    /**
+     * @brief Returns whether this particle is decaying.
+     * @return False by default.
+     */
     virtual bool IsDecaying() const {return false;}
 
-    LorentzVector const& P4() const {return _vec;}//const be changed by others
+    /**
+     * @brief Get the particle's Lorentz four-vector.
+     * @return Constant reference to the LorentzVector.
+     */
+    LorentzVector const& P4() const {return _vec;}
+    /**
+     * @brief Get a pointer to the particle's Lorentz four-vector.
+     * @return Pointer to LorentzVector.
+     */
     LorentzVector* P4ptr() {return &_vec;}
     
-    int Pdg()const{return _pdg;}
+    /**
+     * @brief Get the PDG code for this particle.
+     * @return PDG integer code.
+     */
+    int Pdg() const {return _pdg;}
 
- 
-    void SetXYZT(double xx,double yy,double zz, double tt){
-      _vec.SetXYZT(xx,yy,zz,tt);
-      _dynamicMass=_vec.M();
-    }
-    
-    void SetXYZ(double xx,double yy,double zz){
-      auto m2=_vec.M2();auto P2=xx*xx+yy*yy+zz*zz;
-      _vec.SetXYZT(xx,yy,zz,TMath::Sqrt(P2+m2));
-    }
-    void SetP4(const LorentzVector& p4){
-      _vec=p4;
-      _dynamicMass=_vec.M();
-    }
-    void TakeMaximumMass(){
-      SetP4M( MaximumMassPossible() );
-    }
-   void TakeMinimumMass(){
-      SetP4M( MinimumMassPossible() );
-    }
+    /**
+     * @brief Set the four-vector components (x, y, z, t).
+     * @param[in] xx X component.
+     * @param[in] yy Y component.
+     * @param[in] zz Z component.
+     * @param[in] tt Time component.
+     */
+    void SetXYZT(double xx, double yy, double zz, double tt);
+
+    /**
+     * @brief Set the spatial three-vector; time is calculated by mass.
+     * @param[in] xx X component.
+     * @param[in] yy Y component.
+     * @param[in] zz Z component.
+     */
+    void SetXYZ(double xx, double yy, double zz);
+
+    /**
+     * @brief Set the four-vector from a LorentzVector.
+     * @param[in] p4 The LorentzVector to copy.
+     */
+    void SetP4(const LorentzVector& p4);
+
+    /**
+     * @brief Set the four-vector to the maximum possible mass.
+     */
+    void TakeMaximumMass();
+
+    /**
+     * @brief Set the four-vector to the minimum possible mass.
+     */
+    void TakeMinimumMass();
+
+    /**
+     * @brief Set the four-vector to the PDG mass.
+     */
     void TakePdgMass(){
       SetP4M( PdgMass() );
     }
-
+    /**
+     * @brief Boost the particle by a given velocity vector.
+     * @param[in] vboost BetaVector (velocity/c).
+     */
     void Boost(const  elSpectro::BetaVector& vboost ){
       _vec=ROOT::Math::VectorUtil::boost(_vec,vboost);
     }
 
+    /**
+     * @brief Get mass squared (M^2) of the particle.
+     * @return Mass squared in GeV^2.
+     */
     double M2() const {
       if(Pdg()==22) return 0.;
       return _dynamicMass*_dynamicMass;
     }
+    /**
+     * @brief Get mass of the particle.
+     * @return Mass in GeV.
+     */
     double Mass() const {
       if(Pdg()==22) return 0.;
       return _dynamicMass;
     }
     
+    /**
+     * @brief Set the mass distribution for this particle.
+     * @param[in] dist Shared pointer to Distribution.
+     */
     void SetMassDist(std::shared_ptr<Distribution> dist){
       _massDist = dist;
     }
    
-    Distribution* MassDistribution() const{return _massDist.get();}
+    /**
+     * @brief Get the mass distribution for this particle, if any.
+     * @return Pointer to Distribution, or nullptr.
+     */
+    Distribution* MassDistribution() const {return _massDist.get();}
     
+    /**
+     * @brief Set the parent particle pointer.
+     * @param[in] parent Pointer to parent Particle.
+     */
     void SetParent(Particle* parent);
  
+    /**
+     * @brief Set the PDG mass for this particle and update four-vector mass.
+     * @param[in] val The new PDG mass.
+     */
     void SetPdgMass(double val){ _pdgMass=val; SetP4M(val); }
     
-    double PdgMass()const  noexcept{
-      return _pdgMass;
-    }
+    /**
+     * @brief Get the PDG mass for this particle.
+     * @return PDG mass value.
+     */
+    double PdgMass() const noexcept { return _pdgMass; }
 
-    virtual double MinimumMassPossible()const  noexcept{
-      // std::cout<<"Particle::MinimumMassPossible() "<< _pdgMass<<std::endl;
+    /**
+     * @brief Get the minimum physically possible mass for this particle.
+     * @return Minimum mass value.
+     */
+    virtual double MinimumMassPossible()const noexcept {
       return  PdgMass();
     }
-    virtual double MaximumMassPossible()const  noexcept{
+    /**
+     * @brief Get the maximum physically possible mass for this particle.
+     * @return Maximum mass value.
+     */
+    virtual double MaximumMassPossible()const noexcept {
       return  PdgMass();
     }
-    virtual double MinimumMassForChannel() const  noexcept{
+    /**
+     * @brief Get the minimum mass allowed by the decay channel.
+     * @return Minimum channel mass.
+     */
+    virtual double MinimumMassForChannel() const noexcept {
       return MinimumMassPossible();
     }
  
-    double MassWeight() const noexcept {
-      return _massWeight;
-    }
+    /**
+     * @brief Get the mass weight for this particle (used in mass distributions).
+     * @return Mass weight (probability).
+     */
+    double MassWeight() const noexcept { return _massWeight; }
 
-    virtual void Print()  const;
+    /**
+     * @brief Print the particle state to the console.
+     */
+    virtual void Print() const;
 
+    /**
+     * @brief Set the vertex ID associated with this particle.
+     * @param[in] vertexID The vertex ID.
+     */
     void SetVertexID(int vertexID){
       _vertexID=vertexID;
     }
+    /**
+     * @brief Set the vertex position for this particle.
+     * @param[in] v The LorentzVector for the vertex.
+     */
     void SetVertexPosition(const LorentzVector& v){
       _vertex=v;
     }
-    // void SetVertex(int vertexID,const LorentzVector* v){
-    //   _vertexID=vertexID;
-    //   _vertex=v;
-    //  }
+    /**
+     * @brief Get the vertex position.
+     * @return Constant reference to LorentzVector.
+     */
     const LorentzVector& VertexPosition()const noexcept{return _vertex;}
+    /**
+     * @brief Get the vertex ID.
+     * @return Vertex ID.
+     */
     int VertexID()const noexcept{return _vertexID;}
 
+    /**
+     * @brief Returns decay type (Stable by default).
+     * @return DecayType status.
+     */
     virtual DecayType IsDecay() const noexcept {return DecayType::Stable;}
   
-
+    /**
+     * @brief Initialise the SDME for this particle.
+     * @param[in] J Spin.
+     * @param[in] alphaMax Maximum allowed value for alpha.
+     * @return Pointer to initialised SDME.
+     */
     SDME* InitSDME(uint J,uint alphaMax){
       _sdme=SDME(J,alphaMax);
       return &_sdme;
     }
+    /**
+     * @brief Get the SDME for this particle.
+     * @return Const pointer to SDME.
+     */
     const SDME* GetSDME() const noexcept{ return &_sdme; }
 
+    /**
+     * @brief Lock the mass, preventing it from being changed by mass distributions.
+     */
     void LockMass(){_massLocked=true;}
+    /**
+     * @brief Unlock the mass, allowing mass distributions to update it.
+     */
     void UnlockMass(){_massLocked=false;}
     
-    void SetP4M(double mm){
-      auto P2=_vec.P2();
-      _vec.SetXYZT(_vec.X(),_vec.Y(),_vec.Z(),TMath::Sqrt(P2+mm*mm));
-      _dynamicMass=mm;
-    }
+    /**
+     * @brief Set the four-vector mass component, adjusting energy accordingly.
+     * @param[in] mm The new mass.
+     */
+    void SetP4M(double mm);
 
   private:
 
-    friend DecayModel; //for  DetermineDynamicMass()
-    friend DistFlatMassMaster; //for  DetermineDynamicMass()
-    
-    //if mass comes from a distribution sample it
-    void  DetermineDynamicMass(double xmin=-1,double xmax=-1){
-      // std::cout<<"Particle::DetermineDynamicMass "<<Pdg()<<" "<<_dynamicMass<<" "<<_massDist<<" "<<xmin<<" "<<xmax<<std::endl;
-      if(_massDist==nullptr ){
-	TakePdgMass();
-	return; //stick at pdgMass
-      }
-      if(_massLocked==true) return; //someone else in charge...
-      _dynamicMass=-1;
-      _massWeight=0;
-      auto minposs = MinimumMassPossible();
-   
-      auto minRange = (xmin==-1)?minposs:xmin;
-      if(minRange>minposs)minRange=minposs;
-      auto maxRange = (xmax==-1)?_massDist->GetMaxX():xmax;
-      if((maxRange-minRange)<0) {
-	if((maxRange-minRange)>-1E-6) {
-	  _dynamicMass=minRange;
-	  return;
-	}
-      }
+    friend DecayModel;        
+    friend DistFlatMassMaster;
 
-      if(minRange>maxRange){//unphysical
-	std::cout<<"Warning  Particle::DetermineDynamicMass min "<<minRange<<" greater than max "<<maxRange<<" for "<<_pdg<<" minposs "<<minposs<<" "<<xmax<<" "<<_massDist->GetMaxX()<<" equal "<<(minposs==_massDist->GetMaxX())<<std::endl;
-	_dynamicMass=minRange; 
-	return ;
-	//	exit(0);
-	 
-      }
-      while(_dynamicMass<minposs){
-	// if((maxRange-minRange)<1E-6) {
-	//   _dynamicMass=minRange;
-	//   return;
-	// }
-	//        std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<" "<<_massWeight<<" "<<minRange<<" "<<maxRange<<" check "<<minposs-minRange<<"check "<<_massDist->GetMinX()-minRange<<std::endl;
+    /**
+     * @brief If mass comes from a distribution, sample it.
+     * @param[in] xmin Minimum mass range (default -1 for auto).
+     * @param[in] xmax Maximum mass range (default -1 for auto).
+     * @note This function may update _dynamicMass and _massWeight.
+     */
+    void DetermineDynamicMass(double xmin=-1, double xmax=-1);
 
-	_dynamicMass= _massDist->SampleSingle(minRange,maxRange);
-	
+    LorentzVector _vec;               ///< Particle's Lorentz four-vector.
+    SDME _sdme;                       ///< Spin Density Matrix Elements for the particle.
+    double _pdgMass {0};              ///< PDG mass value for the particle (GeV).
+    double _dynamicMass {0};          ///< Mass that may be updated by distributions (GeV).
+    double _massWeight {1};           ///< Weight of the sampled mass (for distributions).
+    int _pdg {0};                     ///< PDG integer code.
+    int _vertexID {0};                ///< ID of the production vertex.
+    LorentzVector _vertex;            ///< Position of the production vertex.
+    std::shared_ptr<Distribution> _massDist {nullptr}; ///< Mass distribution, if applicable.
+    bool _massLocked {false};         ///< Is the mass locked (cannot be changed by distributions)?
 
-	//std::cout<<"DONE "<<_pdg<<"  DetermineDynamicMass( "<<_dynamicMass<<" "<<MinimumMassPossible()<<" diff "<<_dynamicMass-minRange<<" "<<maxRange-minRange<<std::endl;
-	//need a weight for "envelope"
-	_massWeight =_massDist->GetCurrentWeight();
+    ClassDef(elSpectro::Particle,1);  ///< ROOT class definition macro.
+    
+  }; // class Particle
 
-	if(_dynamicMass==0) {
-	  std::cout<<"Error  Particle::DetermineDynamicMass zero mass"<<std::endl;
-	  std::cout<<_pdg<<"  DetermineDynamicMass( "<<MinimumMassPossible()<<" "<<_dynamicMass<<" "<<_massWeight<<" "<<minRange<<" "<<maxRange<<std::endl;
-	  exit(0);
-	}
-      }
-      SetP4M(_dynamicMass);
-
-    }
-
-    
-    LorentzVector _vec;
-    SDME _sdme;
-    double _pdgMass={0};
-    double _dynamicMass={0};
-    double _massWeight={1};
-    
-    int _pdg={0};
-    int _vertexID={0};
-    LorentzVector _vertex;
-    
-    std::shared_ptr<Distribution> _massDist={nullptr};
-    bool _massLocked={false};
-    
-    
-    ClassDef(elSpectro::Particle,1); //class Particle
-    
-  };//class Particle
-
+  /**
+   * @brief Unique pointer type to Particle.
+   */
   using particle_uptr = std::unique_ptr<Particle>;
 
-  
-}//namespace elSpectro
+} // namespace elSpectro
