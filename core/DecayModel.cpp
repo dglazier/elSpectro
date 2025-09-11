@@ -11,35 +11,10 @@ namespace elSpectro{
   DecayModel::DecayModel( const decaying_objs& decs, const particle_objs& stables):_unstables{decs},_stables{stables}{
   
   
-    //first add pre-existing particles
-    //std::copy(std::begin(ps), std::end(ps), std::back_inserter(_products));
-    
-    //store list of unstable particles which decay
-    //make our own copy
-    // for(auto* prod: ps ){ 
-    //   auto dp=dynamic_cast<DecayingParticle*>(prod);
-    //   if(dp!=nullptr){
-    // 	_unstables.push_back(*dp);//make a copy
-    //  }
-    //   else{
-    // 	_stables.push_back(*prod);//make a copy
-    //   }
-    // }
-    
-    // //now the non decaying particles
-    // auto& pman = Manager::Instance().Particles();
-    // for(const auto& pdg : pdgs){
-    //   _stables.push_back( Particle{pdg} );
-    //   // _stables.push_back( pman.Take( new Particle{pdg} ) );
-    // }
-    // if(decs.size())std::cout<<"DecayModel dec "<<" "<<&decs[0]<<" "<<decs.size()<<" "<<decs[0].Pdg()<<" "<<decs[0].Model()->Product(0)->Pdg()<<std::endl;//<<decs[0].Model()->Product(0)->Pdg()
-
-    //now vectors have all their entries
-    //we can assign their ptrs to products
+    //we can copy their objects to list of all products
     _products.reserve(_stables.size()+_unstables.size());
     for(auto& prod: _stables ){
-      // std::cout<<"DecayModel add stable product "<<&prod<<" "<<&_stables<<std::endl;
-      _products.push_back(&prod);
+       _products.push_back(&prod);
     }
     for(auto& prod: _unstables ){
       //std::cout<<"DecayModel add unstable product "<<prod.Pdg()<<" "<<&prod<<" "<<&_unstables<<" "<<prod.Model()->Product(0)->Pdg()<<" "<<prod.Model()->Product(0)<<std::endl;
@@ -156,9 +131,15 @@ namespace elSpectro{
   }
  
   void  DecayModel::EventParticles(particle_ptrs& parts){
-    for(auto& entry:_stables){
-      parts.push_back(&entry);
+    auto nstables = _stables.size();
+    for(size_t istab=0;istab<nstables;++istab){
+      // std::cout<<"DecayModel add stable product "<<&prod<<" "<<&_stables<<std::endl;
+      if(std::count(_notEventParticles.begin(), _notEventParticles.end(), istab)!=0) continue;
+      parts.push_back(&_stables[istab]);
     }
+      //for(auto& entry:_stables){
+      //parts.push_back(&entry);
+      //}
     //if unstable particle add its children
     for(auto& entry:_unstables){
       entry.EventParticles(parts);

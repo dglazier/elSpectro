@@ -122,7 +122,7 @@ namespace elSpectro{
      wmax*=MassPhaseSpaceCorrect();
      wmax*=2;//fudge factor
     //
-     //     std::cout<<" TwoBodyProduction::Intensity w = "<<get_W()<<" weight "<<weight<<" "<<wmax<<" new weight"<< weight/wmax<<" cos  "<<get_cosThCM()<<" t "<<get_t()<<" or "<<kin_tFromWCosTh(get_W(),get_cosThCM())<<" min "<<kin_tFromWCosTh(get_W(),1)<<" Q2 "<<-_p4photon.M2() <<std::endl;
+     //std::cout<<" TwoBodyProduction::Intensity w = "<<get_W()<<" weight "<<weight<<" "<<wmax<<" new weight"<< weight/wmax<<" cos  "<<get_cosThCM()<<" t "<<get_t()<<" or "<<"kin_tFromWCosTh(get_W(),get_cosThCM()) "<<" min "<<kin_tFromWCosTh(get_W(),1)<<" Q2 "<<-_p4photon.M2() <<std::endl;
       weight/=wmax;
       //weight*=0.5; ///the reduces the efficiecny of the sampling, but also decreases the probability of current weight being grerater than the sampling weight. This may happen due to different values of t for a given cosTheta due to the mass not being PDG
       
@@ -144,7 +144,7 @@ namespace elSpectro{
 	//     // decMeson_ptr->SetP4M(tempmass);
 	//     _p4meson.SetXYZT(tempmass.X(),tempmass.Y(),tempmass.Z(),tempmass.T());
 
-	std::cout<<" TwoBodyProduction::Intensity w = "<<get_W()<<" weight "<<weight<<" max "<<wmax<<"xs at min "<< DiffXS_at_tmin()<< " new xs"<< weight*wmax<< " alternative "<< weight*wmax/DiffXS_at_tmin()<<" cos  "<<get_cosThCM()<<" t "<<get_t()<<" or "<<kin_tFromWCosTh(get_W(),get_cosThCM())<<" or pdg  "<< pdgt<<" or Q20 "<<tQ20<<" or Q20PDG "<<tQ20PDG<<" min "<<kin_tFromWCosTh(get_W(),1)<<" Q2 "<<-_p4photon.M2()<<" t from particles "<< (_p4meson-_p4photon).M2()<<" target "<<_p4target.M()<<" baryon "<<_p4baryon.M()<<" baryon "<<_p4meson.M()<<" surronding max "<<_distHighXS.GetValueFor(_W)<<" "<<_distHighXS.GetValueForBinAbove(_W)<<" "<<_distHighXS.GetValueForBinBelow(_W)<<" pdg mass t xs "<<pdgEquivCosTh<<" "<<_distEnvelope.GetValueFor(_W,pdgEquivCosTh+1)<<" "<<std::endl;
+	//	std::cout<<" TwoBodyProduction::Intensity w = "<<get_W()<<" weight "<<weight<<" max "<<wmax<<"xs at min "<< DiffXS_at_tmin()<< " new xs"<< weight*wmax<< " alternative "<< weight*wmax/DiffXS_at_tmin()<<" cos  "<<get_cosThCM()<<" t "<<get_t()<<" or "<<kin_tFromWCosTh(get_W(),get_cosThCM())<<" or pdg  "<< pdgt<<" or Q20 "<<tQ20<<" or Q20PDG "<<tQ20PDG<<" min "<<kin_tFromWCosTh(get_W(),1)<<" Q2 "<<-_p4photon.M2()<<" t from particles "<< (_p4meson-_p4photon).M2()<<" target "<<_p4target.M()<<" baryon "<<_p4baryon.M()<<" baryon "<<_p4meson.M()<<" surronding max "<<_distHighXS.GetValueFor(_W)<<" "<<_distHighXS.GetValueForBinAbove(_W)<<" "<<_distHighXS.GetValueForBinBelow(_W)<<" pdg mass t xs "<<pdgEquivCosTh<<" "<<_distEnvelope.GetValueFor(_W,pdgEquivCosTh+1)<<" "<<std::endl;
 	//	exit(0);
       }
      //     weight/=get_max(); //normalise range 0-1

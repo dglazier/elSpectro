@@ -82,6 +82,7 @@ namespace elSpectro{
     auto minRange = (xmin == -1) ? minposs : xmin;
     if(minRange > minposs) minRange = minposs;
     auto maxRange = (xmax == -1) ? _massDist->GetMaxX() : xmax;
+    // Handle cases where the range is numerically zero or slightly negative due to precision issues.
     if((maxRange-minRange)<0) {
       if((maxRange-minRange)>-1E-6) {
         _dynamicMass = minRange;
@@ -89,7 +90,7 @@ namespace elSpectro{
       }
     }
     
-    if(minRange > maxRange){
+    if(minRange > maxRange){// Unphysical situation where the calculated minimum is greater than the maximum allowed.
       std::cout << "Warning  Particle::DetermineDynamicMass min " << minRange
                 << " greater than max " << maxRange << " for " << _pdg
                 << " minposs " << minposs << " " << xmax << " "

@@ -48,6 +48,14 @@ namespace elSpectro{
 
     void SetX(double v) const {
       _x=v;
+      if(_xbins_lowedges.front()>v){
+	_current_xbin = 0;
+	return;
+      }
+      if(_xbins_lowedges.back()<v){
+	_current_xbin = _xbins_lowedges.size()-2;
+	return;
+      }
       _current_xbin = TMath::BinarySearch(_nBinsX,_xbins_lowedges.data(),v);
     }
     void SetY(double v) const {_y=v;}

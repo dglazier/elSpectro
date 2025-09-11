@@ -85,6 +85,7 @@ namespace elSpectro{
     double PhaseSpaceFactor_dCosTh() const noexcept ;
     double kinCM_MesonP(double W) const;
     double kinCM_MesonE(double W) const ;
+    double kinCM_PhotonE(double W) const ;
     double kin_tFromWCosTh(double W, double cosTh) const;
     double CalcCosThCM() const;
     double kin_tFromWCosThatQ20(double W, double cosTh) const;
@@ -230,6 +231,12 @@ namespace elSpectro{
     // std::cout<<"kinCM_MesonE "<< (W*W + m2_a - m2_b)/(2.0*W)<<std::endl;
     return (W*W + m2_a - m2_b)/(2.0*W);
   }
+  inline double TwoBodyProduction::kinCM_PhotonE(double W) const {
+    auto m2_a =_p4photon.M2();
+    auto m2_b =_p4baryon.M2();
+    // std::cout<<"kinCM_MesonE "<< (W*W + m2_a - m2_b)/(2.0*W)<<std::endl;
+    return (W*W + m2_a - m2_b)/(2.0*W);
+  }
   inline double TwoBodyProduction::kin_tFromWCosTh(double W, double cosTh) const{
     if(_p4parent.P()==0){
       std::cerr<<"TwoBodyProduction::kin_tFromWCosTh, parent at rest, we require a valid parent particle to calculate the kinematics"<<std::endl;
@@ -242,8 +249,13 @@ namespace elSpectro{
     }
     auto cmBoost=_p4parent.BoostToCM();
     auto p1cm=boost(_p4photon,cmBoost);
-    // std::cout<<"kin_tFromWCosTh "<<p1cm.M2() + _meson->M2() - 2 * (p1cm.E()* kinCM_MesonE(W)-p1cm.P()* kinCM_MesonP(W)*cosTh)<<std::endl;
-
+    auto p2cm=boost(_p4meson,cmBoost);
+    
+    //std::cout<<"kin_tFromWCosTh "<<cmBoost<<" "<<_p4parent<<" "<<_p4parent.M()<<" scat ele "<<dynamic_cast<ReactionElectroProd*>(_prodInfo)->_scattered<<" photon "<<_p4photon<<" "<<_p4photon.M2()<<" "<<p1cm.M2() <<" "<<_p4meson.M2()<<" "<< - 2 * (p1cm.E()* kinCM_MesonE(W)-p1cm.P()* kinCM_MesonP(W)*cosTh)<<" part 1 "<<p1cm.E()* kinCM_MesonE(W)<<" "<<p1cm.P()* kinCM_MesonP(W)*cosTh<<" p1cmE "<<p1cm.E()<<" kinCM_MesonE(W) "<<kinCM_MesonE(W)<<" p1cm.P() "<<p1cm.P()<<" kinCM_MesonP(W) "<<kinCM_MesonP(W)<<" p4meson CM "<<p2cm.E() <<" "<<p2cm.P()<<" "<<_p4meson<<" "<<kinCM_PhotonE(W)<<std::endl;
+    auto temp =dynamic_cast<ReactionElectroProd*>(_prodInfo)->_target + _p4photon;
+    auto temp2 =dynamic_cast<ReactionElectroProd*>(_prodInfo)->_target + dynamic_cast<ReactionElectroProd*>(_prodInfo)->_ebeam;
+    //std::cout<<"kin_tFromWCosTh e "<<dynamic_cast<ReactionElectroProd*>(_prodInfo)->_ebeam<<" tar "<<dynamic_cast<ReactionElectroProd*>(_prodInfo)->_target<<" photon "<<dynamic_cast<ReactionElectroProd*>(_prodInfo)->_photon<<" cm "<<temp<<temp2<<std::endl;
+    
     return p1cm.M2() + _p4meson.M2() - 2 * (p1cm.E()* kinCM_MesonE(W)-p1cm.P()* kinCM_MesonP(W)*cosTh);
   }
   

@@ -8,9 +8,9 @@
 
 namespace elSpectro {
 
-  CollidingParticle::CollidingParticle() : Particle() {
-    // Default constructor
-  }
+  // CollidingParticle::CollidingParticle() : Particle() {
+  //   // Default constructor
+  // }
 
   CollidingParticle::CollidingParticle(Int_t pdg, Double_t momentum) : Particle(pdg) {
     // Constructor for a simple beam particle with a defined momentum.
@@ -24,23 +24,28 @@ namespace elSpectro {
 
   CollidingParticle::CollidingParticle(Int_t pdg, Double_t momentum, Int_t parentpdg, decaymodel_ptr  model, decayer_ptr  decayer)
     : Particle(parentpdg) {
-    
+
     // Set the model and decayer on the internal channel
     _decayChannel.AddDecay(nullptr,1.,std::move(model),std::move(decayer));
 
     // Set interacting particle pdg
     _interactingPdg = pdg;
-
+    
     // Set the parent LorentzVector
+
     auto mass = PdgMass();
     LorentzVector lv(0, 0, momentum, TMath::Sqrt(momentum * momentum + mass * mass));
     SetP4(lv);
-    _nominalP4 = P4();
+    
+    //    _nominalP4 = P4();
 
     // Find the relevant particle pointer in the model
     // This is the particle which is used in the production process
     UInt_t position = 0;
-    for (auto& p : model->Products()) {
+    auto mymodel = Model();
+    std::cout << "CollidingParticle::CollidingParticle " <<pdg<<" "<<PdgMass()<< " model "<<mymodel<<" "<<_decayChannel.N()<<" "<<_decayChannel.CurrChannel()<<" "<<mymodel->Products().size()<<" parent "<<P4()<<std::endl;
+
+    for (auto& p : mymodel->Products()) {
       if (p->Pdg() == pdg) {
 	if (_interactIdx != -1) {
 	  std::cerr << "CollidingParticle::CollidingParticle, multiple particles with pdg = " << pdg << std::endl;
@@ -58,7 +63,10 @@ namespace elSpectro {
       // Get the interacting particle (at rest in the parent frame)
       _nominalP4 = GetInteracting4Vector();
       // Boost it to the lab frame
-      decayer->BoostToParentWithRandPhi(P4(), _nominalP4);
+       Decayer()->BoostToParentWithRandPhi(P4(), _nominalP4);
+       std::cout<<"CollidingPArtilce check "<<_nominalP4<<" "<<GetInteracting4Vector()<<" "<<P4()<<std::endl;
+      //Alert DecayModel not to include this in EventParticles
+      Model()->NotEventParticle(_interactIdx);
     }
   }
 
@@ -78,10 +86,9 @@ namespace elSpectro {
   
   void CollidingParticle::PostInit(ReactionInfo* info) {
     // This function handles setup after the particle is fully constructed.
-
     // First, delegate the PostInit call to the DecayChannel.
-   // This allows the channel to initialize its internal components (model and decayer)
-   // and potentially make choices about the decay.
+    // This allows the channel to initialize its internal components (model and decayer)
+    // and potentially make choices about the decay.
     if(_decayChannel.N() == 0) return;
     _decayChannel.PostInit(info);
    

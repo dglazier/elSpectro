@@ -120,11 +120,13 @@ namespace elSpectro{
     auto x = GetX();
     auto xbin =_current_xbin;
 
+    // std::cout<<"DistYGivenX::RandomXY() "<<x <<" "<<xbin<<" "<<_xbins_integrals.size()<<" should be OK  "<<_xbins_lowedges.size()<<" "<<_xbins_lowedges[0]<<" "<<_xbins_lowedges[1]<< " " <<_xbins_integrals[xbin].size()<<" "<<_xbins_integrals[xbin].back()<<std::endl;
+
     if(_xbins_integrals[xbin].back()==0){
       SetY(gRandom->Uniform(GetMinY(),GetMaxY()));
       SetVal(1);
       _current_max = 1.;
-      //std::cout<<"Warning :: DistYGivenX::RandomXY() warning zero distribution at x = "<<x<<" bin "<<xbin<<std::endl;
+      std::cout<<"Warning :: DistYGivenX::RandomXY() warning zero distribution at x = "<<x<<" bin "<<xbin<<std::endl;
       return;
     }
     
@@ -133,8 +135,9 @@ namespace elSpectro{
 
     //need to use the slice in x y-bins
     //_binIntegrals[binx] = cumulative y vector at x
-    Int_t ybin = TMath::BinarySearch(_xbins_integrals[xbin].size(),_xbins_integrals[xbin].data(),r1)+1;
-    // std::cout<<"DistYGivenX::RandomXY() "<<_xbins_integrals[xbin].size()<<" "<<_xbins_integrals[xbin][0]<<" "<<_xbins_integrals[xbin][ybin]<<" "<<_xbins_integrals[xbin].back()<<" r1 "<<r1<<" ybin "<<ybin<<std::endl;
+    // std::cout<<"DistYGivenX::RandomXY() "<<_xbins_integrals[xbin].size()<<" "<<_xbins_integrals[xbin][0]<<" "<<" "<<_xbins_integrals[xbin].back()<<" r1 "<<r1<<std::endl;
+   Int_t ybin = TMath::BinarySearch(_xbins_integrals[xbin].size(),_xbins_integrals[xbin].data(),r1)+1;
+   // std::cout<<"DistYGivenX::RandomXY() "<<_xbins_integrals[xbin].size()<<" "<<_xbins_integrals[xbin][0]<<" "<<_xbins_integrals[xbin][ybin]<<" "<<_xbins_integrals[xbin].back()<<" r1 "<<r1<<" ybin "<<ybin<<std::endl;
     
     //start y from low edge of bin
     Double_t y = _ybins_lowedges[xbin][ybin];

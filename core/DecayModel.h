@@ -119,6 +119,9 @@ namespace elSpectro{
 
     virtual double dsigma() const {return 1;}
 
+    void NotEventParticle(size_t index){
+      _notEventParticles.push_back(index);
+    }
   protected:
 
     friend DecayingParticle;
@@ -144,6 +147,7 @@ namespace elSpectro{
     decaying_objs _unstables; //products which decay
     
     std::vector<double> _unstableReservedMass; //mass reserved for other unstable products
+    std::vector<size_t> _notEventParticles;
     
     mutable LorentzVector _parent;
     mutable double _sumOfMasses=0;

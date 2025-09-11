@@ -40,7 +40,7 @@ public:
     /**
      * @brief Default constructor.
      */
-    CollidingParticle();
+    CollidingParticle()=default;
 
     /**
      * @brief Constructor for a simple beam particle with a defined momentum.

@@ -188,6 +188,8 @@ namespace elSpectro{
     }
     /**
      * @brief Get the maximum physically possible mass for this particle.
+     * @note Derived classes (like DecayingParticle) MUST implement this function,
+     * typically by summing the masses of their decay products.
      * @return Maximum mass value.
      */
     virtual double MaximumMassPossible()const noexcept {
@@ -281,6 +283,10 @@ namespace elSpectro{
 
     /**
      * @brief If mass comes from a distribution, sample it.
+     * @details If no mass distribution is set, the particle's nominal mass is used.
+     * Otherwise, this function samples a mass from the provided Distribution
+     * object, respecting the kinematic limits and any optional range provided.
+     * It handles edge cases where the allowed mass range is very small or unphysical.
      * @param[in] xmin Minimum mass range (default -1 for auto).
      * @param[in] xmax Maximum mass range (default -1 for auto).
      * @note This function may update _dynamicMass and _massWeight.

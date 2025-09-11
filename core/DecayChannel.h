@@ -37,11 +37,11 @@ namespace elSpectro{
     void AddDecay(DecayingParticle* parent,double bratio,decaymodel_ptr mod,decayer_ptr dec){
       _brRatioSum.push_back(_brRatioSum.back()+bratio);
       _brRatios.push_back(bratio);
-     _models.push_back(std::move(mod));
+      _models.push_back(std::move(mod));
       _models.back()->SetParent(parent);
       _decayers.push_back(std::move(dec));
-       _idecay++; //so we can edit new decay
-
+      _idecay++; //so we can edit new decay
+      std::cout<< "DecayChannel AddDecay " << _models.size()<<" "<<_models.back()<<std::endl;
      }
 
     void SetParent(DecayingParticle* parent){
@@ -56,13 +56,12 @@ namespace elSpectro{
       //    std::cout<<"DecayChannel::PostInit "<<dynamic_cast<ReactionElectroProd*>(info) <<std::endl; 
      for(uint i = 0; i<_models.size();++i){
 	SetCurrChannel(i);
-	//	std::cout<<"DecayChannel::PostInit model "<<i<<" "<<CurrModel()<<std::endl;
 	CurrModel()->PostInit(info);
  	CurrDecayer()->PostInit(info);
       }
      MaxThreshold();
      SetCurrChannel(0);
-     }
+    }
     uint ChooseDecay(double W) const;
     
     uint CurrChannel() const {return _idecay>=N() ? 0 : _idecay;}
@@ -74,7 +73,7 @@ namespace elSpectro{
       _idecay=val;
     };
 
-    DecayModel* CurrModel()  const {return _models[CurrChannel()].get();}
+    DecayModel* CurrModel()  const { return _models[CurrChannel()].get();}
 
     DecayVectors* CurrDecayer() const {return _decayers[CurrChannel()].get();}
 

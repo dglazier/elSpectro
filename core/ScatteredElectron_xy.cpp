@@ -27,7 +27,7 @@ namespace elSpectro{
     double xx,yy;
     std::tie(xx,yy) = _random_xy.SamplePair();
     CompleteGivenXandY(parent, products, xx, yy);
-    double Ee = escat::E_el(parent.Z()); //parent in rest frame of ion, momentum= 
+    double Ee = escat::E_el(parent.P()); //parent in rest frame of ion, momentum= 
     double Mion= parent.T()-Ee; // energy of parent = Mion + E(e-)
 
     double Egamma = Ee * yy;
@@ -37,7 +37,7 @@ namespace elSpectro{
     histyQ2.Fill(escat::Q2_xy( Ee,xx,yy,Mion),yy);
     histyx.Fill(xx,yy);
     histW.Fill(W);
-    //if(W<140.7)std::cout<<"ScatteredElectron_xy::Generate E = "<<Egamma<<" W= "<<W<<std::endl;
+    //  std::cout<<"ScatteredElectron_xy::Generate E = "<<Egamma<<" W= "<<W<<" "<<Mion<<" "<<parent<<std::endl;
     return 1;//in this case distribution already accounts for virtual photon flux
   
     /*
@@ -143,9 +143,9 @@ namespace elSpectro{
     _scattered.SetXYZT(x_sc,y_sc,z_sc,Esc);//scattered electron
     //Must make sure scattered e- is in the same frame as the parent
     //still in rest system of nucl, just need rotation
-    //std::cout<<"1 ScatteredElectron_xy::CompleteGivenXandY"<<_parent_in_elFrame<<" "<<_scattered<<" "<<_parent_in_elFrame -_scattered<<" W "<<(_parent_in_elFrame -_scattered).M()<<std::endl;
+    // std::cout<<"1 ScatteredElectron_xy::CompleteGivenXandY"<<_parent_in_elFrame<<" "<<_scattered<<" "<<_parent_in_elFrame -_scattered<<" W "<<(_parent_in_elFrame -_scattered).M()<<std::endl;
     RotateZaxisToCMDirection(parent,_scattered);
-    //RotateZaxisToCMDirection(parent,_parent_in_elFrame);
+    // RotateZaxisToCMDirection(_parent_in_elFrame,scattered);
     //std::cout<<" check parents match "<<parent<<" phi "<<parent.Phi()<< " with "<<_parent_in_elFrame<<std::endl;
     // std::cout<<"2 ScatteredElectron_xy::CompleteGivenXandY"<<parent<<" "<<_scattered<<" "<<parent -_scattered<<" "<<(parent -_scattered).M()<<std::endl;
     if(products[0]->Pdg()==11){

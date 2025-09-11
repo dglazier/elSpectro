@@ -112,8 +112,7 @@ namespace elSpectro{
     auto p4scat=GetScatteredElectron().P4();
     
     _gamma = p4beam-p4scat;//can now use getQ2
-    
-    //calculate photon polarisation
+    // std::cout<<"FormationQ2W::Intensity() "<<p4beam+p4tar<<" beam "<<p4beam<<" tar "<<p4tar<<" scat "<<p4scat<<_gamma<<" sum ebeam "<<p4scat+_gamma<<std::endl;//calculate photon polarisation
     auto epsilon = escat::virtualPhotonPolarisation(p4beam,p4tar,p4scat);
     //protect divide by 0
     auto delta = (epsilon==1)? 0: 2*escat::M2_el()/getQ2()*(1-epsilon);
@@ -128,7 +127,7 @@ namespace elSpectro{
     
     
     weight*=Q2H1Rho();
-    // std::cout<<"FormationQ2W "<<weight<<" "<<getQ2()<< " "<<W<<std::endl;
+    //std::cout<<"FormationQ2W "<<weight<<" "<<getQ2()<< " "<<W<<std::endl;
     
     //copy all currently known particle info
     prodInfo->_scattered=p4scat;

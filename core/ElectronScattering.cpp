@@ -276,7 +276,7 @@ namespace elSpectro{
   ///Use Frixione + sigma(W) to integrate cross section over x , y and t
   double ElectronScattering::IntegrateCrossSectionFast(TwoBodyProduction* model2body){
     gBenchmark->Start("IntegrateCrossSectionFast");
-    auto collision=MakeCollision();
+    auto collision=MakeNominalCollision();
 
     //auto Q2WModel =dynamic_cast<FormationQ2W*>(Model());
     Q2WModel()->ZeroPhoton();//need Q2=0 for P1CM
@@ -330,14 +330,38 @@ namespace elSpectro{
     _nuclRestElec= boost(_beamElec.P4(),prBoost);
     //set decay parent for e -> e'g*
     SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
-    // std::cout<<" ElectronScattering::MakeCollision()  "<<(_targetptr->GetInteracting4Vector())<<" "<<_electronptr<<_beamElec.P4()<<_beamNucl.P4()<<_nuclRestNucl<<_nuclRestElec<<collision<<std::endl;
+    //  std::cout<<" ElectronScattering::MakeCollision()  "<<(_targetptr->GetInteracting4Vector())<<" "<<_electronptr<<"ele beam "<<_beamElec.P4()<<"ele beam nuclle "<<_beamNucl.P4()<<_nuclRestNucl<<_nuclRestElec<<collision<<" beam ncule mass "<<_beamNucl.Mass()<<std::endl;
+   _reactionInfo._target=_nuclRestNucl;
+    _reactionInfo._ebeam =_nuclRestElec;
+    return collision;
+  }
+  //Nominal collision for integrations etc
+  LorentzVector ElectronScattering::MakeNominalCollision(){
+    //Generate collision 4-momentum
+    if(_electronptr!=nullptr){
+      _beamElec.SetP4(_electronptr->GetNominal4Vector());
+    }
+    if(_targetptr!=nullptr){
+      _beamNucl.SetP4(_targetptr->GetNominal4Vector());
+    }
+    //First, Eventually want to sample from beam divergence distributions
+    LorentzVector collision = _beamElec.P4() + _beamNucl.P4();
+    //Boost into ion rest frame
+    auto prBoost=_beamNucl.P4().BoostToCM();
+    collision=boost(collision,prBoost);
+    SetBoostToLab(-prBoost);
+    _nuclRestNucl=LorentzVector(0,0,0,_beamNucl.Mass());
+    _nuclRestElec= boost(_beamElec.P4(),prBoost);
+    //set decay parent for e -> e'g*
+    SetXYZT(collision.X(),collision.Y(),collision.Z(),collision.T());
+     std::cout<<" ElectronScattering::MakeNominalCollision()  "<<(_targetptr->GetInteracting4Vector())<<" "<<_electronptr<<_beamElec.P4()<<_beamNucl.P4()<<_nuclRestNucl<<_nuclRestElec<<collision<<std::endl;
     return collision;
   }
  //////////////////////////////////////////////////////////////////////////
   ///Use RooFit integrator to integrate cross section over x , y and t
   double ElectronScattering::IntegrateCrossSection(TwoBodyProduction* model2body){
     
-    auto collision=MakeCollision();
+    auto collision=MakeNominalCollision();
 
     auto photonFlux= dynamic_cast<ScatteredElectron_xy* >(mutableDecayer());
     //photonFlux->Dist().SetWThresholdVal(model2body->GetMeson()->PdgMass()+model2body->GetBaryon()->PdgMass());
@@ -389,7 +413,8 @@ namespace elSpectro{
 	if(val<0) return 0.;
 	val*=Q2WModel()->Q2H1Rho();
 
-       	//std::cout<< "check W "<<Q2WModel()->getW()<<" Q2 "<<Q2WModel()->getQ2()<<" pdg1 "<<Model()->Products()[0]->Pdg()<<" pdg2 "<<Model()->Products()[1]->Pdg()<<" "<<model2body->get_W_FromParent()<<" "<<threshW<<" "<<x[2]<<" "<<val<<std::endl;
+	//	std::cout<< "check W "<<Q2WModel()->getW()<<" Q2 "<<Q2WModel()->getQ2()<<" pdg1 "<<Model()->Products()[0]->Pdg()<<" pdg2 "<<Model()->Products()[1]->Pdg()<<" "<<model2body->get_W_FromParent()<<" "<<threshW<<" "<<x[2]<<" "<<val<<std::endl;
+	//if(Q2WModel()->getW()>2) exit(0);
 
 	return val;
       };
@@ -464,7 +489,14 @@ namespace elSpectro{
     //Manager::Instance().Particles().BoostToFrame(-prBoost,collision);
 
     particle_ptrs final_state;
-    EventParticles(final_state);//collect all final state particles
+    EventParticles(final_state);//collect all final state particles from elecrton scattering
+    //collect any additional particles from initial state
+    //e.g. recoil nucleons, radiated photons,...
+    auto elmodel =_electronptr->Model();
+    if(elmodel)elmodel->EventParticles(final_state);
+    auto tarmodel = _targetptr->Model();
+    if(tarmodel)tarmodel->EventParticles(final_state);
+    
    // std::cout<<"ElectronScattering final particles "<<final_state.size()<<std::endl;
    // for(auto& p:final_state){std::cout<<" "<<p->Pdg();}
    // std::cout<<std::endl;

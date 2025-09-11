@@ -112,13 +112,7 @@ namespace elSpectro{
 
     */
 
-
-
-
-
-
-
-    
+   
     _channels.PostInit(info);
 
     auto& products=Model()->Products();
@@ -143,7 +137,7 @@ namespace elSpectro{
 //////////////////////////////////////////////////////////////////////
   DecayStatus   DecayingParticle::GenerateProducts(const ProductionProcess* production){
     // if(Pdg()==-2211) std::cout<<"********************************DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" "<<Model()->Products().size()<<" "<<" "<<Model()->Products()[0]->Pdg()<<" prod mass "<<Model()->Products()[0]->Mass()<<" "<<Model()->UnstableProducts().size()<<" "<<Model()->StableProducts().size()<<" "<<std::endl;
-    //std::cout<<"********************************DecayingParticle::GenerateProducts "<<Pdg()<<" "<<Mass()<<" "<<P4().M()<<" minmass "<<MinimumMassPossible()<<" ? "<<(Mass()-MinimumMassPossible())<<" "<<Model()->Products().size()<<" "<<" pdg1 "<<Model()->Products()[0]->Pdg()<<" pdg2 "<<Model()->Products()[1]->Pdg()<<" prod mass "<<Model()->Products()[0]->Mass()<<" "<<Model()->UnstableProducts().size()<<" "<<Model()->StableProducts().size()<<" "<<std::endl;
+    //std::cout<<"********************************DecayingParticle::GenerateProducts "<<Pdg()<<" "<<P4()<<" mass "<<Mass()<<" "<<P4().M()<<" minmass "<<MinimumMassPossible()<<" ? "<<(Mass()-MinimumMassPossible())<<" "<<Model()->Products().size()<<" "<<" pdg1 "<<Model()->Products()[0]->Pdg()<<" pdg2 "<<Model()->Products()[1]->Pdg()<<" prod mass "<<Model()->Products()[0]->Mass()<<" "<<Model()->UnstableProducts().size()<<" "<<Model()->StableProducts().size()<<" "<<std::endl;
 
     _generateCalls++;
 
@@ -162,7 +156,7 @@ namespace elSpectro{
     //for others it allows to weigth phase space back in 
 
     auto samplingWeight= Decay();
-    //std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" sample weight "<<samplingWeight<<" "<<Model()->HasAngularDistribution()<<std::endl;
+    // std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" sample weight "<<samplingWeight<<" "<<Model()->HasAngularDistribution()<<std::endl;
     if(Model()->HasAngularDistribution()==false)samplingWeight=1; //Model has no angular distribution
  
 
@@ -172,7 +166,7 @@ namespace elSpectro{
       //evaluate the model intensity for the product vectors
     double weight = 1.;
     
-    //  std::cout<<"DecayingParticle::GenerateProducts GetIntensity"<<std::endl;
+    // std::cout<<"DecayingParticle::GenerateProducts GetIntensity"<<std::endl;
     if(Model()!=nullptr)  weight = Model()->Intensity();
     //if in charge of phase space calculate masses for full decay chain
     // std::cout<<"DecayingParticle::GenerateProducts GetIntensity "<<weight<<std::endl;
@@ -199,7 +193,7 @@ namespace elSpectro{
     // 	std::cout<<"W "<< twoBody->get_W()<<" t "<<twoBody->get_t()<<" th "<<twoBody->get_cosThCM()<<" "<<kine::tFromcosthW(twoBody->get_cosThCM(), twoBody->get_W(),twoBody->GetPhoton().M(),twoBody->GetTarget().M(),Model()->Product(0)->Mass(),Model()->Product(1)->Mass())<<" p1 "<<Model()->Product(1)->Mass()<<" p0 "<<Model()->Product(0)->Mass()<<" ph "<<twoBody->GetPhoton().M()<<" tar "<<twoBody->GetTarget().M()<<std::endl; 
     //   }
     // }
-    //if(Pdg()==-2211)std::cout<<"DecayingParticle::GenerateProducts "<<Pdg()<<" "<<weight <<" "<<_maxWeight<<" "<<samplingWeight<<" "<<Model()->RegenerateOnFail()<<" "<<weight/samplingWeight<<std::endl;
+    // if(Pdg()==-2211)std::cout<<"DecayingParticle::GenerateProducts calc weihgt "<<Pdg()<<" "<<weight <<" "<<_maxWeight<<" "<<samplingWeight<<" "<<Model()->RegenerateOnFail()<<" "<<weight/samplingWeight<<std::endl;
     //if event info use its weight, if not assume phse space model = 1.
     weight/=samplingWeight;
         
@@ -209,7 +203,7 @@ namespace elSpectro{
     //if decay indendent of parent variables can just try for another
     decayed = weight > gRandom->Uniform() ;
     //std::cout<<"+++++++++++++++++DecayingParticle "<<decayed<<std::endl;
-
+    //if(Pdg()==-2211) exit(0);
     if (decayed == false && (Model()->RegenerateOnFail()==false) )
       return DecayStatus::TryAnother;
     else if (decayed == false && (Model()->RegenerateOnFail()==true) )

@@ -52,6 +52,7 @@ namespace elSpectro{
 	
         pdgDB->ReadPDGTable(Form("%s/etc/xyz_pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
         pdgDB->ReadPDGTable(Form("%s/etc/rndmflav_pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
+	pdgDB->ReadPDGTable(Form("%s/etc/nuclei_table.txt",gSystem->Getenv("ELSPECTRO")));
 	//	pdgDB->ReadPDGTable(Form("%s/etc/pdg_table.txt",gSystem->Getenv("ROOTSYS")));
 	pdgDB->ReadPDGTable(Form("%s/etc/pdg_table.txt",gSystem->Getenv("ELSPECTRO")));
 

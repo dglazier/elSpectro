@@ -42,7 +42,7 @@ namespace elSpectro{
       if(_cacheW==currW) return true;
       ChooseDecay();//Need full decay chain
       // auto idec = _channels.ChooseDecay(P4().M());
-      //std::cout<<" ProductionModel::ReadyForDecay ChooseDecay()  "<<Pdg()<<" "<<idec<<std::endl;
+      //    std::cout<<" ProductionModel::ReadyForDecay ChooseDecay()  "<<currW<<std::endl;
  
       _cacheW = currW;
       SampleNBodyPhaseSpace(currW,this);

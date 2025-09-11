@@ -78,6 +78,7 @@ namespace elSpectro{
     double IntegrateCrossSection(TwoBodyProduction* model2body) override;
     double IntegrateCrossSectionFast(TwoBodyProduction* model2body) override;
     LorentzVector MakeCollision();
+    LorentzVector MakeNominalCollision();
 
     void SetCacheIntegrals(int doit=1){_cacheIntegrals=doit;}
     const FormationQ2W* Q2WModel() const {return static_cast<FormationQ2W*>(Model());}
