@@ -13,7 +13,7 @@ namespace phoPro{
 
   elSpectro::ElectronScattering*  Build_ep_Collision(double ebeamE,double pbeamE, elSpectro::JpacTwoBody& jpac){
     auto Nmass = (0.93827210);
-    double NbeamP = sqrt(pbeamE*pbeamE - Nmass*Nmass);
+    double pbeamP = sqrt(pbeamE*pbeamE - Nmass*Nmass);
    
     double ebeamP = sqrt(ebeamE*ebeamE - 0.00051099900*0.00051099900);
 
